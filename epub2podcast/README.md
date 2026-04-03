@@ -288,3 +288,9 @@ epub2podcast/
 - `src/`：独立运行所需源码
 - `scripts/`：方便调用的 shell 入口
 - `assets/`：README 示例图
+- `examples/`：最小命令示例与环境配置示例
+
+如果你想快速查看实际命令，可继续看：
+
+- `examples/sample-commands.md`
+- `examples/env-minimal-example.md`
