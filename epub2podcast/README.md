@@ -1,37 +1,51 @@
 # epub2podcast
 
-`epub2podcast` 是一个把电子书内容整理成播客形态的本地工作流 skill。
+`epub2podcast` 是一个面向本地工作流的 skill，用来把电子书内容整理成更适合收听和传播的播客形态。
 
-它适合这样的场景：你手上有一本 EPUB / PDF / MOBI / AZW3，希望把它进一步处理成更适合收听和传播的内容，例如：
+简单来说，它想解决的是这样一个问题：
 
-- 双人中文播客脚本
-- 完整播客音频
-- Smart Slide 视觉页
-- 最终 MP4 视频
+> 手上有一本电子书，能不能把它进一步处理成“能听、能看、能分享”的播客内容？
 
-## 这个 skill 适合谁用
+这个 skill 提供的就是这样一条本地链路：
 
-这个 skill 更适合下面这些用户：
+- 电子书 → 双人中文播客脚本
+- 脚本 → 音频分段与完整音频
+- 内容 → Smart Slide 页面
+- 音频 + 页面 → 最终 MP4 视频
+
+## 它适合什么场景
+
+如果你遇到下面这些场景，这个 skill 会比较合适：
+
+- 你想把一本书整理成播客节目
+- 你想把文字内容变成更容易传播的视频内容
+- 你已经有本地 `epub2podcast` 项目，希望把流程固定下来
+- 你希望把“电子书 → 播客”的过程封装成可复用的 skill
+
+## 它适合谁
+
+这个 skill 更适合：
 
 - 已经有本地 `epub2podcast` 项目代码的人
-- 想把“电子书 → 播客”流程标准化的人
-- 想把这条工作流封装成可复用 skill 的 Hermes 用户
-- 想在本地完成脚本、音频、页面和视频产出的人
+- 想把这条工作流沉淀下来的人
+- 想复用成熟工作流的 Hermes 用户
+- 想在本地掌控脚本、音频、页面和视频产出的人
 
-如果你希望的是“下载这个目录后直接一键运行”，那它目前并不是一个完全独立的软件包，而更像是一个**建立在现有本地项目之上的 skill 封装**。
+如果你期待的是“下载这个目录后直接一键运行”，那它目前还不是一个完全独立的软件包，而是一个**建立在现有本地项目之上的 skill 封装**。
 
-## 它能做什么
+## 它能产出什么
 
-这个 skill 主要覆盖下面这条本地链路：
+在典型流程里，这个 skill 会帮助你得到：
 
-1. 读取 EPUB / PDF / MOBI / AZW3
-2. 生成双人中文播客脚本
-3. 生成分段音频并合成为完整音频
-4. 生成 Smart Slide
-5. 合成最终 MP4 视频
-6. 在需要时压缩视频，方便后续分享或上传
+- 双人中文播客脚本
+- 分段音频
+- 合并后的完整播客音频
+- Smart Slide 图片
+- Smart Slide HTML 源文件
+- 最终 MP4 视频
+- 必要时可进一步压缩的视频文件
 
-## 开始之前要准备什么
+## 使用前提（Prerequisites）
 
 在真正运行之前，你需要先准备好下面这些内容。
 
@@ -49,11 +63,11 @@
 export EPUB2PODCAST_PROJECT_ROOT=/path/to/your/epub2podcast-local/frontend/server
 ```
 
-这个 skill 目录里的脚本，会通过这个环境变量找到真正的项目代码并执行。
+这个 skill 目录中的脚本会通过这个环境变量，找到真正的项目代码并执行。
 
 ### 2）Node.js 和 npm
 
-因为底层项目是 Node / TypeScript 运行链路，所以本机需要先安装：
+因为底层项目是 Node / TypeScript 运行链路，所以本机通常需要：
 
 - Node.js
 - npm
@@ -76,18 +90,31 @@ export EPUB2PODCAST_PROJECT_ROOT=/path/to/your/epub2podcast-local/frontend/serve
 
 ### 5）模型和 TTS 相关环境变量
 
-如果你的本地 `epub2podcast` 项目依赖模型服务或 TTS 服务，那么对应环境变量也需要提前配置好。
+如果你的本地 `epub2podcast` 项目依赖模型服务或 TTS 服务，那么这些环境变量也需要提前配置好。
 
 常见会涉及：
 
 - OpenRouter 相关配置
 - Volcengine TTS 相关配置
 
-具体变量名，以你实际使用的 `epub2podcast` 项目为准。
+具体变量名，以你实际使用的本地 `epub2podcast` 项目为准。
+
+## 安装前检查清单
+
+在开始前，建议先快速确认下面这些项目：
+
+- [ ] 已有可运行的本地 `epub2podcast` 项目代码
+- [ ] 已设置 `EPUB2PODCAST_PROJECT_ROOT`
+- [ ] 本机已安装 Node.js 和 npm
+- [ ] 本机已安装 `ffmpeg` / `ffprobe`
+- [ ] 本机已安装 Chrome 或 Chromium
+- [ ] 所需模型 / TTS 环境变量已配置完成
+
+如果这几项里有任何一项没准备好，后面运行时大概率会报错。
 
 ## 3 分钟快速开始
 
-当你已经准备好本地项目和依赖后，可以按下面方式开始。
+当你已经准备好项目和依赖之后，可以按下面方式开始。
 
 ### 第一步：设置项目路径
 
@@ -101,7 +128,7 @@ export EPUB2PODCAST_PROJECT_ROOT=/path/to/your/epub2podcast-local/frontend/serve
 bash scripts/epub2podcast_local_run.sh --epub ./book.epub
 ```
 
-### 第三步：如果需要，重生成某一页 slide
+### 第三步：如果某一页 slide 效果不理想，就单独重做
 
 ```bash
 bash scripts/epub2podcast_local_regenerate_slide.sh \
@@ -110,7 +137,7 @@ bash scripts/epub2podcast_local_regenerate_slide.sh \
   --recompose
 ```
 
-### 第四步：如果视频太大，先压缩再分享
+### 第四步：如果视频太大，就先压缩
 
 ```bash
 bash scripts/epub2podcast_local_compress_feishu_video.sh \
@@ -135,16 +162,18 @@ bash scripts/epub2podcast_local_compress_feishu_video.sh \
 
 它依赖你本地已经有可运行的 `epub2podcast` 项目代码，以及对应的运行环境。
 
-### 为什么 README 里要写这么多前置条件？
+### 为什么这里不是直接附上完整项目代码？
 
-因为对外部用户来说，最容易踩坑的地方不是“命令怎么写”，而是：
+因为这里的定位是 **skill 封装**，不是完整项目镜像。
 
-- 本地有没有底层项目代码
-- 依赖装没装
-- 环境变量配没配
-- Chrome / ffmpeg 是否可用
+它更适合放：
 
-如果这些前提不清楚，别人很容易误以为这是一个开箱即用的独立工具。
+- 工作流说明
+- 推荐命令
+- 运行入口脚本
+- 实战经验总结
+
+而不是把整个底层项目直接复制进来。
 
 ### 如果只想重做某一页 slide，可以吗？
 
@@ -156,11 +185,60 @@ bash scripts/epub2podcast_local_compress_feishu_video.sh \
 
 ### 如果最终 MP4 太大怎么办？
 
-可以先使用：
+可以使用：
 
 - `scripts/epub2podcast_local_compress_feishu_video.sh`
 
-把视频压缩后再上传或分享。
+先把视频压缩后再上传或分享。
+
+## 常见报错与排查思路
+
+### 1. 提示没有设置 `EPUB2PODCAST_PROJECT_ROOT`
+
+说明脚本找不到底层项目代码。
+
+先执行：
+
+```bash
+export EPUB2PODCAST_PROJECT_ROOT=/path/to/your/epub2podcast-local/frontend/server
+```
+
+然后再重新运行脚本。
+
+### 2. 提示 `npm`、`node`、`ffmpeg` 或 `ffprobe` 不存在
+
+说明本机依赖还没装好。
+
+优先检查这些命令是否可用：
+
+```bash
+node -v
+npm -v
+ffmpeg -version
+ffprobe -version
+```
+
+### 3. Smart Slide 生成失败
+
+通常优先检查：
+
+- Chrome / Chromium 是否可用
+- Puppeteer 依赖是否正常
+- 页面渲染环境是否齐全
+
+### 4. 音频或脚本生成失败
+
+通常优先检查：
+
+- 模型服务相关环境变量是否正确
+- TTS 相关环境变量是否正确
+- 本地项目本身是否已经能独立跑通
+
+### 5. 视频太大，上传困难
+
+这是比较常见的问题。
+
+可以先使用压缩脚本，把 MP4 压小以后再上传或分享。
 
 ## 这个 skill 的边界
 
@@ -175,6 +253,6 @@ bash scripts/epub2podcast_local_compress_feishu_video.sh \
 
 ## 想进一步了解
 
-如果你想看更完整的命令、默认参数、实战经验和问题排查，可以继续看：
+如果你想看更完整的命令、默认参数、经验总结和问题排查，可以继续看：
 
 - `SKILL.md`
