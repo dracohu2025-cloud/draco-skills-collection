@@ -22,16 +22,6 @@ metadata:
 - 最终视频播客 `final_podcast.mp4`
 - 营销文案与 metadata
 
-## 版本边界
-
-为了避免混淆，这里明确区分三个版本：
-
-- **remote 版**：调用远端运行中的 epub2podcast 服务，由远端项目实际生产结果
-- **local 版**：依赖另一份本地 `epub2podcast-local` 源码目录，由 skill/wrapper 去调用那个项目
-- **standalone 版（当前 GitHub 目录唯一保留的版本）**：当前目录自带独立源码、独立 package、独立 CLI，不依赖外部项目路径
-
-**当前 GitHub 仓库中的 `epub2podcast/` 只对应 standalone 版本，不再把 local / remote 版 skill 一起放进去。**
-
 ## 核心原则
 
 - **本地运行**

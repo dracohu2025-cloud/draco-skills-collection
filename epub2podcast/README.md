@@ -10,18 +10,6 @@
 
 ---
 
-## 版本说明
-
-为了避免混淆，这里明确区分三个版本：
-
-- **remote 版**：调用远端服务，由远端项目生成结果
-- **local 版**：依赖另一份本地 `epub2podcast-local` 项目目录，本目录只是调用入口
-- **standalone 版（当前目录）**：自带独立源码、独立 package、独立 CLI，用户只下载当前目录即可运行
-
-**当前 GitHub 仓库中的 `epub2podcast/` 只保留 standalone 版本，不再同时放 local / remote 版 skill。**
-
----
-
 ## 你能用它做什么
 
 `epub2podcast` 当前最稳的工作流是：
