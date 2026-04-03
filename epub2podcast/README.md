@@ -46,7 +46,7 @@
     </td>
     <td width="50%" valign="top">
       <img src="./assets/example-slide-infographic.png" alt="epub2podcast 示例信息页" />
-      <p><strong>信息页风格</strong><br/>适合展示结构化信息、核心观点或分层关系。</p>
+      <p><strong>信息图风格</strong><br/>适合展示结构化信息、核心观点或分层关系。</p>
     </td>
   </tr>
   <tr>
@@ -57,6 +57,16 @@
     <td width="50%" valign="top">
       <img src="./assets/example-slide-card-layout.png" alt="epub2podcast 三卡片版式示例" />
       <p><strong>三卡片信息页</strong><br/>适合把一个主题拆成 3 个并列重点，方便快速浏览与理解。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-list-layout.png" alt="epub2podcast 条目列表版式示例" />
+      <p><strong>条目列表版式</strong><br/>适合做学术总结、历史回响、观点归纳这类要点式内容页。</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-center-layout.png" alt="epub2podcast 中心聚焦版式示例" />
+      <p><strong>中心聚焦版式</strong><br/>适合用一个核心概念带出四周支撑观点，展示主题与延展关系。</p>
     </td>
   </tr>
 </table>
