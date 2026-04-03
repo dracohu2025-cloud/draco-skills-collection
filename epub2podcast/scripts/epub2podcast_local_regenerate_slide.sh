@@ -1,22 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="${EPUB2PODCAST_PROJECT_ROOT:-}"
-ENTRY_REL="dist/regenerateLocalSlide.js"
-SRC_REL="src/regenerateLocalSlide.ts"
-
-if [[ -z "$PROJECT_ROOT" ]]; then
-  echo "Please set EPUB2PODCAST_PROJECT_ROOT to your epub2podcast-local/frontend/server path." >&2
-  exit 1
-fi
-
-ENTRY_SRC="$PROJECT_ROOT/$SRC_REL"
-ENTRY_DIST="$PROJECT_ROOT/$ENTRY_REL"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-if [[ ! -f "$ENTRY_DIST" || "$ENTRY_SRC" -nt "$ENTRY_DIST" ]]; then
-  npm run build
+if [[ ! -d node_modules ]]; then
+  echo "Dependencies not installed. Running npm install..."
+  npm install
 fi
 
-exec node "$ENTRY_DIST" "$@"
+npm run build >/dev/null
+exec node dist/cli/regenerate-slide.js "$@"

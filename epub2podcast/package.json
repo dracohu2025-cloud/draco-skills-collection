@@ -1,0 +1,35 @@
+{
+  "name": "epub2podcast-local-standalone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone local-first EPUB2Podcast pipeline: EPUB to Chinese podcast script, audio, Smart Slides, and MP4.",
+  "bin": {
+    "epub2podcast-run": "dist/cli/run.js",
+    "epub2podcast-regenerate-slide": "dist/cli/regenerate-slide.js",
+    "epub2podcast-compress-video": "dist/cli/compress-video.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "run": "node dist/cli/run.js",
+    "regenerate-slide": "node dist/cli/regenerate-slide.js",
+    "compress-video": "node dist/cli/compress-video.js",
+    "smoke-test": "bash scripts/smoke-test.sh"
+  },
+  "dependencies": {
+    "@google/genai": "^1.30.0",
+    "@xmldom/xmldom": "^0.8.11",
+    "dotenv": "^17.2.3",
+    "fluent-ffmpeg": "^2.1.3",
+    "jszip": "^3.10.1",
+    "jsonrepair": "^3.13.1",
+    "puppeteer": "24.32.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.28",
+    "@types/node": "^24.10.1",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.9.3"
+  }
+}
