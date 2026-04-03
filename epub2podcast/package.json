@@ -1,9 +1,20 @@
 {
-  "name": "epub2podcast-local-standalone",
+  "name": "epub2podcast",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Standalone local-first EPUB2Podcast pipeline: EPUB to Chinese podcast script, audio, Smart Slides, and MP4.",
+  "description": "Standalone local-first EPUB to Chinese podcast pipeline with Smart Slides and MP4 output.",
+  "license": "MIT",
+  "keywords": [
+    "epub",
+    "podcast",
+    "tts",
+    "slides",
+    "smart-slide",
+    "video",
+    "mp4",
+    "hermes-skill"
+  ],
   "bin": {
     "epub2podcast-run": "dist/cli/run.js",
     "epub2podcast-regenerate-slide": "dist/cli/regenerate-slide.js",
