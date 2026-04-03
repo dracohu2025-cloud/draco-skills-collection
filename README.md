@@ -35,6 +35,18 @@
 
 这类页面适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。
 
+### 示例 3：左右分栏版式
+
+![epub2podcast 左右分栏版式示例](./epub2podcast/assets/example-slide-split-layout.png)
+
+这类页面适合做“引言 + 分点展开”的讲述页。
+
+### 示例 4：三卡片版式
+
+![epub2podcast 三卡片版式示例](./epub2podcast/assets/example-slide-card-layout.png)
+
+这类页面适合把一个主题拆成多个并列重点。
+
 更多截图、流程图和说明，请查看：
 - [`epub2podcast/README.md`](./epub2podcast/README.md)
 
