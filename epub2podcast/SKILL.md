@@ -1,18 +1,18 @@
 ---
-name: epub2podcast-local
-description: 在当前机器本地把 EPUB/PDF/MOBI 转成完整的 Smart Slide + 双人中文音频 + 最终 MP4 视频播客；公开版说明已去除敏感信息。
-version: 1.0.0
+name: epub2podcast-standalone
+description: 可独立运行的 standalone 版 EPUB2Podcast：用户只需下载当前项目本身，即可在本地把 EPUB 转成 Smart Slide + 双人中文音频 + 最终 MP4 视频播客。
+version: 0.1.0
 author: Hermes Agent
 license: MIT
 platforms: [linux]
 metadata:
   hermes:
-    tags: [epub, podcast, smart-ppt, smart-slide, tts, video, mp4, local-only]
+    tags: [epub, podcast, smart-ppt, smart-slide, tts, video, mp4, standalone]
 ---
 
-# EPUB2Podcast Local
+# EPUB2Podcast Standalone
 
-这个 skill 使用当前机器上的 **本地版 epub2podcast 管线**，把 EPUB/PDF/MOBI/AZW3 转成：
+这个 skill 对应的是 **standalone 版本** 的 epub2podcast 管线。用户只需要下载当前项目本身，就可以把 EPUB 转成：
 
 - 双人中文播客脚本
 - 分段音频
@@ -22,9 +22,20 @@ metadata:
 - 最终视频播客 `final_podcast.mp4`
 - 营销文案与 metadata
 
+## 版本边界
+
+为了避免混淆，这里明确区分三个版本：
+
+- **remote 版**：调用远端运行中的 epub2podcast 服务，由远端项目实际生产结果
+- **local 版**：依赖另一份本地 `epub2podcast-local` 源码目录，由 skill/wrapper 去调用那个项目
+- **standalone 版（当前 GitHub 目录唯一保留的版本）**：当前目录自带独立源码、独立 package、独立 CLI，不依赖外部项目路径
+
+**当前 GitHub 仓库中的 `epub2podcast/` 只对应 standalone 版本，不再把 local / remote 版 skill 一起放进去。**
+
 ## 核心原则
 
 - **本地运行**
+- **独立运行**（不依赖外部 `EPUB2PODCAST_PROJECT_ROOT`）
 - **不依赖 Supabase 持久化**
 - **不调用远端运行中的 epub2podcast 服务**
 - 交付物优先落本地目录，后续可再上传飞书
