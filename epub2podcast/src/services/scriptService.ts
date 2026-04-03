@@ -3,9 +3,6 @@ import dotenv from 'dotenv';
 import { ScriptSegment, ImageStyleConfig, ImagePromptJSON, ApiProvider, ScriptGenerationContext, SourceChapter } from '../types.js';
 import { TEXT_MODEL, getImageStyleDefinition, getDefaultImageStyle, ImageStyleDefinition } from '../constants.js';
 import { openrouterService } from './openrouterService.js';
-// P0+P1 Refactoring: New abstraction layers (available for future use)
-import { getTextProvider, TextProviderType } from '../providers/index.js';
-import { getSlideGenerationPrompt, Language } from '../prompts/index.js';
 import { extractHookFromScript, generateThumbnailPrompt, HookData } from './thumbnailHooks.js';
 import { sanitizeBookTitleForPrompt } from '../utils/titleSanitizer.js';
 
