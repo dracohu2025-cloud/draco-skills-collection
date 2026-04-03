@@ -25,6 +25,10 @@ All notable changes to `epub2podcast` will be documented in this file.
 ### Removed
 - Unused standalone provider modules that were no longer required by the local-only runtime path
 
+### Fixed
+- Fixed EPUB parsing for namespace-prefixed OPF files by making metadata / manifest / spine extraction namespace-safe
+- Verified the standalone pipeline end-to-end with `太平天国革命运动史` EPUB, including real content extraction, script generation, audio, slides, and final MP4 output
+
 ### Notes
 - Current most stable input type is **EPUB**
 - PDF / MOBI / AZW3 support may require further standalone-specific hardening before being treated as equally stable

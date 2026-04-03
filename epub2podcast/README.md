@@ -190,6 +190,7 @@ npm run smoke-test
 - 主流程：EPUB → 脚本 → 音频 → Slide → MP4
 - 单页重生成：`regenerate-slide`
 - 视频压缩：`compress-video`
+- namespace 前缀 OPF 结构的 EPUB 解析兼容性（已用《太平天国革命运动史》样本验证）
 
 ### 当前最稳的输入类型
 
