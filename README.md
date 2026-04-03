@@ -19,6 +19,13 @@
 - 合成最终 MP4 视频
 - 提供视频压缩脚本，方便后续分享或上传
 
+示例页面预览：
+
+![epub2podcast 示例封面页](./epub2podcast/assets/example-slide-cover.png)
+
+更多截图、流程图和说明，请查看：
+- [`epub2podcast/README.md`](./epub2podcast/README.md)
+
 目录里目前包含：
 
 - `SKILL.md`：核心技能说明
