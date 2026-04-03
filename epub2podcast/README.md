@@ -38,29 +38,28 @@
 
 ## 示例效果
 
-### 示例 1：封面页风格
-
-![epub2podcast 示例封面页](./assets/example-slide-cover.png)
-
-适合做视频开场、书籍介绍或主题引入。
-
-### 示例 2：信息页风格
-
-![epub2podcast 示例信息页](./assets/example-slide-infographic.png)
-
-适合展示结构化信息、核心观点或分层关系。
-
-### 示例 3：左右分栏讲述页
-
-![epub2podcast 左右分栏版式示例](./assets/example-slide-split-layout.png)
-
-适合做“左侧引言 + 右侧要点展开”的内容页，版式更有杂志感。
-
-### 示例 4：三卡片信息页
-
-![epub2podcast 三卡片版式示例](./assets/example-slide-card-layout.png)
-
-适合把一个主题拆成 3 个并列重点，方便快速浏览与理解。
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
+      <p><strong>封面页风格</strong><br/>适合做视频开场、书籍介绍或主题引入。</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-infographic.png" alt="epub2podcast 示例信息页" />
+      <p><strong>信息页风格</strong><br/>适合展示结构化信息、核心观点或分层关系。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-split-layout.png" alt="epub2podcast 左右分栏版式示例" />
+      <p><strong>左右分栏讲述页</strong><br/>适合做“左侧引言 + 右侧要点展开”的内容页，版式更有杂志感。</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./assets/example-slide-card-layout.png" alt="epub2podcast 三卡片版式示例" />
+      <p><strong>三卡片信息页</strong><br/>适合把一个主题拆成 3 个并列重点，方便快速浏览与理解。</p>
+    </td>
+  </tr>
+</table>
 
 ---
 

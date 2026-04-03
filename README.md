@@ -23,29 +23,28 @@
 
 示例页面预览：
 
-### 示例 1：封面页风格
-
-![epub2podcast 示例封面页](./epub2podcast/assets/example-slide-cover.png)
-
-这类页面适合放在视频开头，用来介绍书名、主题和整体气质。
-
-### 示例 2：信息图风格
-
-![epub2podcast 示例信息图页](./epub2podcast/assets/example-slide-infographic.png)
-
-这类页面适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。
-
-### 示例 3：左右分栏版式
-
-![epub2podcast 左右分栏版式示例](./epub2podcast/assets/example-slide-split-layout.png)
-
-这类页面适合做“引言 + 分点展开”的讲述页。
-
-### 示例 4：三卡片版式
-
-![epub2podcast 三卡片版式示例](./epub2podcast/assets/example-slide-card-layout.png)
-
-这类页面适合把一个主题拆成多个并列重点。
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./epub2podcast/assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
+      <p><strong>封面页风格</strong><br/>适合放在视频开头，用来介绍书名、主题和整体气质。</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./epub2podcast/assets/example-slide-infographic.png" alt="epub2podcast 示例信息图页" />
+      <p><strong>信息图风格</strong><br/>适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./epub2podcast/assets/example-slide-split-layout.png" alt="epub2podcast 左右分栏版式示例" />
+      <p><strong>左右分栏版式</strong><br/>适合做“引言 + 分点展开”的讲述页。</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./epub2podcast/assets/example-slide-card-layout.png" alt="epub2podcast 三卡片版式示例" />
+      <p><strong>三卡片版式</strong><br/>适合把一个主题拆成多个并列重点。</p>
+    </td>
+  </tr>
+</table>
 
 更多截图、流程图和说明，请查看：
 - [`epub2podcast/README.md`](./epub2podcast/README.md)
