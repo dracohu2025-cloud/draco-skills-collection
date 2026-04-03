@@ -47,11 +47,19 @@
 
 ## 示例效果
 
-下面是一张实际生成的 Smart Slide 示例图，可以帮助你快速理解这个 skill 最终会产出什么样的视觉结果：
+下面放两张实际生成的 Smart Slide 示例图，帮助你快速理解这个 skill 可能产出的视觉风格。
+
+### 示例 1：封面页风格
 
 ![epub2podcast 示例封面页](./assets/example-slide-cover.png)
 
-> 说明：这里展示的是一张示例封面页，主要用于说明产出风格与版式效果。
+这类页面更适合做视频开场、书籍介绍或主题引入。
+
+### 示例 2：信息图风格
+
+![epub2podcast 示例信息图页](./assets/example-slide-infographic.png)
+
+这类页面更适合把一个主题拆成结构化信息，用于解释观点、梳理层次或做中段内容展示。
 
 ## 使用前提（Prerequisites）
 
