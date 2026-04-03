@@ -21,7 +21,17 @@
 
 示例页面预览：
 
+### 示例 1：封面页风格
+
 ![epub2podcast 示例封面页](./epub2podcast/assets/example-slide-cover.png)
+
+这类页面适合放在视频开头，用来介绍书名、主题和整体气质。
+
+### 示例 2：信息图风格
+
+![epub2podcast 示例信息图页](./epub2podcast/assets/example-slide-infographic.png)
+
+这类页面适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。
 
 更多截图、流程图和说明，请查看：
 - [`epub2podcast/README.md`](./epub2podcast/README.md)
