@@ -14,6 +14,7 @@
     "run": "node dist/cli/run.js",
     "regenerate-slide": "node dist/cli/regenerate-slide.js",
     "compress-video": "node dist/cli/compress-video.js",
+    "help": "node dist/cli/run.js --help",
     "smoke-test": "bash scripts/smoke-test.sh"
   },
   "dependencies": {

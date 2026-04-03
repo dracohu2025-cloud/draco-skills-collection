@@ -1,48 +1,34 @@
 # epub2podcast
 
-`epub2podcast` 现在已经升级成一个 **可独立运行的本地项目**。
+一个**可独立运行**的本地项目：把 EPUB 内容转换成双人中文播客脚本、音频、Smart Slide，以及最终 MP4 视频。
 
-这意味着：
-
-- 你**不需要**再另外准备原始 `epub2podcast-local` 项目代码
-- 只需要下载当前这个目录
-- 安装依赖、配置环境变量后
-- 就可以从电子书一路生成脚本、音频、Smart Slide 和最终视频
-
-一句话理解：
-
-> 这是一个把 EPUB 内容整理成“可听、可看、可分享”的播客项目。
+> 现在这份目录已经不再依赖外部 `epub2podcast-local` 项目路径。下载当前目录、安装依赖、配置 `.env` 后，就可以直接运行。
 
 ---
 
-## 现在它能做什么
+## 你能用它做什么
 
-当前这版独立项目主要覆盖这条本地链路：
+`epub2podcast` 当前最稳的工作流是：
 
-1. 读取 **EPUB** 文件
-2. 生成双人中文播客脚本
-3. 生成分段音频
-4. 合并为完整播客音频
-5. 生成 Smart Slide HTML 与 PNG
-6. 合成最终 MP4 视频
-7. 按需要压缩视频，方便后续上传或分享
+- 读取 **EPUB** 文件
+- 生成双人中文播客脚本
+- 生成分段音频并合并为完整音频
+- 生成 Smart Slide HTML 与 PNG
+- 合成最终 MP4 视频
+- 按需压缩视频，便于上传或分享
 
-## 亮点摘要
+如果你想把一本书快速整理成“可听、可看、可传播”的内容，这就是它最适合做的事。
 
-- **独立运行**：不再依赖原来的 `epub2podcast-local` 项目目录
-- **本地优先**：核心处理流程在本地完成，更容易掌控产物
-- **端到端**：从电子书到脚本、音频、Slide、视频，一条链路跑完
-- **可复用**：支持主流程、单页重生成、视频压缩三种常用入口
-- **适合展示**：很适合做图书播客、知识型视频播客和内容再包装
+---
 
-## 适合什么场景
+## 适合谁
 
-这个项目适合下面这些场景：
+这个项目特别适合：
 
-- 你想把一本书快速整理成“可以听”的播客内容
-- 你想把一本书进一步做成“可以看”的视频播客
-- 你想在本地掌控脚本、音频、页面和视频的完整产出
-- 你想把这条工作流沉淀成一个长期可复用的项目
+- 想把一本 EPUB 做成中文播客的人
+- 想把文字内容进一步做成视频播客的人
+- 想在本地掌控脚本、音频、页面和视频产出的人
+- 想把“电子书 → 播客”做成可复用流程的人
 
 ---
 
@@ -52,17 +38,13 @@
 
 ![epub2podcast 示例封面页](./assets/example-slide-cover.png)
 
-这类页面适合做视频开场、书籍介绍或主题引入。
-
 ### 示例 2：信息页风格
 
-![epub2podcast 示例信息图页](./assets/example-slide-infographic.png)
-
-这类页面适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。
+![epub2podcast 示例信息页](./assets/example-slide-infographic.png)
 
 ---
 
-## 工作流程图
+## 工作流程
 
 ```mermaid
 flowchart LR
@@ -79,31 +61,26 @@ flowchart LR
 
 ---
 
-## 安装前需要准备什么
-
-虽然它已经是独立项目，但仍然需要本机具备基础运行环境。
+## 安装前准备
 
 ### 系统依赖
 
-请先确认本机已经安装：
+请先确认本机已安装：
 
 - Node.js 20+
 - npm
 - `ffmpeg`
 - `ffprobe`
-- Chrome 或 Chromium
+- Chrome / Chromium
 
-### 模型 / TTS 环境变量
+### 环境变量
 
-你还需要准备模型和 TTS 所需的环境变量。当前最常见的是：
+你至少需要准备以下能力对应的密钥：
 
-- `OPENROUTER_API_KEY`
-- `VOLCENGINE_ACCESS_TOKEN`
-- `VOLCENGINE_APP_ID`
-- `VOLCENGINE_VOICE_ID_MALE`
-- `VOLCENGINE_VOICE_ID_FEMALE`
+- 文本/HTML 生成：通常使用 `OPENROUTER_API_KEY`
+- 中文 TTS：通常使用火山引擎（Volcengine）相关变量
 
-项目中已经附带：
+项目里已经附带：
 
 - `.env.example`
 
@@ -111,30 +88,30 @@ flowchart LR
 
 ---
 
-## 3 分钟快速开始
+## 快速开始
 
-### 1）进入目录并安装依赖
+### 1. 安装依赖
 
 ```bash
 cd epub2podcast
 npm install
 ```
 
-### 2）复制环境变量模板
+### 2. 配置环境变量
 
 ```bash
 cp .env.example .env
 ```
 
-然后按你的实际账号与服务配置补全 `.env`。
+然后按你的实际账号信息填写 `.env`。
 
-### 3）构建项目
+### 3. 构建项目
 
 ```bash
 npm run build
 ```
 
-### 4）运行主流程
+### 4. 运行主流程
 
 ```bash
 node dist/cli/run.js --epub ./book.epub --output-dir ./deliveries
@@ -150,7 +127,13 @@ bash scripts/epub2podcast_local_run.sh --epub ./book.epub --output-dir ./deliver
 
 ## 常用命令
 
-### 主流程：从 EPUB 生成完整交付物
+### 查看主命令帮助
+
+```bash
+node dist/cli/run.js --help
+```
+
+### 从 EPUB 生成完整交付物
 
 ```bash
 node dist/cli/run.js --epub ./book.epub --output-dir ./deliveries
@@ -173,7 +156,7 @@ node dist/cli/compress-video.js \
   --output /path/to/final_podcast_compressed.mp4
 ```
 
-### 环境检查 + 构建检查
+### 环境检查
 
 ```bash
 npm run smoke-test
@@ -181,7 +164,108 @@ npm run smoke-test
 
 ---
 
-## 当前目录结构
+## 输出内容
+
+一次成功运行后，输出目录中通常会包含：
+
+- `source/`：输入书文件副本
+- `audio_segments/`：分段音频
+- `smart_slides/`：Slide PNG
+- `smart_slides_html/`：Slide HTML
+- `full_podcast.mp3`：完整播客音频
+- `final_podcast.mp4`：最终视频
+
+---
+
+## 当前状态
+
+### 已验证
+
+当前 standalone 版本已经完成过真实端到端验证，验证通过的链路包括：
+
+- 主流程：EPUB → 脚本 → 音频 → Slide → MP4
+- 单页重生成：`regenerate-slide`
+- 视频压缩：`compress-video`
+
+### 当前最稳的输入类型
+
+- **EPUB**
+
+### 还会继续完善的方向
+
+- 更完整的 PDF / MOBI / AZW3 支持
+- 更少的历史依赖
+- 更统一的 CLI 参数设计
+- 更完善的错误提示和自动检查
+
+---
+
+## 常见问题
+
+### 现在还需要原始 `epub2podcast-local` 项目吗？
+
+**不需要。**
+
+当前这个目录已经具备独立安装、独立构建和独立运行能力。
+
+### 是不是下载后就能直接跑？
+
+原则上是，但前提是：
+
+- 系统依赖已安装
+- `.env` 已配置
+- 你使用的是当前最稳的输入路径（推荐 EPUB）
+
+### 如果最终 MP4 太大怎么办？
+
+可以直接运行：
+
+```bash
+node dist/cli/compress-video.js --input /path/to/final_podcast.mp4
+```
+
+### 如果只想重做某一页 slide，可以吗？
+
+可以：
+
+```bash
+node dist/cli/regenerate-slide.js --delivery-dir /path/to/delivery --slide-index 0 --recompose
+```
+
+---
+
+## 排查建议
+
+### 找不到 `ffmpeg` / `ffprobe`
+
+先检查：
+
+```bash
+ffmpeg -version
+ffprobe -version
+```
+
+### `.env` 没配好
+
+先重点检查：
+
+- `OPENROUTER_API_KEY`
+- `VOLCENGINE_ACCESS_TOKEN`
+- `VOLCENGINE_APP_ID`
+- `VOLCENGINE_VOICE_ID_MALE`
+- `VOLCENGINE_VOICE_ID_FEMALE`
+
+### Smart Slide 生成失败
+
+优先检查：
+
+- Chrome / Chromium 是否可用
+- Puppeteer 是否安装正常
+- 当前机器能否访问所需模型服务
+
+---
+
+## 目录结构
 
 ```text
 epub2podcast/
@@ -198,101 +282,5 @@ epub2podcast/
 其中：
 
 - `src/`：独立运行所需源码
-- `scripts/`：方便直接调用的 shell 入口
+- `scripts/`：方便调用的 shell 入口
 - `assets/`：README 示例图
-
----
-
-## 当前版本的边界
-
-为了尽快完成独立化，这一版优先做了最关键的本地链路抽取。
-
-### 当前最稳的输入类型
-
-- **EPUB**：当前主路径、优先支持、最推荐使用
-
-### 后续还可以继续加强的部分
-
-- 更完整的 PDF / MOBI / AZW3 独立支持
-- 更精简的依赖集
-- 更统一的 CLI 参数设计
-- 更完善的错误提示和自动检查
-
-也就是说：
-
-> 这已经是一个独立项目了，但还可以继续打磨成更成熟的发布版本。
-
----
-
-## 常见问题
-
-### 1. 现在还需要原始 `epub2podcast-local` 项目吗？
-
-**不需要。**
-
-现在这个目录已经自带独立运行所需的源码与 package 配置，不再依赖外部项目路径。
-
-### 2. 是不是下载这个目录后就能直接跑？
-
-原则上是，但前提是：
-
-- 你的系统依赖已经安装好
-- `.env` 已经配置好
-- 你使用的是当前主路径支持最稳的输入类型（建议 EPUB）
-
-### 3. 如果视频太大怎么办？
-
-可以使用：
-
-```bash
-node dist/cli/compress-video.js --input /path/to/final_podcast.mp4
-```
-
-### 4. 如果只想重做某一页 slide，可以吗？
-
-可以：
-
-```bash
-node dist/cli/regenerate-slide.js --delivery-dir /path/to/delivery --slide-index 0 --recompose
-```
-
----
-
-## 排查建议
-
-### 提示找不到 `ffmpeg` / `ffprobe`
-
-先检查：
-
-```bash
-ffmpeg -version
-ffprobe -version
-```
-
-### 提示模型或 TTS 配置有问题
-
-先检查 `.env` 是否填写完整，特别是：
-
-- `OPENROUTER_API_KEY`
-- `VOLCENGINE_ACCESS_TOKEN`
-- `VOLCENGINE_APP_ID`
-
-### Smart Slide 生成失败
-
-优先检查：
-
-- Chrome / Chromium 是否可用
-- Puppeteer 是否安装正常
-- 当前机器能否正常访问模型服务
-
----
-
-## 下一步会继续做什么
-
-这个项目接下来还会继续朝这些方向完善：
-
-- 更纯粹的 standalone 化
-- 更少的历史包袱依赖
-- 更好的安装体验
-- 更强的输入格式兼容性
-- 更适合公开发布的 CLI 入口
