@@ -151,6 +151,15 @@ python3 scripts/run.py publish-feishu-doc-default \
 | `--author` | ❌ | 作者名 |
 | `--digest` | ❌ | 文章摘要 |
 
+### 关于 Doocs 样式
+
+本工具的排版样式参考了 [Doocs/md](https://github.com/doocs/md) 项目，一款开源的微信 Markdown 编辑器。
+
+- **项目地址**：https://github.com/doocs/md
+- **开源协议**：WTFPL (Do What The Fuck You Want To Public License) —— 你可以随意使用，建议保留版权声明
+
+Doocs/md 是一款高度简洁的微信 Markdown 编辑器，支持 Markdown 语法、自定义主题样式、内容管理等特性。本工具提取并实现了其 CSS 渲染逻辑，确保在命令行环境下也能获得一致的排版效果。
+
 ### 样式配置参数（Doocs 风格）
 
 所有发布和预览命令都支持以下样式参数，用于精细控制排版效果：
@@ -345,6 +354,10 @@ A: 确保：
 1. 图片能正常从飞书下载
 2. 图片格式被微信支持（jpg/png/gif）
 3. 图片大小不超过 10MB
+
+## 🙏 致谢
+
+- [Doocs/md](https://github.com/doocs/md) - 样式渲染参考了该项目的 CSS 设计，一款优秀的开源微信 Markdown 编辑器
 
 ## 📄 License
 
