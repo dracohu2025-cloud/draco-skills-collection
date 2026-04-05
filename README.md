@@ -6,6 +6,37 @@
 
 目前已经收录：
 
+### `feishu-doc-to-wechat-draft/`
+
+将飞书（Feishu/Lark）文档一键转换为微信公众号草稿，支持精美排版和图片自动上传。
+
+**核心功能：**
+- 🚀 从飞书文档 URL 直接生成微信草稿
+- 🎨 Doocs 风格渲染（优雅主题 + 活力橘），与 md-editor 编辑器效果一致
+- 📸 自动下载飞书图片并上传至微信素材库
+- 👁️ 支持本地 HTML 预览，确认效果后再发布
+
+**快速开始：**
+```bash
+cd feishu-doc-to-wechat-draft
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 生成预览
+python3 scripts/run.py render-preview-feishu-doc-default \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --output /tmp/preview.html
+
+# 发布到微信草稿箱
+python3 scripts/run.py publish-feishu-doc-default \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --thumb-media-id "your_cover_image_media_id"
+```
+
+更多详情查看 [`feishu-doc-to-wechat-draft/README.md`](./feishu-doc-to-wechat-draft/README.md)
+
+---
+
 ### `epub2podcast/`
 
 这是当前仓库中的 podcast skill / 项目，主要覆盖电子书到视频播客的完整工作流，包括：
