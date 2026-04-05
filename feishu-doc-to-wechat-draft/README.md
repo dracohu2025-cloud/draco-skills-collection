@@ -109,39 +109,174 @@ python3 scripts/run.py publish-feishu-doc-default \
 
 ## 📝 使用说明
 
-### 命令参数
+### 命令列表
+
+| 命令 | 用途 |
+|------|------|
+| `publish-feishu-doc-default` | 发布飞书文档到微信草稿箱（使用默认样式） |
+| `render-preview-feishu-doc-default` | 生成本地 HTML 预览文件 |
+| `list-styles` | 列出所有可用的样式配置选项 |
+
+### 命令参数详解
 
 #### `publish-feishu-doc-default` - 发布到草稿箱
 
-| 参数 | 必填 | 说明 |
-|------|------|------|
-| `--doc` | ✅ | 飞书文档 URL |
-| `--thumb-media-id` | ✅ | 封面图片的微信 media_id |
-| `--author` | ❌ | 作者名（默认：DracoVibeCoding）|
-| `--dry-run` | ❌ | 仅生成 payload，不实际发布 |
+**基础参数：**
+
+| 参数 | 必填 | 默认值 | 说明 |
+|------|------|--------|------|
+| `--doc` | ✅ | - | 飞书文档 URL，例如 `https://your-domain.feishu.cn/docx/DocID` |
+| `--thumb-media-id` | ✅ | - | 封面图片的微信 media_id（需提前上传获取） |
+| `--author` | ❌ | `Author` | 文章作者名（显示在公众号文章底部） |
+| `--digest` | ❌ | - | 文章摘要（默认自动提取正文前120字） |
+| `--cover-image` | ❌ | - | 封面图片本地路径（自动上传并设置为封面） |
+| `--source-url` | ❌ | - | 原文链接（显示在文章底部「阅读原文」） |
+| `--identity` | ❌ | `user` | 飞书身份类型：`user` 或 `bot` |
+| `--assets-dir` | ❌ | `.` | 临时资源下载目录 |
+| `--dry-run` | ❌ | - | 仅生成 payload，不实际发布（用于调试） |
+
+**微信认证参数（如不设置则从环境变量读取）：**
+
+| 参数 | 说明 |
+|------|------|
+| `--appid` | 微信公众号 AppID |
+| `--appsecret` | 微信公众号 AppSecret |
 
 #### `render-preview-feishu-doc-default` - 生成本地预览
 
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `--doc` | ✅ | 飞书文档 URL |
-| `--output` | ✅ | 输出 HTML 文件路径 |
+| `--output` | ✅ | 输出 HTML 文件路径，例如 `/tmp/preview.html` |
+| `--author` | ❌ | 作者名 |
+| `--digest` | ❌ | 文章摘要 |
 
-### 样式配置
+### 样式配置参数（Doocs 风格）
 
-默认使用 Doocs 风格的「优雅」主题（活力橘色），可通过修改 `examples/default-publish-style.yaml` 自定义：
+所有发布和预览命令都支持以下样式参数，用于精细控制排版效果：
+
+#### 1. 基础样式
+
+| 参数 | 可选值 | 说明 |
+|------|--------|------|
+| `--profile` | `default`, `doocs`, `classic`, `minimal` | 整体渲染配置方案 |
+| `--theme` | `default`, `grace` (优雅), `simple` (简单) | 主题风格 |
+| `--primary-color` | 任意 HEX 色值 | 主题主色（如标题、强调色） |
+| `--font-family` | 字体名称 | 正文字体 |
+| `--font-size` | 整数 | 正文字号（px） |
+| `--line-height` | 浮点数 | 行高倍数（如 1.75） |
+
+#### 2. 排版控制
+
+| 参数 | 可选值 | 说明 |
+|------|--------|------|
+| `--justify` | 布尔值 | 段落两端对齐（默认关闭，建议左对齐） |
+| `--indent-first-line` | 布尔值 | 段落首行缩进 2 字符（默认关闭） |
+
+#### 3. 标题样式
+
+| 参数 | 可选值 | 说明 |
+|------|--------|------|
+| `--heading-style` | `solid`, `left-bar`, `underline`, `minimal` | 标题整体风格 |
+| `--h1-style` | `default`, `color-only`, `border-bottom`, `border-left`, `custom` | H1 样式 |
+| `--h2-style` | 同上 | H2 样式 |
+| `--h3-style` | 同上 | H3 样式 |
+| `--h4-style` | 同上 | H4 样式 |
+| `--h5-style` | 同上 | H5 样式 |
+| `--h6-style` | 同上 | H6 样式 |
+
+**标题风格说明：**
+- `solid`: 实心背景块（grace 主题默认，圆角带阴影）
+- `left-bar`: 左侧彩色边框
+- `underline`: 底部下划线
+- `minimal`: 极简样式
+
+#### 4. 代码块样式
+
+| 参数 | 可选值 | 说明 |
+|------|--------|------|
+| `--code-theme` | `dark`, `light`, `github`, `github-dark`, `github-dark-dimmed`, `github-light`, `one-dark`, `vitesse-light`, `vitesse-dark` | 代码高亮主题 |
+| `--mac-code-block` | 布尔值 | Mac 风格代码块（显示红黄绿三个圆点） |
+| `--code-line-numbers` | 布尔值 | 显示代码行号 |
+
+#### 5. 其他元素
+
+| 参数 | 可选值 | 说明 |
+|------|--------|------|
+| `--hr-style` | `dash` (虚线), `star` (星号), `underscore` (下划线) | 分隔线样式 |
+| `--caption-mode` | `title-first`, `alt-first`, `title-only`, `alt-only`, `hidden` | 图片题注显示方式 |
+| `--footnote-links` | 布尔值 | 将文中外链转为底部脚注形式 |
+
+#### 6. 配置文件方式
+
+对于复杂的样式组合，建议使用配置文件：
+
+| 参数 | 说明 |
+|------|------|
+| `--style-config` | YAML/JSON 样式配置文件路径 |
+| `--style-json` | 内联 JSON 样式配置 |
+
+### 样式配置示例
+
+#### 方式一：命令行参数
+
+```bash
+python3 scripts/run.py publish-feishu-doc-default \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --thumb-media-id "your_media_id" \
+  --author "YourName" \
+  --profile doocs \
+  --theme grace \
+  --primary-color "#FA5151" \
+  --font-size 14 \
+  --line-height 1.75 \
+  --mac-code-block \
+  --no-justify
+```
+
+#### 方式二：配置文件（推荐）
+
+创建 `my-style.yaml`：
 
 ```yaml
 style:
-  profile: doocs        # 渲染配置: doocs
-  theme: 优雅            # 主题: 优雅/简单
-  font: 无衬线           # 字体
-  theme_colors: 活力橘    # 主题色
-  font_size: 更小        # 字号: 更小(14px)/稍小(15px)/推荐(16px)
-  code_theme: github     # 代码高亮主题
-  mac_code_block: 开启    # Mac 风格代码块
-  justify: 关闭          # 两端对齐
+  profile: doocs
+  theme: grace
+  primary_color: "#FA5151"
+  font_family: "-apple-system, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Microsoft YaHei"
+  font_size: 14
+  line_height: 1.75
+  justify: false
+  indent_first_line: false
+  code_theme: github
+  mac_code_block: true
+  code_line_numbers: false
+  hr_style: dash
+  heading_style: solid
+  heading_styles:
+    h1: default
+    h2: default
+    h3: default
+  caption_mode: hidden
+  footnote_links: false
 ```
+
+使用配置：
+
+```bash
+python3 scripts/run.py publish-feishu-doc-default \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --thumb-media-id "your_media_id" \
+  --style-config my-style.yaml
+```
+
+### 查看所有可用选项
+
+```bash
+python3 scripts/run.py list-styles
+```
+
+输出包含所有可用的颜色预设、主题、代码高亮方案等选项。
 
 ## 📁 项目结构
 

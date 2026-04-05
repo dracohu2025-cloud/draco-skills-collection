@@ -68,7 +68,7 @@ def _style_overrides_from_args(args) -> dict:
 
 def add_lark_doc_args(parser: argparse.ArgumentParser, *, require_output: bool = False, publish_mode: bool = False) -> None:
     parser.add_argument("--doc", required=True, help="Feishu/Lark doc URL or token")
-    parser.add_argument("--author", default="DracoVibeCoding")
+    parser.add_argument("--author", default="Author", help="Article author name (displayed in WeChat article)")
     parser.add_argument("--digest")
     parser.add_argument("--cover-image")
     parser.add_argument("--source-url")
