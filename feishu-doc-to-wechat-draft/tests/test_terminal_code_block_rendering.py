@@ -24,3 +24,20 @@ def test_shell_code_block_uses_mac_dots_but_keeps_doocs_light_theme() -> None:
     assert 'background: #f6f8fa;' in html
     assert 'md-code-window-title' not in html
     assert 'background: #24292f;' not in html
+
+
+def test_mac_code_block_keeps_pre_as_horizontal_scroll_container() -> None:
+    md = '```yaml\nstyle:\n  primary_color: "#FA5151"\n  font_family: "-apple-system, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Microsoft YaHei"\n```\n'
+    html = render_markdown(
+        md,
+        profile="doocs",
+        theme="grace",
+        code_theme="github",
+        mac_code_block=True,
+        code_line_numbers=False,
+    ).html
+
+    assert 'md-pre md-pre-mac' in html
+    assert 'overflow-x: auto; overflow-y: hidden;' in html
+    assert '-webkit-overflow-scrolling: touch;' in html
+    assert 'overflow: hidden;' not in html

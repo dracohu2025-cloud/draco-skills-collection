@@ -358,6 +358,7 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     border_radius = "8px"
     line_height = "1.5"
     box_shadow = "none"
+    overflow_css = "overflow-x: auto; overflow-y: hidden;"
     if options.mac_code_block:
         classes.append("md-pre-mac")
     if options.theme == "grace":
@@ -368,8 +369,8 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     class_str = " ".join(classes)
     border_css = 'none' if options.theme in {'default', 'grace'} else f'1px solid {code_border}'
     return (
-        f'<pre class="{class_str}" style="font-size: 90%; margin: {margin}; padding: 0; overflow: hidden; '
-        f'border-radius: {border_radius}; line-height: {line_height}; background: {code_bg}; color: {code_fg}; border: {border_css}; '
+        f'<pre class="{class_str}" style="font-size: 90%; margin: {margin}; padding: 0; {overflow_css} '
+        f'-webkit-overflow-scrolling: touch; border-radius: {border_radius}; line-height: {line_height}; background: {code_bg}; color: {code_fg}; border: {border_css}; '
         f'box-shadow: {box_shadow}; position: relative;\"><code'
     )
 
@@ -559,9 +560,9 @@ def _code_block_style(options: RenderOptions) -> str:
     if options.mac_code_block:
         top_padding = '0.35em'
     return (
-        f"display: block; padding: {top_padding} 1em 1em; overflow-x: auto; text-indent: 0; "
+        f"display: block; padding: {top_padding} 1em 1em; text-indent: 0; "
         "color: inherit; background: none; white-space: pre; margin: 0; min-width: max-content; "
-        "word-break: normal; overflow-wrap: normal; box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; "
+        "word-break: normal; overflow-wrap: normal; box-sizing: border-box; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 
