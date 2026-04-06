@@ -17,8 +17,6 @@ _WS_RE = re.compile(r"\s+")
 # Match horizontal rules that could be mistaken for setext h2 underlines
 # Matches: standalone --- on its own line, or --- preceded by text (to prevent setext h2)
 _HR_RE = re.compile(r'(^|\n)(-{3,}|\*{3,}|_{3,})(\s*\n|$)', re.M)
-_STRONG_NUMBERED_LINE_RE = re.compile(r'^\*\*(\d+)\.\s+(.+?)\*\*$')
-_STANDALONE_STRONG_RE = re.compile(r'^\*\*[^\n]+\*\*$')
 
 
 def extract_lark_doc_token(doc: str) -> str:
@@ -125,121 +123,12 @@ def _convert_horizontal_rules(markdown: str) -> str:
     return _HR_RE.sub(replace_hr, markdown)
 
 
-def _convert_strong_numbered_blocks(markdown: str) -> str:
-    """Convert Feishu's line-broken numbered highlights into real ordered lists.
-
-    Example input:
-      简单说，它解决三个核心问题：
-      **1. 图片自动处理**
-      飞书文档里的图片会自动下载...
-      **2. 格式完整保留**
-      表格、引用块...
-
-    becomes:
-      简单说，它解决三个核心问题：
-
-      1. **图片自动处理** 飞书文档里的图片会自动下载...
-      2. **格式完整保留** 表格、引用块...
-    """
-    lines = markdown.replace("\r\n", "\n").split("\n")
-    out: list[str] = []
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        match = _STRONG_NUMBERED_LINE_RE.match(line.strip())
-        if not match:
-            out.append(line)
-            i += 1
-            continue
-
-        start_i = i
-        items: list[tuple[int, str, str]] = []
-        while i < len(lines):
-            current = lines[i].strip()
-            current_match = _STRONG_NUMBERED_LINE_RE.match(current)
-            if not current_match:
-                break
-            number = int(current_match.group(1))
-            label = current_match.group(2).strip()
-            i += 1
-
-            body_lines: list[str] = []
-            while i < len(lines):
-                candidate = lines[i]
-                stripped = candidate.strip()
-                if not stripped:
-                    break
-                if _STRONG_NUMBERED_LINE_RE.match(stripped):
-                    break
-                if stripped.startswith(("#", "- ", "* ", "> ", "```", "<hr")):
-                    break
-                body_lines.append(stripped)
-                i += 1
-
-            body = _collapse_ws(" ".join(body_lines))
-            if not body:
-                i = start_i
-                items = []
-                break
-            items.append((number, label, body))
-
-        if items:
-            if out and out[-1].strip():
-                out.append("")
-            for number, label, body in items:
-                out.append(f"{number}. **{label}** {body}")
-            if i < len(lines) and lines[i].strip():
-                out.append("")
-            continue
-
-        out.append(line)
-        i += 1
-
-    return "\n".join(out)
-
-
-def _normalize_block_boundaries(markdown: str) -> str:
-    """Insert missing blank lines around standalone strong titles and list boundaries."""
-    lines = markdown.replace("\r\n", "\n").split("\n")
-    out: list[str] = []
-
-    def prev_nonempty() -> str | None:
-        for item in reversed(out):
-            if item.strip():
-                return item.strip()
-        return None
-
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
-        prev = prev_nonempty() or ""
-
-        if stripped and _STANDALONE_STRONG_RE.match(stripped):
-            if out and out[-1].strip():
-                out.append("")
-            out.append(line)
-            if nxt and not nxt.startswith("```"):
-                out.append("")
-            continue
-
-        if stripped and not stripped.startswith(("- ", "* ", "```", ">", "#", "<hr")) and not re.match(r'^\d+\.\s', stripped):
-            if prev.startswith(("-", "*")) or re.match(r'^\d+\.', prev):
-                if out and out[-1] != "":
-                    out.append("")
-
-        out.append(line)
-
-    return "\n".join(out)
-
-
 def normalize_lark_markdown(markdown: str) -> str:
     normalized = _convert_text_tags(markdown)
     normalized = _convert_quote_containers(normalized)
     normalized = _convert_image_tags(normalized)
     normalized = _LARK_TABLE_RE.sub(lambda m: _convert_lark_table(m.group(0)), normalized)
     normalized = _convert_horizontal_rules(normalized)
-    normalized = _convert_strong_numbered_blocks(normalized)
-    normalized = _normalize_block_boundaries(normalized)
     normalized = normalized.replace("\r\n", "\n")
     normalized = re.sub(r"\n{3,}", "\n\n", normalized)
     return normalized.strip() + "\n"

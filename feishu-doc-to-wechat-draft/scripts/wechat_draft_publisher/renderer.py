@@ -1,13 +1,8 @@
 from __future__ import annotations
 
-import html as html_lib
 import re
 
 from markdown_it import MarkdownIt
-from pygments import highlight
-from pygments.formatters import HtmlFormatter
-from pygments.lexers import TextLexer, get_lexer_by_name
-from pygments.util import ClassNotFound
 
 from .models import RenderResult
 from .rendering import RenderOptions, build_css_vars, css_var_style, resolve_render_options
@@ -86,6 +81,8 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
         (r"<p>", f'<p class="md-p" style="margin: 1.5em 8px; color: {text}; font-family: inherit; font-size: {options.font_size}px; line-height: inherit; letter-spacing: 0.1em;{p_extra_style}">'),
         (r"<blockquote>", _blockquote_open(options, primary, muted, soft)),
         (r"<blockquote class=\"wechat-blockquote\">", _blockquote_open(options, primary, muted, soft)),
+        (r"<ul>", _ul_open(options, text)),
+        (r"<ol>", _ol_open(options, text)),
         (r"<li>", _li_open(options, text)),
         (r"<pre><code", _pre_open(options, code_bg, code_fg, code_border)),
         (r"<code>", '<code class="md-inline-code" style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">'),
@@ -167,21 +164,18 @@ def _rewrite_unordered_lists(html: str, options: RenderOptions) -> str:
 
 
 def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
-    list_pattern = re.compile(r'<ol class="md-ol"(?P<attrs>[^>]*)>(?P<body>.*?)</ol>', re.S)
+    list_pattern = re.compile(r'<ol class="md-ol"[^>]*>(.*?)</ol>', re.S)
     item_pattern = re.compile(r'<li class="md-li"[^>]*>(.*?)</li>', re.S)
 
     def repl(match: re.Match[str]) -> str:
-        attrs = match.group('attrs') or ''
-        body = match.group('body')
+        body = match.group(1)
         items = item_pattern.findall(body)
         if not items:
             return match.group(0)
         margin = '0' if options.theme == 'default' else '.8em 0'
         item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
-        start_match = re.search(r'data-start="(\d+)"', attrs)
-        start = int(start_match.group(1)) if start_match else 1
         parts = [f'<section class="md-list md-list-ordered" style="margin: {margin};">']
-        for index, item in enumerate(items, start=start):
+        for index, item in enumerate(items, start=1):
             item = item.strip()
             parts.append(
                 f'<p class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit;">'
@@ -319,12 +313,10 @@ def _ul_open(options: RenderOptions, text: str) -> str:
     return f'<ul class="md-ul" style="list-style: none; padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
-def _ol_open(options: RenderOptions, text: str, attrs: str = '') -> str:
-    start_match = re.search(r'\bstart="?(\d+)"?', attrs or '')
-    start_attr = f' data-start="{start_match.group(1)}"' if start_match else ''
+def _ol_open(options: RenderOptions, text: str) -> str:
     if options.theme == "default":
-        return f'<ol class="md-ol"{start_attr} style="padding-left: 1em; margin-left: 0; color: {text};">'
-    return f'<ol class="md-ol"{start_attr} style="padding-left: 1.5em; margin-left: 0; color: {text};">'
+        return f'<ol class="md-ol" style="padding-left: 1em; margin-left: 0; color: {text};">'
+    return f'<ol class="md-ol" style="padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
 def _li_open(options: RenderOptions, text: str) -> str:
@@ -414,11 +406,6 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
     def repl(match: re.Match[str]) -> str:
         pre_open, code_block = match.groups()
         prefix = ""
-        language = 'text'
-        code_open_match = re.match(r'(<code[^>]*>)', code_block)
-        if code_open_match:
-            language = _extract_code_language(code_open_match.group(1))
-
         if options.mac_code_block:
             prefix += (
                 '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px;">'
@@ -427,111 +414,39 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #28c840; display: inline-block;"></span>'
                 '</div>'
             )
-
-        if code_open_match:
-            code_open = code_open_match.group(1)
-            content_match = re.match(r'<code[^>]*>(.*?)</code></pre>', code_block, re.S)
-            if content_match:
-                encoded_content = content_match.group(1)
-                raw_code = html_lib.unescape(encoded_content)
-                rendered_content = _render_code_block_content(raw_code, language, options)
-                code_block = f'{code_open}{rendered_content}</code></pre>'
-
-        code_style = _code_block_style(options)
         code_block = code_block.replace(
             '<code',
-            f'<code style="{code_style}"',
+            f'<code style="{_code_block_style(options)}"',
             1,
         )
+        if options.code_line_numbers:
+            code_block = code_block.replace('<code ', '<code data-line-numbers="true" ', 1)
+            code_block = re.sub(
+                r'(<code[^>]*>)(.*?)</code>',
+                _render_code_lines,
+                code_block,
+                count=1,
+                flags=re.S,
+            )
         return pre_open + prefix + code_block
 
     return pattern.sub(repl, html)
 
 
-def _extract_code_language(code_open: str) -> str:
-    match = re.search(r'class="[^"]*language-([^\s"]+)', code_open)
-    if not match:
-        return 'text'
-    language = match.group(1).strip().lower()
-    aliases = {
-        'py': 'python',
-        'js': 'javascript',
-        'ts': 'typescript',
-        'shell': 'bash',
-        'sh': 'bash',
-        'yml': 'yaml',
-        'md': 'markdown',
-        'text': 'text',
-        'plaintext': 'text',
-    }
-    return aliases.get(language, language)
-
-
-def _pygments_inline_html(code: str, language: str) -> str:
-    try:
-        lexer = get_lexer_by_name(language)
-    except ClassNotFound:
-        lexer = TextLexer()
-    formatter = HtmlFormatter(nowrap=True, noclasses=True)
-    return highlight(code, lexer, formatter)
-
-
-def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_newlines: bool) -> str:
-    formatted = highlighted_html
-    formatted = re.sub(
-        r'(<span[^>]*>[^<]*</span>)(\s+)(<span[^>]*>[^<]*</span>)',
-        lambda m: m.group(1) + m.group(3).replace(m.group(3).split('>', 1)[0] + '>', m.group(3).split('>', 1)[0] + '>' + m.group(2), 1),
-        formatted,
-    )
-    formatted = re.sub(
-        r'(\s+)(<span[^>]*>)',
-        lambda m: m.group(2).replace('>', '>' + m.group(1), 1),
-        formatted,
-    )
-    formatted = formatted.replace('\t', '    ')
-    if preserve_newlines:
-        formatted = formatted.replace('\r\n', '<br/>').replace('\n', '<br/>')
-    parts = re.split(r'(<[^>]+>)', formatted)
-    out: list[str] = []
-    for part in parts:
-        if not part:
-            continue
-        if part.startswith('<') and part.endswith('>'):
-            out.append(part)
-        else:
-            out.append(part.replace(' ', '&nbsp;'))
-    return ''.join(out)
-
-
-def _render_code_block_content(raw_code: str, language: str, options: RenderOptions) -> str:
-    if options.code_line_numbers:
-        return _render_highlighted_code_lines(raw_code, language)
-    highlighted = _pygments_inline_html(raw_code, language)
-    return _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=True)
-
-
-def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
-    raw_lines = raw_code.replace('\r\n', '\n').split('\n')
-    if raw_lines and raw_lines[-1] == '':
-        raw_lines = raw_lines[:-1]
-    highlighted_lines: list[str] = []
-    for line in raw_lines:
-        highlighted = _pygments_inline_html(line, language)
-        formatted = _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=False)
-        highlighted_lines.append(formatted or '&nbsp;')
-    line_numbers_html = ''.join(
-        f'<section style="padding:0 10px 0 0;line-height:1.75">{idx}</section>'
-        for idx in range(1, len(highlighted_lines) + 1)
-    )
-    code_inner_html = '<br/>'.join(highlighted_lines)
-    code_lines_html = f'<div style="white-space:pre;min-width:max-content;line-height:1.75">{code_inner_html}</div>'
-    line_number_column_styles = 'text-align:right;padding:8px 0;border-right:1px solid rgba(0,0,0,0.04);user-select:none;background:var(--code-bg,transparent);'
-    return (
-        '<section style="display:flex;align-items:flex-start;overflow-x:hidden;overflow-y:auto;width:100%;max-width:100%;padding:0;box-sizing:border-box">'
-        f'<section class="line-numbers" style="{line_number_column_styles}">{line_numbers_html}</section>'
-        f'<section class="code-scroll" style="flex:1 1 auto;overflow-x:auto;overflow-y:visible;padding:8px;min-width:0;box-sizing:border-box">{code_lines_html}</section>'
-        '</section>'
-    )
+def _render_code_lines(match: re.Match[str]) -> str:
+    code_open, inner = match.groups()
+    if inner.endswith('\n'):
+        inner = inner[:-1]
+    parts = inner.split('\n') if inner else []
+    rendered = []
+    for idx, line in enumerate(parts, start=1):
+        rendered.append(
+            '<span class="md-code-line" style="display: block;">'
+            f'<span class="md-code-line-number" style="display: inline-block; width: 2em; margin-right: 12px; color: rgba(148,163,184,.9); user-select: none;">{idx}</span>'
+            f'<span class="md-code-line-text">{line or " "}</span>'
+            '</span>'
+        )
+    return code_open + ''.join(rendered) + '</code>'
 
 
 def _code_block_style(options: RenderOptions) -> str:
@@ -539,8 +454,8 @@ def _code_block_style(options: RenderOptions) -> str:
     if options.mac_code_block:
         padding = '0 0 0'
     return (
-        f"display: block; padding: {padding}; overflow-x: auto; text-indent: 0; "
-        "color: inherit; background: none; white-space: pre; margin: 0; "
+        f"display: -webkit-box; padding: {padding}; overflow-x: auto; text-indent: 0; "
+        "color: inherit; background: none; white-space: nowrap; margin: 0; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 
