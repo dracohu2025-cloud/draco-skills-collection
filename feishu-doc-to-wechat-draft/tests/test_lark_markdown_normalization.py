@@ -41,7 +41,7 @@ def test_standalone_strong_heading_keeps_paragraph_boundary() -> None:
     assert "2. **微信公众号凭证**\n\n   登录微信公众号平台，在「开发」-「基本配置」里获取：" in normalized
     assert "- AppID" in normalized
     assert "- AppSecret（只显示一次，记得保存）" in normalized
-    assert "- AppSecret（只显示一次，记得保存）\n\n同时把你的服务器 IP 添加到「IP 白名单」" in normalized
+    assert "   - AppSecret（只显示一次，记得保存）\n\n   同时把你的服务器 IP 添加到「IP 白名单」" in normalized
 
 
 def test_media_id_section_keeps_method_headings_and_lists() -> None:

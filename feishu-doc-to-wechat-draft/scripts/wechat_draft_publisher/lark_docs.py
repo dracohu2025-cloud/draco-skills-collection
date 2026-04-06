@@ -126,7 +126,12 @@ def _convert_horizontal_rules(markdown: str) -> str:
 
 
 def _convert_strong_numbered_blocks(markdown: str) -> str:
-    """Convert Feishu's line-broken numbered highlights into real ordered lists."""
+    """Convert Feishu's line-broken numbered highlights into real ordered lists.
+
+    Preserve following block structure inside the numbered item until the next
+    numbered strong heading, while stopping before standalone strong subheadings
+    like "方法一：..." so they can remain separate top-level blocks.
+    """
     lines = markdown.replace("\r\n", "\n").split("\n")
     out: list[str] = []
     i = 0
@@ -138,57 +143,51 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
             i += 1
             continue
 
-        start_i = i
-        items: list[tuple[int, str, str]] = []
+        if out and out[-1].strip():
+            out.append("")
+
         while i < len(lines):
             current = lines[i].strip()
             current_match = _STRONG_NUMBERED_LINE_RE.match(current)
             if not current_match:
                 break
+
             number = int(current_match.group(1))
             label = current_match.group(2).strip()
+            out.append(f"{number}. **{label}**")
             i += 1
 
-            body_lines: list[str] = []
+            block_lines: list[str] = []
             while i < len(lines):
                 candidate = lines[i]
                 stripped = candidate.strip()
-                if not stripped:
-                    break
                 if _STRONG_NUMBERED_LINE_RE.match(stripped):
                     break
-                if _STANDALONE_STRONG_RE.match(stripped):
+                if stripped and _STANDALONE_STRONG_RE.match(stripped):
                     break
-                if re.match(r'^\d+\.\s', stripped):
+                if stripped.startswith(("#", "<hr")):
                     break
-                if stripped.startswith(("#", "- ", "* ", "> ", "```", "<hr")):
-                    break
-                body_lines.append(stripped)
+                block_lines.append(candidate)
                 i += 1
 
-            body = _collapse_ws(" ".join(body_lines))
-            if not body:
-                i = start_i
-                items = []
-                break
-            items.append((number, label, body))
+            while block_lines and not block_lines[0].strip():
+                block_lines.pop(0)
+            while block_lines and not block_lines[-1].strip():
+                block_lines.pop()
 
-        if items:
-            if out and out[-1].strip():
+            if block_lines:
                 out.append("")
-            for number, label, body in items:
-                out.append(f"{number}. **{label}**")
+                for block_line in block_lines:
+                    out.append(f"   {block_line}" if block_line else "")
                 out.append("")
-                out.append(f"   {body}")
-                out.append("")
-            if out and out[-1] == "":
-                out.pop()
-            if i < len(lines) and lines[i].strip():
-                out.append("")
-            continue
 
-        out.append(line)
-        i += 1
+            while i < len(lines) and not lines[i].strip():
+                i += 1
+
+        if out and out[-1] == "":
+            out.pop()
+        if i < len(lines) and lines[i].strip():
+            out.append("")
 
     return "\n".join(out)
 
