@@ -157,6 +157,10 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
                     break
                 if _STRONG_NUMBERED_LINE_RE.match(stripped):
                     break
+                if _STANDALONE_STRONG_RE.match(stripped):
+                    break
+                if re.match(r'^\d+\.\s', stripped):
+                    break
                 if stripped.startswith(("#", "- ", "* ", "> ", "```", "<hr")):
                     break
                 body_lines.append(stripped)

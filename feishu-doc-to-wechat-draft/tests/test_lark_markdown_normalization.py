@@ -42,3 +42,26 @@ def test_standalone_strong_heading_keeps_paragraph_boundary() -> None:
     assert "- AppID" in normalized
     assert "- AppSecret（只显示一次，记得保存）" in normalized
     assert "- AppSecret（只显示一次，记得保存）\n\n同时把你的服务器 IP 添加到「IP 白名单」" in normalized
+
+
+def test_media_id_section_keeps_method_headings_and_lists() -> None:
+    source = """## 前置准备
+**3. 封面图的 media_id**
+微信要求每篇文章必须有封面图。获取封面图 media_id 的方法有三种：
+**方法一：微信公众平台后台（最简单）**
+1. 登录微信公众平台
+1. 左侧菜单 →「内容与互动」→「素材库」
+**方法二：微信在线调试工具**
+1. 访问微信公众平台接口调试工具（mp.weixin.qq.com/debug）
+**方法三：使用代码上传**
+如果你熟悉 Python，可以直接调用微信 API 上传：
+```python
+print('hi')
+```
+"""
+    normalized = normalize_lark_markdown(source)
+
+    assert "3. **封面图的 media_id**\n\n   微信要求每篇文章必须有封面图。获取封面图 media_id 的方法有三种：" in normalized
+    assert "**方法一：微信公众平台后台（最简单）**\n\n1. 登录微信公众平台" in normalized
+    assert "**方法二：微信在线调试工具**\n\n1. 访问微信公众平台接口调试工具（mp.weixin.qq.com/debug）" in normalized
+    assert "**方法三：使用代码上传**\n\n如果你熟悉 Python，可以直接调用微信 API 上传：\n```python" in normalized
