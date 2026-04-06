@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import html as html_lib
 import re
 
 from markdown_it import MarkdownIt
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import TextLexer, get_lexer_by_name
+from pygments.util import ClassNotFound
 
 from .models import RenderResult
 from .rendering import RenderOptions, build_css_vars, css_var_style, resolve_render_options
@@ -406,6 +411,11 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
     def repl(match: re.Match[str]) -> str:
         pre_open, code_block = match.groups()
         prefix = ""
+        language = 'text'
+        code_open_match = re.match(r'(<code[^>]*>)', code_block)
+        if code_open_match:
+            language = _extract_code_language(code_open_match.group(1))
+
         if options.mac_code_block:
             prefix += (
                 '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px;">'
@@ -414,39 +424,111 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #28c840; display: inline-block;"></span>'
                 '</div>'
             )
+
+        if code_open_match:
+            code_open = code_open_match.group(1)
+            content_match = re.match(r'<code[^>]*>(.*?)</code></pre>', code_block, re.S)
+            if content_match:
+                encoded_content = content_match.group(1)
+                raw_code = html_lib.unescape(encoded_content)
+                rendered_content = _render_code_block_content(raw_code, language, options)
+                code_block = f'{code_open}{rendered_content}</code></pre>'
+
+        code_style = _code_block_style(options)
         code_block = code_block.replace(
             '<code',
-            f'<code style="{_code_block_style(options)}"',
+            f'<code style="{code_style}"',
             1,
         )
-        if options.code_line_numbers:
-            code_block = code_block.replace('<code ', '<code data-line-numbers="true" ', 1)
-            code_block = re.sub(
-                r'(<code[^>]*>)(.*?)</code>',
-                _render_code_lines,
-                code_block,
-                count=1,
-                flags=re.S,
-            )
         return pre_open + prefix + code_block
 
     return pattern.sub(repl, html)
 
 
-def _render_code_lines(match: re.Match[str]) -> str:
-    code_open, inner = match.groups()
-    if inner.endswith('\n'):
-        inner = inner[:-1]
-    parts = inner.split('\n') if inner else []
-    rendered = []
-    for idx, line in enumerate(parts, start=1):
-        rendered.append(
-            '<span class="md-code-line" style="display: block;">'
-            f'<span class="md-code-line-number" style="display: inline-block; width: 2em; margin-right: 12px; color: rgba(148,163,184,.9); user-select: none;">{idx}</span>'
-            f'<span class="md-code-line-text">{line or " "}</span>'
-            '</span>'
-        )
-    return code_open + ''.join(rendered) + '</code>'
+def _extract_code_language(code_open: str) -> str:
+    match = re.search(r'class="[^"]*language-([^\s"]+)', code_open)
+    if not match:
+        return 'text'
+    language = match.group(1).strip().lower()
+    aliases = {
+        'py': 'python',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'shell': 'bash',
+        'sh': 'bash',
+        'yml': 'yaml',
+        'md': 'markdown',
+        'text': 'text',
+        'plaintext': 'text',
+    }
+    return aliases.get(language, language)
+
+
+def _pygments_inline_html(code: str, language: str) -> str:
+    try:
+        lexer = get_lexer_by_name(language)
+    except ClassNotFound:
+        lexer = TextLexer()
+    formatter = HtmlFormatter(nowrap=True, noclasses=True)
+    return highlight(code, lexer, formatter)
+
+
+def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_newlines: bool) -> str:
+    formatted = highlighted_html
+    formatted = re.sub(
+        r'(<span[^>]*>[^<]*</span>)(\s+)(<span[^>]*>[^<]*</span>)',
+        lambda m: m.group(1) + m.group(3).replace(m.group(3).split('>', 1)[0] + '>', m.group(3).split('>', 1)[0] + '>' + m.group(2), 1),
+        formatted,
+    )
+    formatted = re.sub(
+        r'(\s+)(<span[^>]*>)',
+        lambda m: m.group(2).replace('>', '>' + m.group(1), 1),
+        formatted,
+    )
+    formatted = formatted.replace('\t', '    ')
+    if preserve_newlines:
+        formatted = formatted.replace('\r\n', '<br/>').replace('\n', '<br/>')
+    parts = re.split(r'(<[^>]+>)', formatted)
+    out: list[str] = []
+    for part in parts:
+        if not part:
+            continue
+        if part.startswith('<') and part.endswith('>'):
+            out.append(part)
+        else:
+            out.append(part.replace(' ', '&nbsp;'))
+    return ''.join(out)
+
+
+def _render_code_block_content(raw_code: str, language: str, options: RenderOptions) -> str:
+    if options.code_line_numbers:
+        return _render_highlighted_code_lines(raw_code, language)
+    highlighted = _pygments_inline_html(raw_code, language)
+    return _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=True)
+
+
+def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
+    raw_lines = raw_code.replace('\r\n', '\n').split('\n')
+    if raw_lines and raw_lines[-1] == '':
+        raw_lines = raw_lines[:-1]
+    highlighted_lines: list[str] = []
+    for line in raw_lines:
+        highlighted = _pygments_inline_html(line, language)
+        formatted = _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=False)
+        highlighted_lines.append(formatted or '&nbsp;')
+    line_numbers_html = ''.join(
+        f'<section style="padding:0 10px 0 0;line-height:1.75">{idx}</section>'
+        for idx in range(1, len(highlighted_lines) + 1)
+    )
+    code_inner_html = '<br/>'.join(highlighted_lines)
+    code_lines_html = f'<div style="white-space:pre;min-width:max-content;line-height:1.75">{code_inner_html}</div>'
+    line_number_column_styles = 'text-align:right;padding:8px 0;border-right:1px solid rgba(0,0,0,0.04);user-select:none;background:var(--code-bg,transparent);'
+    return (
+        '<section style="display:flex;align-items:flex-start;overflow-x:hidden;overflow-y:auto;width:100%;max-width:100%;padding:0;box-sizing:border-box">'
+        f'<section class="line-numbers" style="{line_number_column_styles}">{line_numbers_html}</section>'
+        f'<section class="code-scroll" style="flex:1 1 auto;overflow-x:auto;overflow-y:visible;padding:8px;min-width:0;box-sizing:border-box">{code_lines_html}</section>'
+        '</section>'
+    )
 
 
 def _code_block_style(options: RenderOptions) -> str:
