@@ -152,6 +152,7 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
             i += 1
             continue
 
+        start_i = i
         items: list[tuple[int, str, str]] = []
         while i < len(lines):
             current = lines[i].strip()
@@ -177,6 +178,8 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
 
             body = _collapse_ws(" ".join(body_lines))
             if not body:
+                i = start_i
+                items = []
                 break
             items.append((number, label, body))
 
