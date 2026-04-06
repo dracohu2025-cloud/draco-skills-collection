@@ -81,16 +81,14 @@ class WechatClient:
             self.token_cache = TokenCache(Path.home() / ".cache/wechat-draft-publisher" / f"access_token_{safe_appid}.json")
 
     def get_access_token(self, *, now: int | None = None) -> str:
-        cached = self.token_cache.load(now=now)
-        if cached:
-            return cached
         payload = self.transport.request(
-            method="GET",
-            url="https://api.weixin.qq.com/cgi-bin/token",
-            params={
+            method="POST",
+            url="https://api.weixin.qq.com/cgi-bin/stable_token",
+            data={
                 "grant_type": "client_credential",
                 "appid": self.appid,
                 "secret": self.appsecret,
+                "force_refresh": True,
             },
         )
         token = payload["access_token"]
