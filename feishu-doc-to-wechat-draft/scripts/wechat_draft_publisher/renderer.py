@@ -171,7 +171,8 @@ def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
     item_pattern = re.compile(r'<li class="md-li"[^>]*>(.*?)</li>', re.S)
 
     def repl(match: re.Match[str]) -> str:
-        body = match.group(1)
+        attrs = match.group('attrs') or ''
+        body = match.group('body')
         items = item_pattern.findall(body)
         if not items:
             return match.group(0)
