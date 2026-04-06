@@ -178,10 +178,10 @@ def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
         for index, item in enumerate(items, start=1):
             item = item.strip()
             parts.append(
-                f'<p class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit;">'
-                f'<span class="md-ordered-index" style="display: inline-block; min-width: 2.2em; font-weight: 700;">{index}.</span>'
-                f'<span class="md-ordered-text">{item}</span>'
-                '</p>'
+                f'<section class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start;">'
+                f'<span class="md-ordered-index" style="display: inline-block; min-width: 2.2em; font-weight: 700; flex: 0 0 auto;">{index}.</span>'
+                f'<section class="md-ordered-text" style="flex: 1 1 auto; min-width: 0;">{item}</section>'
+                '</section>'
             )
         parts.append('</section>')
         return ''.join(parts)

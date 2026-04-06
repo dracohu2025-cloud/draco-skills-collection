@@ -22,7 +22,23 @@ def test_strong_numbered_lines_become_ordered_list_items() -> None:
 """
     normalized = normalize_lark_markdown(source)
 
-    assert "1. **图片自动处理** 飞书文档里的图片会自动下载" in normalized
-    assert "2. **格式完整保留** 表格、引用块、代码块、分割线" in normalized
-    assert "3. **排版风格统一** 工具内置了 Doocs 风格的渲染方案" in normalized
+    assert "1. **图片自动处理**\n\n   飞书文档里的图片会自动下载" in normalized
+    assert "2. **格式完整保留**\n\n   表格、引用块、代码块、分割线" in normalized
+    assert "3. **排版风格统一**\n\n   工具内置了 Doocs 风格的渲染方案" in normalized
     assert "**1. 图片自动处理**\n飞书文档里的图片" not in normalized
+
+
+def test_standalone_strong_heading_keeps_paragraph_boundary() -> None:
+    source = """## 使用之前需要准备三样东西：
+**2. 微信公众号凭证**
+登录微信公众号平台，在「开发」-「基本配置」里获取：
+- AppID
+- AppSecret（只显示一次，记得保存）
+同时把你的服务器 IP 添加到「IP 白名单」，否则调用接口会报错。
+"""
+    normalized = normalize_lark_markdown(source)
+
+    assert "2. **微信公众号凭证**\n\n   登录微信公众号平台，在「开发」-「基本配置」里获取：" in normalized
+    assert "- AppID" in normalized
+    assert "- AppSecret（只显示一次，记得保存）" in normalized
+    assert "- AppSecret（只显示一次，记得保存）\n\n同时把你的服务器 IP 添加到「IP 白名单」" in normalized

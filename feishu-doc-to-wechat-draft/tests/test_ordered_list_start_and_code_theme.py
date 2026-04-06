@@ -30,3 +30,19 @@ def test_code_blocks_use_same_light_background_under_default_github_theme() -> N
     ).html
     assert html.count('background: #f6f8fa;') >= 2
     assert 'background: #24292f;' not in html
+
+
+def test_ordered_list_items_preserve_block_paragraphs() -> None:
+    md = """1. **图片自动处理**
+
+   飞书文档里的图片会自动下载。
+
+2. **格式完整保留**
+
+   表格、引用块、代码块都能显示。
+"""
+    html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
+    assert '<section class="md-ordered-item"' in html
+    assert '<section class="md-ordered-text"' in html
+    assert '<span class="md-ordered-text"><p' not in html
+    assert '飞书文档里的图片会自动下载。' in html
