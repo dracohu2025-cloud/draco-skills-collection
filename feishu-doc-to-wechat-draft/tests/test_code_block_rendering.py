@@ -24,9 +24,25 @@ def test_code_block_does_not_double_escape_quotes_and_preserves_highlight_markup
 
     assert '&amp;quot;' not in html
     assert 'md-code-window-dots' in html
+    assert '<svg xmlns="http://www.w3.org/2000/svg"' in html
     assert '<br/>' in html
-    assert 'style="color:' in html or 'style="font-weight:' in html
+    assert '#D73A49' in html or '#6F42C1' in html or '#032F62' in html or '#E36209' in html
     assert 'print' in html
+
+
+def test_yaml_code_block_uses_github_like_inline_colors() -> None:
+    md = '''```yaml\nstyle:\n  code_theme: github\n  mac_code_block: true\n```\n'''
+    html = render_markdown(
+        md,
+        profile="doocs",
+        theme="grace",
+        code_theme="github",
+        mac_code_block=True,
+    ).html
+
+    assert 'language-yaml' in html
+    assert 'md-code-window-dots' in html
+    assert '#D73A49' in html or '#005CC5' in html or '#032F62' in html or '#E36209' in html or 'style="color: #' in html
 
 
 def test_code_block_line_numbers_match_nonempty_code_lines_without_trailing_blank() -> None:

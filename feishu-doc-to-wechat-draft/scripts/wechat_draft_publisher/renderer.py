@@ -21,6 +21,16 @@ _LINK_RE = re.compile(r'<a class="md-link"[^>]* href="([^"]+)"[^>]*>(.*?)</a>')
 _IMAGE_WITH_TITLE_RE = re.compile(r'!\[(?P<alt>[^\]]*)\]\((?P<src>[^)\s]+)(?:\s+"(?P<title>[^"]*)")?\)')
 
 
+_MAC_CODE_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0px" y="0px" width="45px" height="13px" '
+    'viewBox="0 0 450 130">'
+    '<ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)" />'
+    '<ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)" />'
+    '<ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)" />'
+    '</svg>'
+)
+
+
 class WechatRenderer:
     def __init__(self, options: RenderOptions | None = None) -> None:
         self._md = MarkdownIt("commonmark", {"html": True, "breaks": False}).enable("table")
@@ -347,15 +357,9 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     margin = "10px 8px"
     border_radius = "8px"
     line_height = "1.5"
-    padding_top = "0"
-    padding_side = "0"
-    padding_bottom = "0"
     box_shadow = "none"
     if options.mac_code_block:
         classes.append("md-pre-mac")
-        padding_top = "38px"
-        padding_side = "16px"
-        padding_bottom = "16px"
     if options.theme == "grace":
         box_shadow = "inset 0 0 10px rgba(0, 0, 0, 0.05)"
     elif options.theme == "simple":
@@ -364,7 +368,7 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     class_str = " ".join(classes)
     border_css = 'none' if options.theme in {'default', 'grace'} else f'1px solid {code_border}'
     return (
-        f'<pre class="{class_str}" style="font-size: 90%; margin: {margin}; padding: {padding_top} {padding_side} {padding_bottom}; overflow-x: auto; '
+        f'<pre class="{class_str}" style="font-size: 90%; margin: {margin}; padding: 0; overflow: hidden; '
         f'border-radius: {border_radius}; line-height: {line_height}; background: {code_bg}; color: {code_fg}; border: {border_css}; '
         f'box-shadow: {box_shadow}; position: relative;\"><code'
     )
@@ -418,11 +422,10 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
 
         if options.mac_code_block:
             prefix += (
-                '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px;">'
-                '<span style="width: 10px; height: 10px; border-radius: 999px; background: #ff5f57; display: inline-block;"></span>'
-                '<span style="width: 10px; height: 10px; border-radius: 999px; background: #febc2e; display: inline-block;"></span>'
-                '<span style="width: 10px; height: 10px; border-radius: 999px; background: #28c840; display: inline-block;"></span>'
-                '</div>'
+                '<span class="md-code-window-dots md-code-window-mac" '
+                'style="display:block;padding:10px 14px 0;line-height:0;user-select:none;">'
+                f'{_MAC_CODE_SVG}'
+                '</span>'
             )
 
         if code_open_match:
@@ -464,13 +467,33 @@ def _extract_code_language(code_open: str) -> str:
     return aliases.get(language, language)
 
 
+def _remap_pygments_colors_to_github_like(html: str) -> str:
+    replacements = {
+        '#008000': '#22863A',  # keywords / shell builtins
+        '#00F': '#6F42C1',
+        '#0000FF': '#6F42C1',
+        '#19177C': '#005CC5',
+        '#666': '#24292E',
+        '#666666': '#24292E',
+        '#BA2121': '#032F62',
+        '#AA5D1F': '#032F62',
+        '#3D7B7B': '#6A737D',
+        '#BBB': '#24292E',
+        '#bbbbbb': '#24292E',
+    }
+    for old, new in replacements.items():
+        html = html.replace(old, new)
+    return html
+
+
 def _pygments_inline_html(code: str, language: str) -> str:
     try:
         lexer = get_lexer_by_name(language)
     except ClassNotFound:
         lexer = TextLexer()
     formatter = HtmlFormatter(nowrap=True, noclasses=True)
-    return highlight(code, lexer, formatter)
+    highlighted = highlight(code, lexer, formatter)
+    return _remap_pygments_colors_to_github_like(highlighted)
 
 
 def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_newlines: bool) -> str:
@@ -532,12 +555,13 @@ def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
 
 
 def _code_block_style(options: RenderOptions) -> str:
-    padding = '0.5em 1em 1em'
+    top_padding = '0.5em'
     if options.mac_code_block:
-        padding = '0 0 0'
+        top_padding = '0.35em'
     return (
-        f"display: -webkit-box; padding: {padding}; overflow-x: auto; text-indent: 0; "
-        "color: inherit; background: none; white-space: nowrap; margin: 0; "
+        f"display: block; padding: {top_padding} 1em 1em; overflow-x: auto; text-indent: 0; "
+        "color: inherit; background: none; white-space: pre; margin: 0; min-width: max-content; "
+        "word-break: normal; overflow-wrap: normal; box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 
