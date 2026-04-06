@@ -77,7 +77,8 @@ class WechatClient:
         if self.transport is None:
             self.transport = UrllibTransport()
         if self.token_cache is None:
-            self.token_cache = TokenCache(Path.home() / ".cache/wechat-draft-publisher/access_token.json")
+            safe_appid = (self.appid or "default").strip() or "default"
+            self.token_cache = TokenCache(Path.home() / ".cache/wechat-draft-publisher" / f"access_token_{safe_appid}.json")
 
     def get_access_token(self, *, now: int | None = None) -> str:
         cached = self.token_cache.load(now=now)
