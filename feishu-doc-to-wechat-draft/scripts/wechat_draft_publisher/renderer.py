@@ -86,8 +86,6 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
         (r"<p>", f'<p class="md-p" style="margin: 1.5em 8px; color: {text}; font-family: inherit; font-size: {options.font_size}px; line-height: inherit; letter-spacing: 0.1em;{p_extra_style}">'),
         (r"<blockquote>", _blockquote_open(options, primary, muted, soft)),
         (r"<blockquote class=\"wechat-blockquote\">", _blockquote_open(options, primary, muted, soft)),
-        (r"<ul>", _ul_open(options, text)),
-        (r"<ol>", _ol_open(options, text)),
         (r"<li>", _li_open(options, text)),
         (r"<pre><code", _pre_open(options, code_bg, code_fg, code_border)),
         (r"<code>", '<code class="md-inline-code" style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">'),
@@ -169,7 +167,7 @@ def _rewrite_unordered_lists(html: str, options: RenderOptions) -> str:
 
 
 def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
-    list_pattern = re.compile(r'<ol class="md-ol"[^>]*>(.*?)</ol>', re.S)
+    list_pattern = re.compile(r'<ol class="md-ol"(?P<attrs>[^>]*)>(?P<body>.*?)</ol>', re.S)
     item_pattern = re.compile(r'<li class="md-li"[^>]*>(.*?)</li>', re.S)
 
     def repl(match: re.Match[str]) -> str:
@@ -179,8 +177,10 @@ def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
             return match.group(0)
         margin = '0' if options.theme == 'default' else '.8em 0'
         item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
+        start_match = re.search(r'data-start="(\d+)"', attrs)
+        start = int(start_match.group(1)) if start_match else 1
         parts = [f'<section class="md-list md-list-ordered" style="margin: {margin};">']
-        for index, item in enumerate(items, start=1):
+        for index, item in enumerate(items, start=start):
             item = item.strip()
             parts.append(
                 f'<p class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit;">'
@@ -318,10 +318,12 @@ def _ul_open(options: RenderOptions, text: str) -> str:
     return f'<ul class="md-ul" style="list-style: none; padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
-def _ol_open(options: RenderOptions, text: str) -> str:
+def _ol_open(options: RenderOptions, text: str, attrs: str = '') -> str:
+    start_match = re.search(r'\bstart="?(\d+)"?', attrs or '')
+    start_attr = f' data-start="{start_match.group(1)}"' if start_match else ''
     if options.theme == "default":
-        return f'<ol class="md-ol" style="padding-left: 1em; margin-left: 0; color: {text};">'
-    return f'<ol class="md-ol" style="padding-left: 1.5em; margin-left: 0; color: {text};">'
+        return f'<ol class="md-ol"{start_attr} style="padding-left: 1em; margin-left: 0; color: {text};">'
+    return f'<ol class="md-ol"{start_attr} style="padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
 def _li_open(options: RenderOptions, text: str) -> str:
@@ -416,25 +418,14 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
         if code_open_match:
             language = _extract_code_language(code_open_match.group(1))
 
-        terminal_mode = _is_terminal_language(language) and options.mac_code_block
-
         if options.mac_code_block:
             prefix += (
-                '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2;">'
+                '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px;">'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #ff5f57; display: inline-block;"></span>'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #febc2e; display: inline-block;"></span>'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #28c840; display: inline-block;"></span>'
                 '</div>'
             )
-            if terminal_mode:
-                prefix += (
-                    '<div class="md-code-window-title" style="position: absolute; top: 10px; left: 0; right: 0; text-align: center; color: rgba(230,237,243,.72); font-size: 12px; letter-spacing: .04em; z-index: 1;">terminal</div>'
-                )
-
-        if terminal_mode:
-            pre_open = pre_open.replace('background: #f6f8fa;', 'background: #24292f;')
-            pre_open = pre_open.replace('color: #24292f;', 'color: #e6edf3;')
-            pre_open = pre_open.replace('box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);', 'box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);')
 
         if code_open_match:
             code_open = code_open_match.group(1)
@@ -445,7 +436,7 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
                 rendered_content = _render_code_block_content(raw_code, language, options)
                 code_block = f'{code_open}{rendered_content}</code></pre>'
 
-        code_style = _code_block_style(options, terminal=terminal_mode)
+        code_style = _code_block_style(options)
         code_block = code_block.replace(
             '<code',
             f'<code style="{code_style}"',
@@ -454,10 +445,6 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
         return pre_open + prefix + code_block
 
     return pattern.sub(repl, html)
-
-
-def _is_terminal_language(language: str) -> bool:
-    return language in {'bash', 'sh', 'shell', 'zsh', 'console', 'terminal'}
 
 
 def _extract_code_language(code_open: str) -> str:
@@ -546,13 +533,13 @@ def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
     )
 
 
-def _code_block_style(options: RenderOptions, *, terminal: bool = False) -> str:
+def _code_block_style(options: RenderOptions) -> str:
     padding = '0.5em 1em 1em'
     if options.mac_code_block:
         padding = '0 0 0'
     return (
         f"display: block; padding: {padding}; overflow-x: auto; text-indent: 0; "
-        f"color: {'#e6edf3' if terminal else 'inherit'}; background: none; white-space: pre; margin: 0; "
+        "color: inherit; background: none; white-space: pre; margin: 0; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 

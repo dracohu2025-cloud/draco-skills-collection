@@ -10,7 +10,7 @@ if str(SCRIPT_ROOT) not in sys.path:
 from wechat_draft_publisher.renderer import render_markdown
 
 
-def test_shell_code_block_uses_terminal_style_when_mac_mode_enabled() -> None:
+def test_shell_code_block_uses_mac_dots_but_keeps_doocs_light_theme() -> None:
     md = '```bash\necho "hello"\n```\n'
     html = render_markdown(
         md,
@@ -20,7 +20,7 @@ def test_shell_code_block_uses_terminal_style_when_mac_mode_enabled() -> None:
         mac_code_block=True,
     ).html
 
-    assert 'md-code-window-title' in html
-    assert '>terminal<' in html
-    assert 'background: #24292f;' in html
-    assert 'color: #e6edf3;' in html
+    assert 'md-code-window-dots' in html
+    assert 'background: #f6f8fa;' in html
+    assert 'md-code-window-title' not in html
+    assert 'background: #24292f;' not in html
