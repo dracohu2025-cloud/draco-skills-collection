@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+SCRIPT_ROOT = Path(__file__).resolve().parents[1] / "scripts"
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
+
+from wechat_draft_publisher.lark_docs import normalize_lark_markdown
+
+
+def test_strong_numbered_lines_become_ordered_list_items() -> None:
+    source = """## 这个工具能做什么
+简单说，它解决三个核心问题：
+**1. 图片自动处理**
+飞书文档里的图片会自动下载，上传到微信素材库，替换成微信 CDN 链接。你不需要手动一张张处理。
+**2. 格式完整保留**
+表格、引用块、代码块、分割线，这些在飞书里的格式，转成 HTML 后都能正确显示。特别是代码块，支持 Mac 风格的美化显示。
+**3. 排版风格统一**
+工具内置了 Doocs 风格的渲染方案，和我们平时在 md-editor 编辑器里看到的预览效果一致。标题、正文、引用都有统一的视觉风格。
+"""
+    normalized = normalize_lark_markdown(source)
+
+    assert "1. **图片自动处理** 飞书文档里的图片会自动下载" in normalized
+    assert "2. **格式完整保留** 表格、引用块、代码块、分割线" in normalized
+    assert "3. **排版风格统一** 工具内置了 Doocs 风格的渲染方案" in normalized
+    assert "**1. 图片自动处理**\n飞书文档里的图片" not in normalized
