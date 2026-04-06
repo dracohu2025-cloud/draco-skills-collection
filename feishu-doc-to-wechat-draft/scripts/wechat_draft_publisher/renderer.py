@@ -411,34 +411,53 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
     def repl(match: re.Match[str]) -> str:
         pre_open, code_block = match.groups()
         prefix = ""
+        language = 'text'
+        code_open_match = re.match(r'(<code[^>]*>)', code_block)
+        if code_open_match:
+            language = _extract_code_language(code_open_match.group(1))
+
+        terminal_mode = _is_terminal_language(language) and options.mac_code_block
+
         if options.mac_code_block:
             prefix += (
-                '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px;">'
+                '<div class="md-code-window-dots" style="position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2;">'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #ff5f57; display: inline-block;"></span>'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #febc2e; display: inline-block;"></span>'
                 '<span style="width: 10px; height: 10px; border-radius: 999px; background: #28c840; display: inline-block;"></span>'
                 '</div>'
             )
+            if terminal_mode:
+                prefix += (
+                    '<div class="md-code-window-title" style="position: absolute; top: 10px; left: 0; right: 0; text-align: center; color: rgba(230,237,243,.72); font-size: 12px; letter-spacing: .04em; z-index: 1;">terminal</div>'
+                )
 
-        code_open_match = re.match(r'(<code[^>]*>)', code_block)
+        if terminal_mode:
+            pre_open = pre_open.replace('background: #f6f8fa;', 'background: #24292f;')
+            pre_open = pre_open.replace('color: #24292f;', 'color: #e6edf3;')
+            pre_open = pre_open.replace('box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);', 'box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);')
+
         if code_open_match:
             code_open = code_open_match.group(1)
             content_match = re.match(r'<code[^>]*>(.*?)</code></pre>', code_block, re.S)
             if content_match:
                 encoded_content = content_match.group(1)
                 raw_code = html_lib.unescape(encoded_content)
-                language = _extract_code_language(code_open)
                 rendered_content = _render_code_block_content(raw_code, language, options)
                 code_block = f'{code_open}{rendered_content}</code></pre>'
 
+        code_style = _code_block_style(options, terminal=terminal_mode)
         code_block = code_block.replace(
             '<code',
-            f'<code style="{_code_block_style(options)}"',
+            f'<code style="{code_style}"',
             1,
         )
         return pre_open + prefix + code_block
 
     return pattern.sub(repl, html)
+
+
+def _is_terminal_language(language: str) -> bool:
+    return language in {'bash', 'sh', 'shell', 'zsh', 'console', 'terminal'}
 
 
 def _extract_code_language(code_open: str) -> str:
@@ -527,13 +546,13 @@ def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
     )
 
 
-def _code_block_style(options: RenderOptions) -> str:
+def _code_block_style(options: RenderOptions, *, terminal: bool = False) -> str:
     padding = '0.5em 1em 1em'
     if options.mac_code_block:
         padding = '0 0 0'
     return (
         f"display: block; padding: {padding}; overflow-x: auto; text-indent: 0; "
-        "color: inherit; background: none; white-space: pre; margin: 0; "
+        f"color: {'#e6edf3' if terminal else 'inherit'}; background: none; white-space: pre; margin: 0; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 

@@ -18,6 +18,7 @@ _WS_RE = re.compile(r"\s+")
 # Matches: standalone --- on its own line, or --- preceded by text (to prevent setext h2)
 _HR_RE = re.compile(r'(^|\n)(-{3,}|\*{3,}|_{3,})(\s*\n|$)', re.M)
 _STRONG_NUMBERED_LINE_RE = re.compile(r'^\*\*(\d+)\.\s+(.+?)\*\*$')
+_STANDALONE_STRONG_RE = re.compile(r'^\*\*[^\n]+\*\*$')
 
 
 def extract_lark_doc_token(doc: str) -> str:
@@ -194,6 +195,40 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
     return "\n".join(out)
 
 
+def _normalize_block_boundaries(markdown: str) -> str:
+    """Insert missing blank lines around standalone strong titles and list boundaries."""
+    lines = markdown.replace("\r\n", "\n").split("\n")
+    out: list[str] = []
+
+    def prev_nonempty() -> str | None:
+        for item in reversed(out):
+            if item.strip():
+                return item.strip()
+        return None
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+        prev = prev_nonempty() or ""
+
+        if stripped and _STANDALONE_STRONG_RE.match(stripped):
+            if out and out[-1].strip():
+                out.append("")
+            out.append(line)
+            if nxt and not nxt.startswith("```"):
+                out.append("")
+            continue
+
+        if stripped and not stripped.startswith(("- ", "* ", "```", ">", "#", "<hr")) and not re.match(r'^\d+\.\s', stripped):
+            if prev.startswith(("-", "*")) or re.match(r'^\d+\.', prev):
+                if out and out[-1] != "":
+                    out.append("")
+
+        out.append(line)
+
+    return "\n".join(out)
+
+
 def normalize_lark_markdown(markdown: str) -> str:
     normalized = _convert_text_tags(markdown)
     normalized = _convert_quote_containers(normalized)
@@ -201,6 +236,7 @@ def normalize_lark_markdown(markdown: str) -> str:
     normalized = _LARK_TABLE_RE.sub(lambda m: _convert_lark_table(m.group(0)), normalized)
     normalized = _convert_horizontal_rules(normalized)
     normalized = _convert_strong_numbered_blocks(normalized)
+    normalized = _normalize_block_boundaries(normalized)
     normalized = normalized.replace("\r\n", "\n")
     normalized = re.sub(r"\n{3,}", "\n\n", normalized)
     return normalized.strip() + "\n"
