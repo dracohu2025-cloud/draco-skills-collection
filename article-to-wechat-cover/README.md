@@ -92,20 +92,34 @@ pip install -r requirements.txt
 
 ## 快速开始
 
-### 1）从本地 Markdown 生成封面
+> 现在默认会先输出**最终版生图 prompt**供你审核；只有在你确认后，带上 `--confirm-generate` 才会真的调用图片模型出图。
+
+### 1）从本地 Markdown 生成封面（先出最终 prompt 供确认）
 
 ```bash
 python3 scripts/run.py from-markdown \
   --input ./article.md \
-  --output ./wechat-cover.jpg
+  --output ./wechat-cover.jpg \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
 ```
 
-### 2）从飞书文档生成封面
+### 2）确认 prompt 没问题后，再真正生成封面
+
+```bash
+python3 scripts/run.py from-markdown \
+  --input ./article.md \
+  --output ./wechat-cover.jpg \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt \
+  --confirm-generate
+```
+
+### 3）从飞书文档生成封面
 
 ```bash
 python3 scripts/run.py from-feishu-doc \
   --doc "https://your-domain.feishu.cn/docx/DocID" \
-  --output ./wechat-cover.jpg
+  --output ./wechat-cover.jpg \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
 ```
 
 ### 3）导出分析结果，方便检查主题是否抓对
@@ -139,6 +153,8 @@ thumb_media_id=xxxx
 | `--output` | 输出图片路径 |
 | `--analysis-json` | 导出文章主题分析 JSON |
 | `--dump-json-spec` | 导出最终图片生成 spec |
+| `--final-prompt-output` | 导出最终版生图 prompt，方便发给用户确认 |
+| `--confirm-generate` | 明确确认后才真正生图；不带这个参数时只输出最终 prompt 供审核 |
 | `--visual-style-hint` | 人工补充视觉偏好 |
 | `--must-include` | 强制要求出现的视觉元素，逗号分隔 |
 | `--must-avoid` | 强制避免的视觉元素，逗号分隔 |
@@ -214,6 +230,23 @@ article-to-wechat-cover/
 ### 3）它是不是直接读取整篇文章原文逐字出图？
 
 不是。它会先提炼主题和视觉 brief，再生成结构化图片 spec，这样更稳定，也更适合公众号封面。
+
+### 4）为什么现在默认不会直接出图？
+
+因为这个 skill 现在要求：**必须先把最终版 prompt 给用户确认，再允许真正调用图片模型生图**。
+
+所以默认执行时会：
+- 输出最终版 prompt 预览
+- 可选写入 `--final-prompt-output`
+- 停在确认阶段
+
+确认没问题后，再带上：
+
+```bash
+--confirm-generate
+```
+
+重新执行，才会真的出图。
 
 ## 适用边界
 

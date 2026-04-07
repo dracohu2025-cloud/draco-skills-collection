@@ -463,6 +463,15 @@ def resolve_output_path(output: str | None, mime_type: str) -> Path:
     return path
 
 
+def build_final_image_prompt(image_spec: dict[str, Any]) -> str:
+    return (
+        'Interpret the following JSON as the authoritative image specification. '
+        'Generate exactly one image that follows it faithfully. '
+        'If any field is empty, infer it conservatively from source_prompt.\n\n'
+        + json.dumps(image_spec, ensure_ascii=False, indent=2)
+    )
+
+
 def generate_image(
     *,
     api_key: str,
@@ -472,12 +481,7 @@ def generate_image(
     title: str,
     image_spec: dict[str, Any],
 ) -> tuple[dict[str, Any], bytes, str]:
-    user_prompt = (
-        'Interpret the following JSON as the authoritative image specification. '
-        'Generate exactly one image that follows it faithfully. '
-        'If any field is empty, infer it conservatively from source_prompt.\n\n'
-        + json.dumps(image_spec, ensure_ascii=False, indent=2)
-    )
+    user_prompt = build_final_image_prompt(image_spec)
     payload = {
         'model': image_model,
         'messages': [{'role': 'user', 'content': user_prompt}],
@@ -532,6 +536,8 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument('--output')
         sub.add_argument('--analysis-json')
         sub.add_argument('--dump-json-spec')
+        sub.add_argument('--final-prompt-output')
+        sub.add_argument('--confirm-generate', action='store_true', help='Confirm that the final prompt/spec has been reviewed and approved; without this flag the command stops before image generation')
         sub.add_argument('--text-model', default=os.getenv('OPENROUTER_TEXT') or DEFAULT_TEXT_MODEL)
         sub.add_argument('--image-model', default=os.getenv('OPENROUTER_IMAGE') or DEFAULT_IMAGE_MODEL)
         sub.add_argument('--provider-order', default=','.join(DEFAULT_PROVIDER_ORDER))
@@ -596,6 +602,8 @@ def main(argv: list[str] | None = None) -> int:
             must_avoid=must_avoid,
         )
 
+        final_prompt = build_final_image_prompt(image_spec)
+
         if args.analysis_json:
             path = Path(args.analysis_json)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -604,6 +612,28 @@ def main(argv: list[str] | None = None) -> int:
             path = Path(args.dump_json_spec)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(image_spec, ensure_ascii=False, indent=2), encoding='utf-8')
+        if args.final_prompt_output:
+            path = Path(args.final_prompt_output)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(final_prompt, encoding='utf-8')
+
+        print(f'article_title={article.title}')
+        print(f'core_theme={brief.get("core_theme", "")}')
+        print(f'visual_direction={brief.get("visual_direction", "")}')
+        print(f'text_model={brief.get("_meta", {}).get("model", args.text_model)}')
+        print(f'image_model={args.image_model}')
+        print(f'aspect_ratio={DEFAULT_ASPECT_RATIO}')
+        print('final_prompt_review_required=true')
+        print('final_prompt_preview_begin')
+        print(final_prompt)
+        print('final_prompt_preview_end')
+        if not args.confirm_generate:
+            print('generation_skipped=pending_user_confirmation')
+            if args.final_prompt_output:
+                print(f'final_prompt_output={args.final_prompt_output}')
+            else:
+                print('hint=Use --final-prompt-output /tmp/final-prompt.txt to save the prompt, review it with the user, then rerun with --confirm-generate')
+            return 0
 
         data, image_bytes, mime_type = generate_image(
             api_key=api_key,

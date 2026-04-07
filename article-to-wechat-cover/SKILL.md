@@ -28,7 +28,8 @@ metadata:
    - 文章核心主题
    - 文章视觉风格
    - 适合公众号封面的构图与主视觉
-3. 用 OpenRouter 图片模型（Nano Banana / Gemini Flash Image）生成 **2.35:1** 微信公众号封面图
+3. 先输出最终版生图 prompt 给用户确认
+4. 只有确认后，才用 OpenRouter 图片模型（Nano Banana / Gemini Flash Image）生成 **2.35:1** 微信公众号封面图
 
 默认要求：
 - 宽高比固定 `2.35:1`
@@ -88,6 +89,8 @@ python3 scripts/run.py from-markdown \
 - `--upload-wechat-cover`：直接上传成微信封面素材，返回 `thumb_media_id`
 - `--analysis-json`：导出文章主题分析 JSON
 - `--dump-json-spec`：导出最终图片 JSON 规格
+- `--final-prompt-output`：导出最终版生图 prompt，便于发给用户确认
+- `--confirm-generate`：只有用户确认最终 prompt 后，才允许真正生图
 - `--image-model`：覆盖默认图片模型
 - `--text-model`：覆盖默认文本模型
 - `--provider-order`：OpenRouter provider 顺序，默认 `Vertex AI`

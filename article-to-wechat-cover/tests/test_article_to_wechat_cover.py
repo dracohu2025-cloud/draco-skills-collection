@@ -7,6 +7,7 @@ sys.path.insert(0, str(ROOT))
 
 from article_to_wechat_cover import (  # noqa: E402
     DEFAULT_ASPECT_RATIO,
+    build_final_image_prompt,
     build_image_spec,
     extract_sections,
     load_markdown_article,
@@ -92,3 +93,10 @@ def test_extract_sections_limits_count():
 def test_resolve_output_path_corrects_extension_for_mime():
     adjusted = resolve_output_path('/tmp/wechat-cover.png', 'image/jpeg')
     assert str(adjusted).endswith('.jpg') or str(adjusted).endswith('.jpeg')
+
+
+def test_build_final_image_prompt_contains_image_spec_json():
+    prompt = build_final_image_prompt({'image_request': {'aspect_ratio': '2.35:1', 'subject': 'AI Agent'}})
+    assert 'authoritative image specification' in prompt
+    assert '2.35:1' in prompt
+    assert 'AI Agent' in prompt
