@@ -6,6 +6,32 @@
 
 目前已经收录：
 
+### `article-to-wechat-cover/`
+
+把飞书文档或 Markdown 文章，自动生成成适合微信公众号使用的横幅封面图。
+
+**核心功能：**
+- 🖼️ 固定输出 `2.35:1` 的公众号封面比例
+- 🧠 先理解文章主题与语气，再生成封面图
+- ✨ 复用 OpenRouter + Nano Banana / Gemini Flash Image 出图
+- ☁️ 可选上传飞书云盘，或直接上传为微信封面素材拿到 `thumb_media_id`
+
+**效果预览：**
+
+<img src="./article-to-wechat-cover/assets/example-wechat-cover.jpg" alt="article-to-wechat-cover 示例封面图" />
+
+**快速开始：**
+```bash
+cd article-to-wechat-cover
+python3 scripts/run.py from-feishu-doc \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --output ./wechat-cover.jpg
+```
+
+更多详情查看 [`article-to-wechat-cover/README.md`](./article-to-wechat-cover/README.md)
+
+---
+
 ### `feishu-doc-to-wechat-draft/`
 
 将飞书（Feishu/Lark）文档一键转换为微信公众号草稿，支持精美排版和图片自动上传。
