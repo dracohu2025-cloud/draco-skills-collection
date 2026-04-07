@@ -58,7 +58,7 @@ OPENROUTER_API_KEY=你的key
 可选：
 
 ```bash
-OPENROUTER_TEXT=google/gemini-2.5-flash
+OPENROUTER_TEXT=google/gemini-3.1-flash-lite-preview
 OPENROUTER_IMAGE=google/gemini-3.1-flash-image-preview
 ```
 

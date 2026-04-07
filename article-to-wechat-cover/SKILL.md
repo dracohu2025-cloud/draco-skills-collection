@@ -141,7 +141,7 @@ python3 ~/.hermes/skills/productivity/feishu-doc-to-wechat-draft/scripts/run.py 
 ## 依赖
 
 - `OPENROUTER_API_KEY`
-- 可选：`OPENROUTER_TEXT`
+- 可选：`OPENROUTER_TEXT`（默认 `google/gemini-3.1-flash-lite-preview`）
 - 可选：`OPENROUTER_IMAGE`
 - 如需读取飞书文档：已可用的 `lark-cli`
 - 如需上传微信封面素材：

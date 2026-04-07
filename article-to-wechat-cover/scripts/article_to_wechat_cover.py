@@ -18,7 +18,7 @@ from urllib import error, request
 import yaml
 
 OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-DEFAULT_TEXT_MODEL = 'google/gemini-2.5-flash'
+DEFAULT_TEXT_MODEL = 'google/gemini-3.1-flash-lite-preview'
 DEFAULT_IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
 DEFAULT_REFERER = 'https://hermes.aigc.green'
 DEFAULT_TITLE = 'Hermes Article To WeChat Cover'
