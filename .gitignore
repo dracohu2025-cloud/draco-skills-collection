@@ -1,0 +1,23 @@
+# Global local-only dirs
+.hermes/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Local deliveries / generated artifacts
+epub2podcast/test-deliveries/
+epub2podcast/validation-deliveries/
+epub2podcast/validation-deliveries-fixed/
+epub2podcast/.local-deliveries/
+
+# Common noise
+.DS_Store
+Thumbs.db
+*.log
