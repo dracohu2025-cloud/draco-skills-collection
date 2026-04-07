@@ -17,6 +17,7 @@
 - **风格自动匹配**，会根据文章语气推断更适合的视觉表达
 - **支持飞书文档和本地 Markdown 两种输入**
 - **可直接上传为微信公众号封面素材**，拿到 `thumb_media_id`
+- **可在确认最终 prompt 后，把 Hero 图自动插回飞书文档最顶部**
 - **可导出分析 JSON 和图片 JSON spec**，方便审查和复用
 
 ## 效果示例
@@ -122,7 +123,18 @@ python3 scripts/run.py from-feishu-doc \
   --final-prompt-output /tmp/wechat-cover-prompt.txt
 ```
 
-### 3）导出分析结果，方便检查主题是否抓对
+### 4）确认后，直接把 Hero 图插回飞书文档最顶部
+
+```bash
+python3 scripts/run.py from-feishu-doc \
+  --doc "https://your-domain.feishu.cn/docx/DocID" \
+  --output ./wechat-cover.jpg \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt \
+  --confirm-generate \
+  --insert-into-feishu-doc-top
+```
+
+### 5）导出分析结果，方便检查主题是否抓对
 
 ```bash
 python3 scripts/run.py from-markdown \
@@ -161,6 +173,8 @@ thumb_media_id=xxxx
 | `--allow-text-overlay` | 允许少量文字出现在封面中 |
 | `--upload-feishu` | 生成后上传飞书云盘 |
 | `--upload-wechat-cover` | 生成后上传微信封面素材库 |
+| `--insert-into-feishu-doc-top` | 生成后把 Hero 图自动插入飞书文档正文最顶部 |
+| `--replace-existing-top-image` / `--no-replace-existing-top-image` | 插入时是否替换已有顶部 Hero 图 |
 
 ## 推荐用法
 

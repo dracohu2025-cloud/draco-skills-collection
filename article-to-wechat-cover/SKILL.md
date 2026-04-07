@@ -16,6 +16,7 @@ metadata:
 - 为一篇本地 Markdown 文章自动生成公众号头图
 - 让封面图主题跟随文章内容自动变化
 - 复用 Nano Banana / OpenRouter 图片生成链路做公众号封面
+- 在用户确认最终 prompt 后，把生成图片自动插入飞书文档最顶部作为 Hero 图
 
 就用这个 skill。
 
@@ -45,24 +46,92 @@ metadata:
 
 ```bash
 python3 scripts/run.py from-feishu-doc \
-  --doc 'https://xxx.feishu.cn/docx/xxx'
+  --doc 'https://xxx.feishu.cn/docx/xxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
 ```
 
 ### 2) 本地 Markdown
 
 ```bash
 python3 scripts/run.py from-markdown \
-  --input ./article.md
+  --input ./article.md \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
 ```
 
 ## 输出
 
 成功后会输出：
-- 本地封面图路径
+- 本地封面图路径（仅在已确认并真正生图后）
 - 主题分析 JSON 路径（可选）
 - 图片 JSON spec 路径（可选）
+- 最终版生图 prompt（可打印，也可写入文件）
 - 可选 `feishu_url`
 - 可选 `thumb_media_id`
+
+## 必须先确认最终 prompt
+
+这个 skill 现在默认采用两阶段流程：
+
+### 阶段 1：先生成最终版生图 prompt，给用户确认
+
+推荐：
+
+```bash
+python3 scripts/run.py from-feishu-doc \
+  --doc 'https://g1mu6da08l.feishu.cn/docx/xxxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
+```
+
+或：
+
+```bash
+python3 scripts/run.py from-markdown \
+  --input ./article.md \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
+```
+
+这一步会：
+- 先分析文章主题与风格
+- 生成最终版生图 prompt
+- 在终端打印 prompt 预览
+- 可选写入 `--final-prompt-output`
+- **不会真的调用图片模型生图**
+
+如果命令输出里看到：
+
+```text
+generation_skipped=pending_user_confirmation
+```
+
+说明流程正常停在“待确认”阶段。
+
+### 阶段 2：确认后，再真正生图
+
+只有在用户确认最终 prompt 没问题后，才重新执行并加上：
+
+```bash
+--confirm-generate
+```
+
+例如：
+
+```bash
+python3 scripts/run.py from-feishu-doc \
+  --doc 'https://g1mu6da08l.feishu.cn/docx/xxxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt \
+  --output ./wechat-cover.jpg \
+  --confirm-generate
+```
+
+经验规则：
+- **不要**在第一次分析出 prompt 后立刻自动生图
+- 必须先把 final prompt 发给用户审阅
+- 用户确认后，才允许 `--confirm-generate`
+
+补充经验：
+- 图片模型实际可能返回 `image/jpeg`，即使你手动把输出文件写成 `.png`
+- 因此脚本应按返回的 `mime_type` 自动修正输出后缀，避免出现“JPEG 内容却使用 PNG 扩展名”的混淆
+- 如果用户显式传入了一个不匹配的输出路径，CLI 最好打印一个 `output_adjusted_from=...` 提示，便于排查
 
 ## 统一入口命令
 
@@ -91,6 +160,8 @@ python3 scripts/run.py from-markdown \
 - `--dump-json-spec`：导出最终图片 JSON 规格
 - `--final-prompt-output`：导出最终版生图 prompt，便于发给用户确认
 - `--confirm-generate`：只有用户确认最终 prompt 后，才允许真正生图
+- `--insert-into-feishu-doc-top`：生成后把 Hero 图自动插到飞书文档正文最顶部
+- `--replace-existing-top-image` / `--no-replace-existing-top-image`：插入 Hero 图时是否替换已有顶部图片
 - `--image-model`：覆盖默认图片模型
 - `--text-model`：覆盖默认文本模型
 - `--provider-order`：OpenRouter provider 顺序，默认 `Vertex AI`
@@ -114,6 +185,27 @@ python3 scripts/run.py from-markdown \
 ```bash
 python3 scripts/run.py from-feishu-doc \
   --doc 'https://xxx.feishu.cn/docx/xxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt
+```
+
+确认 prompt 没问题后，如果你想把生成图直接插回飞书文档最顶部：
+
+```bash
+python3 scripts/run.py from-feishu-doc \
+  --doc 'https://xxx.feishu.cn/docx/xxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt \
+  --confirm-generate \
+  --insert-into-feishu-doc-top
+```
+
+如果还要同时上传成微信封面素材：
+
+```bash
+python3 scripts/run.py from-feishu-doc \
+  --doc 'https://xxx.feishu.cn/docx/xxx' \
+  --final-prompt-output /tmp/wechat-cover-prompt.txt \
+  --confirm-generate \
+  --insert-into-feishu-doc-top \
   --upload-wechat-cover
 ```
 

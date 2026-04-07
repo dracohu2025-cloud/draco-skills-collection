@@ -13,6 +13,7 @@ from article_to_wechat_cover import (  # noqa: E402
     load_markdown_article,
     markdown_to_plain_text,
     resolve_output_path,
+    strip_leading_hero_images,
 )
 
 
@@ -100,3 +101,8 @@ def test_build_final_image_prompt_contains_image_spec_json():
     assert 'authoritative image specification' in prompt
     assert '2.35:1' in prompt
     assert 'AI Agent' in prompt
+
+
+def test_strip_leading_hero_images_removes_only_leading_image_tags():
+    markdown = '<image token="abc" width="100" height="50" align="center"/>\n\n# 标题\n\n正文\n'
+    assert strip_leading_hero_images(markdown) == '# 标题\n\n正文\n'

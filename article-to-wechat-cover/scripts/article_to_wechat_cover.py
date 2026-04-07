@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +38,8 @@ H1_RE = re.compile(r'^#\s+(.+?)\s*$', re.M)
 HEADING_RE = re.compile(r'^#{1,6}\s+(.+?)\s*$', re.M)
 BULLET_RE = re.compile(r'^\s*[-*+]\s+', re.M)
 ORDERED_RE = re.compile(r'^\s*\d+\.\s+', re.M)
+IMAGE_TAG_RE = re.compile(r'<image\b[^>]*?/?>')
+LEADING_IMAGE_TAG_RE = re.compile(r'^(?:\s*<image\b[^>]*?/?>\s*\n*)+', re.S)
 
 
 @dataclass(slots=True)
@@ -528,6 +531,57 @@ def upload_cover_to_wechat(path: Path, *, appid: str, appsecret: str) -> str:
     return client.upload_cover_image(str(path), access_token)
 
 
+def run_lark_cli(args: list[str], *, cwd: str | None = None) -> dict[str, Any]:
+    completed = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or completed.stdout.strip() or 'lark-cli command failed')
+    return json.loads(completed.stdout)
+
+
+def strip_leading_hero_images(markdown: str) -> str:
+    stripped = LEADING_IMAGE_TAG_RE.sub('', markdown).lstrip('\n')
+    return stripped
+
+
+def insert_hero_into_feishu_doc_top(*, doc: str, image_path: Path, identity: str = 'user', replace_existing_top_image: bool = True) -> dict[str, Any]:
+    placeholder = '__HERMES_HERO_PLACEHOLDER__'
+    original = fetch_lark_doc(doc, identity=identity)
+    original_markdown = original.get('markdown', '') or ''
+    body_markdown = strip_leading_hero_images(original_markdown) if replace_existing_top_image else original_markdown
+
+    try:
+        run_lark_cli(
+            ['lark-cli', 'docs', '+update', '--as', identity, '--doc', doc, '--mode', 'overwrite', '--markdown', placeholder],
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir) / image_path.name
+            tmp_path.write_bytes(image_path.read_bytes())
+            insert_result = run_lark_cli(
+                ['lark-cli', 'docs', '+media-insert', '--as', identity, '--doc', doc, '--file', f'./{tmp_path.name}'],
+                cwd=tmpdir,
+            )
+        fetched_after_insert = fetch_lark_doc(doc, identity=identity)
+        inserted_markdown = fetched_after_insert.get('markdown', '') or ''
+        match = IMAGE_TAG_RE.search(inserted_markdown)
+        if not match:
+            raise RuntimeError('Failed to locate inserted hero image tag in Feishu document markdown')
+        hero_markdown = match.group(0)
+        final_markdown = hero_markdown if not body_markdown.strip() else f'{hero_markdown}\n\n{body_markdown.strip()}\n'
+        run_lark_cli(
+            ['lark-cli', 'docs', '+update', '--as', identity, '--doc', doc, '--mode', 'overwrite', '--markdown', final_markdown],
+        )
+        return {
+            'doc_id': original.get('doc_id') or extract_lark_doc_token(doc),
+            'doc_url': original.get('source_url') or (doc if doc.startswith(('http://', 'https://')) else ''),
+            'insert_result': insert_result.get('data') or {},
+            'replaced_existing_top_image': replace_existing_top_image and body_markdown != original_markdown,
+        }
+    except Exception:
+        restore_cmd = ['lark-cli', 'docs', '+update', '--as', identity, '--doc', doc, '--mode', 'overwrite', '--markdown', original_markdown]
+        run_lark_cli(restore_cmd)
+        raise
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='Generate a 2.35:1 WeChat article cover from Feishu doc or Markdown using OpenRouter Nano Banana.')
     subparsers = parser.add_subparsers(dest='command', required=True)
@@ -549,6 +603,8 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument('--title', default=DEFAULT_TITLE)
         sub.add_argument('--upload-feishu', action='store_true')
         sub.add_argument('--upload-wechat-cover', action='store_true')
+        sub.add_argument('--insert-into-feishu-doc-top', action='store_true', help='After generation, insert the hero image at the top of the Feishu doc body')
+        sub.add_argument('--replace-existing-top-image', action=argparse.BooleanOptionalAction, default=True, help='When inserting into Feishu doc top, replace an existing leading hero image instead of stacking another one')
         sub.add_argument('--appid', default=os.getenv('WECHAT_APP_ID'))
         sub.add_argument('--appsecret', default=os.getenv('WECHAT_APP_SECRET'))
 
@@ -665,6 +721,21 @@ def main(argv: list[str] | None = None) -> int:
             token, url = upload_to_feishu(output)
             print(f'feishu_token={token}')
             print(f'feishu_url={url}')
+
+        if args.insert_into_feishu_doc_top:
+            if args.command != 'from-feishu-doc':
+                return fail('--insert-into-feishu-doc-top currently requires from-feishu-doc so the target doc is explicit', 2)
+            insert_meta = insert_hero_into_feishu_doc_top(
+                doc=args.doc,
+                image_path=output,
+                identity=args.identity,
+                replace_existing_top_image=args.replace_existing_top_image,
+            )
+            print(f'feishu_doc_hero_inserted=true')
+            print(f'feishu_doc_id={insert_meta.get("doc_id", "")}')
+            if insert_meta.get('doc_url'):
+                print(f'feishu_doc_url={insert_meta.get("doc_url")}')
+            print(f'replaced_existing_top_image={str(insert_meta.get("replaced_existing_top_image", False)).lower()}')
 
         if args.upload_wechat_cover:
             if not args.appid or not args.appsecret:
