@@ -1,0 +1,37 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="520" rx="28" fill="#FFF8F2"/>
+  <rect x="40" y="40" width="1120" height="440" rx="24" fill="#FFFFFF" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="72" y="98" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#C15B12">wechat-article-camofox 工作流</text>
+  <text x="72" y="136" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#6C5A4B">从公众号链接到 Markdown / 飞书文档：自动安装 CamouFox、结构化抓取、正文清洗、图文重组</text>
+
+  <rect x="72" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="96" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">1. 输入链接</text>
+  <text x="96" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">微信公众号文章 URL</text>
+  <text x="96" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">支持直接抓取</text>
+  <text x="96" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">或统一入口 run.py</text>
+
+  <rect x="346" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="370" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">2. 自动准备</text>
+  <text x="370" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">检查 camofox-browser 健康状态</text>
+  <text x="370" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">缺失时自动 clone + npm install</text>
+  <text x="370" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">并打印阶段性进度</text>
+
+  <rect x="620" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="644" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">3. 结构化抓取</text>
+  <text x="644" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">读取 accessibility snapshot</text>
+  <text x="644" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">单独提取图片元数据</text>
+  <text x="644" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">保留图文块顺序</text>
+
+  <rect x="894" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="918" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">4. 输出结果</text>
+  <text x="918" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">过滤留言区 / 弹层 / 噪音</text>
+  <text x="918" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">修复列表、引用、折行</text>
+  <text x="918" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">输出 Markdown / JSON / 飞书文档</text>
+
+  <path d="M292 280H346" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M558 280H620" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M840 280H894" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M332 280L316 268V292L332 280Z" fill="#C15B12"/>
+  <path d="M606 280L590 268V292L606 280Z" fill="#C15B12"/>
+  <path d="M880 280L864 268V292L880 280Z" fill="#C15B12"/>
+</svg>
