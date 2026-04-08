@@ -6,7 +6,7 @@
 
 ## 目前收录了什么
 
-- [`wechat-article-camofox/`](./wechat-article-camofox/)：稳定抓取微信公众号文章，自动安装 CamouFox 依赖，输出 Markdown / JSON / 飞书文档
+- [`wechat-article-camofox/`](./wechat-article-camofox/)：稳定抓取微信公众号文章，自动安装 CamouFox 依赖，输出 Markdown / JSON / 飞书文档（已补 smoke test、CHANGELOG、RELEASE 文档）
 - [`article-to-wechat-cover/`](./article-to-wechat-cover/)：从飞书文档或 Markdown 自动生成微信公众号封面图
 - [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/)：把飞书文档一键转成微信公众号草稿
 - [`epub2podcast/`](./epub2podcast/)：把 EPUB 电子书变成双人中文播客与最终视频

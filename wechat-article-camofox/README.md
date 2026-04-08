@@ -85,6 +85,12 @@ cd draco-skills-collection/wechat-article-camofox
 pip install -r requirements.txt
 ```
 
+如果你想先快速确认当前机器是否满足最低运行要求：
+
+```bash
+./scripts/smoke-test.sh
+```
+
 ## 快速开始
 
 ### 1）统一入口：抓成 Markdown
@@ -238,12 +244,15 @@ done < templates/article_urls.example.txt
 wechat-article-camofox/
 ├── README.md
 ├── SKILL.md
+├── CHANGELOG.md
+├── RELEASE.md
 ├── .env.example
 ├── requirements.txt
 ├── assets/
 │   └── wechat-article-camofox-flow.svg
 ├── scripts/
 │   ├── run.py
+│   ├── smoke-test.sh
 │   ├── fetch_wechat_article.py
 │   └── publish_wechat_article_to_feishu.py
 ├── templates/
@@ -256,7 +265,10 @@ wechat-article-camofox/
 
 - `README.md`：面向普通用户的使用说明
 - `SKILL.md`：面向 Hermes skill 场景的技能说明
+- `CHANGELOG.md`：版本变化记录
+- `RELEASE.md`：当前版本的发布说明与定位
 - `scripts/run.py`：统一入口，适合公开仓库直接使用
+- `scripts/smoke-test.sh`：快速检查 Python / git / node / npm 与 CLI 帮助是否可用
 - `scripts/fetch_wechat_article.py`：核心抓取脚本
 - `scripts/publish_wechat_article_to_feishu.py`：飞书发布 workflow
 
