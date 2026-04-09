@@ -6,27 +6,38 @@
 
   <rect x="72" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
   <text x="96" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">1. 输入链接</text>
-  <text x="96" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">微信公众号文章 URL</text>
-  <text x="96" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">支持直接抓取</text>
-  <text x="96" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">或统一入口 run.py</text>
+  <text x="96" y="274" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="96" dy="0">公众号文章 URL</tspan>
+    <tspan x="96" dy="30">支持直接抓取</tspan>
+    <tspan x="96" dy="30">或统一入口 run.py</tspan>
+  </text>
 
   <rect x="346" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
   <text x="370" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">2. 自动准备</text>
-  <text x="370" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">检查 camofox-browser 健康状态</text>
-  <text x="370" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">缺失时自动 clone + npm install</text>
-  <text x="370" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">并打印阶段性进度</text>
+  <text x="368" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="368" dy="0">检查 camofox-browser</tspan>
+    <tspan x="368" dy="28">服务健康状态</tspan>
+    <tspan x="368" dy="28">缺失时自动安装</tspan>
+    <tspan x="368" dy="28">并输出阶段性进度</tspan>
+  </text>
 
   <rect x="620" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
   <text x="644" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">3. 结构化抓取</text>
-  <text x="644" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">读取 accessibility snapshot</text>
-  <text x="644" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">单独提取图片元数据</text>
-  <text x="644" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">保留图文块顺序</text>
+  <text x="644" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="644" dy="0">读取 accessibility</tspan>
+    <tspan x="644" dy="28">snapshot</tspan>
+    <tspan x="644" dy="28">提取图片元数据</tspan>
+    <tspan x="644" dy="28">保留图文块顺序</tspan>
+  </text>
 
   <rect x="894" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
   <text x="918" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">4. 输出结果</text>
-  <text x="918" y="278" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">过滤留言区 / 弹层 / 噪音</text>
-  <text x="918" y="312" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">修复列表、引用、折行</text>
-  <text x="918" y="346" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5D4D40">输出 Markdown / JSON / 飞书文档</text>
+  <text x="912" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="912" dy="0">过滤留言区与页面噪音</tspan>
+    <tspan x="912" dy="28">修复列表、引用、折行</tspan>
+    <tspan x="912" dy="28">导出 Markdown/JSON</tspan>
+    <tspan x="912" dy="28">或飞书原生文档</tspan>
+  </text>
 
   <path d="M292 280H346" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
   <path d="M558 280H620" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
