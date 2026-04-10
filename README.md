@@ -1,196 +1,155 @@
 # Draco Skills Collection
 
-这是一个面向公开使用的技能 / 小工具集合仓库，主要收录围绕内容生产、飞书协作、微信公众号发布，以及多媒体自动化的可复用项目。
+一个面向内容生产、飞书协作、公众号发布和多媒体自动化的工具仓库。
 
-这里的每个目录，尽量都朝着“下载后就能独立运行”的方向整理，而不是只保留一层内部包装。
+这里收的东西，目标都很直接：
+- 能单独看懂
+- 能尽快跑起来
+- 能在真实工作流里省时间
 
-## 目前收录了什么
+如果你想要的是“讲一堆概念”，这仓库不合适。这里更像一排已经接好电的工具台。
 
-- [`wechat-article-camofox/`](./wechat-article-camofox/)：稳定抓取微信公众号文章，自动安装 CamouFox 依赖，输出 Markdown / JSON / 飞书文档（已补 smoke test、CHANGELOG、RELEASE 文档）
-- [`article-to-wechat-cover/`](./article-to-wechat-cover/)：从飞书文档或 Markdown 自动生成微信公众号封面图
-- [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/)：把飞书文档一键转成微信公众号草稿
-- [`epub2podcast/`](./epub2podcast/)：把 EPUB 电子书变成双人中文播客与最终视频
+## 仓库里有什么
 
----
+目前主要分成 6 类能力：
 
-## 1. wechat-article-camofox
-
-把一篇微信公众号文章链接，自动抓成更干净的 Markdown、JSON，或者直接发布为飞书原生文档。
-
-### 它解决什么问题
-
-普通网页抓取经常会把公众号页面的这些内容一起带下来：
-
-- 留言区
-- 关注区
-- 扫码提示
-- 弹层按钮
-- 点赞 / 分享 / 推荐区
-- 图片位置错乱、列表断裂、额外折行
-
-这个工具会先自动准备 `camofox-browser`，再读取结构化 snapshot 和图片信息，最后做公众号专用清洗，所以结果更适合直接继续编辑或归档。
-
-### 效果预览
-
-<img src="./wechat-article-camofox/assets/wechat-article-camofox-flow.svg" alt="wechat-article-camofox 工作流预览" />
-
-### 快速开始
-
-```bash
-cd wechat-article-camofox
-
-# 抓成 Markdown
-python3 scripts/run.py fetch "https://mp.weixin.qq.com/s/xxxxxxxxxxxxxxxx"
-
-# 抓成 JSON
-python3 scripts/run.py fetch "https://mp.weixin.qq.com/s/xxxxxxxxxxxxxxxx" --format json
-
-# 直接发布到飞书原生文档
-python3 scripts/run.py publish-feishu "https://mp.weixin.qq.com/s/xxxxxxxxxxxxxxxx"
-```
-
-更多详情查看：
-
-- [`wechat-article-camofox/README.md`](./wechat-article-camofox/README.md)
+| 目录 | 适合做什么 | 核心输出 |
+|---|---|---|
+| [`wechat-article-camofox/`](./wechat-article-camofox/) | 抓取微信公众号文章并清洗 | Markdown / JSON / 飞书文档 |
+| [`nano-banana-image/`](./nano-banana-image/) | 用 Nano Banana 2 / Gemini Flash Image 直接出图 | 单图 / 批量图 / workflow |
+| [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
+| [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
+| [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
+| [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / Slide / MP4 |
 
 ---
 
-## 2. article-to-wechat-cover
-
-把一篇飞书文档或本地 Markdown 文章，自动生成成适合微信公众号使用的横幅封面图。
-
-### 亮点
-
-- 固定输出 `2.35:1` 的公众号封面比例
-- 先理解文章主题与语气，再生成封面图
-- 复用 OpenRouter + Nano Banana / Gemini Flash Image 出图
-- 可选上传飞书云盘，或直接上传为微信封面素材拿到 `thumb_media_id`
-
-### 效果预览
-
-<img src="./article-to-wechat-cover/assets/example-wechat-cover.jpg" alt="article-to-wechat-cover 示例封面图" />
-
-### 快速开始
-
-```bash
-cd article-to-wechat-cover
-python3 scripts/run.py from-feishu-doc \
-  --doc "https://your-domain.feishu.cn/docx/DocID" \
-  --output ./wechat-cover.jpg
-```
-
-更多详情查看：
-
-- [`article-to-wechat-cover/README.md`](./article-to-wechat-cover/README.md)
-
----
-
-## 3. feishu-doc-to-wechat-draft
-
-将飞书（Feishu/Lark）文档一键转换为微信公众号草稿，支持图片自动上传、样式渲染和本地预览。
-
-### 亮点
-
-- 从飞书文档 URL 直接生成微信草稿
-- 支持 Doocs 风格渲染
-- 自动下载飞书图片并上传到微信素材库
-- 发布前可先生成 HTML 预览确认效果
-
-### 快速开始
-
-```bash
-cd feishu-doc-to-wechat-draft
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-python3 scripts/run.py render-preview-feishu-doc-default \
-  --doc "https://your-domain.feishu.cn/docx/DocID" \
-  --output /tmp/preview.html
-```
-
-更多详情查看：
-
-- [`feishu-doc-to-wechat-draft/README.md`](./feishu-doc-to-wechat-draft/README.md)
-
----
-
-## 4. epub2podcast
-
-把电子书 EPUB 转成双人中文播客脚本、分段音频、Smart Slide，以及最终 MP4 视频。
-
-### 适合什么场景
-
-- 想把长文 / 电子书内容变成更易传播的播客视频
-- 需要中文双人讲述风格
-- 想自动生成封面页、信息图页、分栏页等多种 slide 版式
-
-### 效果预览
+## 首页预览
 
 <table>
   <tr>
     <td width="50%" valign="top">
-      <img src="./epub2podcast/assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
-      <p><strong>封面页风格</strong><br/>适合放在视频开头，用来介绍书名、主题和整体气质。</p>
+      <a href="./wechat-article-camofox/README.md">
+        <img src="./wechat-article-camofox/assets/wechat-article-camofox-flow.svg" alt="wechat-article-camofox 工作流预览" />
+      </a>
+      <p><strong>wechat-article-camofox</strong><br/>把公众号文章抓成更干净的 Markdown / JSON，或者直接发布成飞书文档。</p>
     </td>
     <td width="50%" valign="top">
-      <img src="./epub2podcast/assets/example-slide-infographic.png" alt="epub2podcast 示例信息图页" />
-      <p><strong>信息图风格</strong><br/>适合在视频中段解释观点、拆解结构，或者展示一个主题的关键信息。</p>
+      <a href="./nano-banana-image/README.md">
+        <img src="./nano-banana-image/assets/example-generated-banner.jpg" alt="nano-banana-image 示例图" />
+      </a>
+      <p><strong>nano-banana-image</strong><br/>直接用 Nano Banana 2 / Gemini Flash Image 出图，适合头图、横幅图、海报和批量视觉实验。</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="./epub2podcast/assets/example-slide-split-layout.png" alt="epub2podcast 左右分栏版式示例" />
-      <p><strong>左右分栏版式</strong><br/>适合做“引言 + 分点展开”的讲述页。</p>
+      <a href="./jimeng-image/README.md">
+        <img src="./jimeng-image/assets/example-jimeng-image.jpg" alt="jimeng-image 示例图" />
+      </a>
+      <p><strong>jimeng-image</strong><br/>走火山引擎 Ark 上的即梦 / Doubao Seedream，适合更省钱的文生图、图生图和多参考图任务。</p>
     </td>
     <td width="50%" valign="top">
-      <img src="./epub2podcast/assets/example-slide-card-layout.png" alt="epub2podcast 三卡片版式示例" />
-      <p><strong>三卡片版式</strong><br/>适合把一个主题拆成多个并列重点。</p>
+      <a href="./article-to-wechat-cover/README.md">
+        <img src="./article-to-wechat-cover/assets/example-wechat-cover.jpg" alt="article-to-wechat-cover 示例封面图" />
+      </a>
+      <p><strong>article-to-wechat-cover</strong><br/>先理解文章主题，再自动生成适合公众号的横幅封面。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./epub2podcast/README.md">
+        <img src="./epub2podcast/assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
+      </a>
+      <p><strong>epub2podcast</strong><br/>把电子书转成双人中文播客脚本、音频、Slides 和最终视频。</p>
+    </td>
+    <td width="50%" valign="top">
+      <p><strong>feishu-doc-to-wechat-draft</strong><br/>把飞书文档转成公众号草稿，处理图片、样式和预览，适合真正临门一脚的发布环节。</p>
+      <p>详情见：<a href="./feishu-doc-to-wechat-draft/README.md">feishu-doc-to-wechat-draft/README.md</a></p>
     </td>
   </tr>
 </table>
 
-发布状态：**v0.1.0 early standalone release**
+---
 
-更多详情查看：
+## 按场景选工具
 
-- [`epub2podcast/README.md`](./epub2podcast/README.md)
+### 1）你主要做公众号内容
+推荐这条链路：
+
+1. 用 [`wechat-article-camofox`](./wechat-article-camofox/) 抓文章
+2. 需要封面时：
+   - 想直接写 prompt 出图，用 [`nano-banana-image`](./nano-banana-image/)
+   - 想走更省钱路线，用 [`jimeng-image`](./jimeng-image/)
+   - 想让系统先理解文章，再出封面，用 [`article-to-wechat-cover`](./article-to-wechat-cover/)
+3. 最后用 [`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/) 发到公众号草稿箱
+
+### 2）你主要做批量视觉实验
+优先看：
+- [`nano-banana-image`](./nano-banana-image/)
+- [`jimeng-image`](./jimeng-image/)
+
+它们都支持：
+- 单张模式
+- 批量模式
+- workflow 模式
+
+区别很简单：
+- `nano-banana-image`：更适合高质量营销视觉和结构化 JSON prompt 控制
+- `jimeng-image`：更适合火山引擎路线，支持图生图、多参考图和连续组图
+
+### 3）你主要做长内容再加工
+优先看：
+- [`epub2podcast`](./epub2podcast/)
+
+它更适合把书、长文、系列内容变成更容易传播的播客视频。
 
 ---
 
-## 这个仓库适合怎么用
+## 每个目录的使用方式
 
-### 如果你主要做公众号内容
+这仓库不是一个“大一统 monorepo 应用”。
 
-推荐组合：
+更准确地说：
+- 每个目录是一个相对独立的小工具 / 小工作流
+- 各自有自己的 README、脚本入口和依赖说明
+- 用哪个，就进哪个目录看 README
 
-1. 先用 `wechat-article-camofox` 把公众号文章抓下来
-2. 用 `article-to-wechat-cover` 生成封面图
-3. 用 `feishu-doc-to-wechat-draft` 发布到公众号草稿箱
+常见启动方式通常长这样：
 
-### 如果你主要做长内容再加工
-
-推荐看：
-
-- `epub2podcast`
-
-它更适合把书籍、长文、系列内容转成播客视频。
+```bash
+cd <project-dir>
+python3 scripts/run.py --help
+```
 
 ---
 
-## 使用建议
+## 通常会用到的基础依赖
 
-不同目录的依赖并不完全相同，请进入对应目录阅读 README 再执行。
-
-通常会涉及的基础工具包括：
+不同目录依赖不同，但常见基础环境包括：
 
 - Python 3
 - `git`
 - Node.js / `npm`
 - `lark-cli`
-- 某些项目所需的 API key 或第三方服务配置
+- 对应项目需要的 API key 或服务配置
+
+有些项目更偏本地自动化，有些更偏 API 编排。别偷懒，先看对应目录 README。
+
+---
+
+## 从哪里开始
+
+如果你是第一次进这个仓库，我建议按这个顺序看：
+
+- 想抓内容：[`wechat-article-camofox`](./wechat-article-camofox/)
+- 想直接出图：[`nano-banana-image`](./nano-banana-image/)
+- 想试火山即梦：[`jimeng-image`](./jimeng-image/)
+- 想自动做公众号封面：[`article-to-wechat-cover`](./article-to-wechat-cover/)
+- 想发公众号草稿：[`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/)
+- 想做长内容播客视频：[`epub2podcast`](./epub2podcast/)
 
 ---
 
 ## 一句话总结
 
-**如果你想把“抓内容、改内容、配封面、发公众号、做播客”这些流程逐步自动化，这个仓库就是一组可以直接拿来用、也可以继续扩展的起点。**
+**如果你想把“抓内容、出图、做封面、发公众号、做播客”这些动作逐步自动化，这个仓库就是一组能直接上手、也能继续扩展的实用工具。**
