@@ -63,20 +63,20 @@
     <tspan x="956" dy="32">飞书文档链接</tspan>
   </text>
 
-  <g>
-    <rect x="316" y="320" width="16" height="10" rx="5" fill="#f97316"/>
-    <path d="M332 312 L346 325 L332 338 Z" fill="#f97316"/>
+  <g opacity="0.96">
+    <rect x="315" y="322" width="18" height="6" rx="3" fill="#f97316"/>
+    <path d="M333 317 L343 325 L333 333 Z" fill="#f97316"/>
   </g>
-  <g>
-    <rect x="606" y="320" width="16" height="10" rx="5" fill="#f97316"/>
-    <path d="M622 312 L636 325 L622 338 Z" fill="#f97316"/>
+  <g opacity="0.96">
+    <rect x="605" y="322" width="18" height="6" rx="3" fill="#f97316"/>
+    <path d="M623 317 L633 325 L623 333 Z" fill="#f97316"/>
   </g>
-  <g>
-    <rect x="896" y="320" width="16" height="10" rx="5" fill="#f97316"/>
-    <path d="M912 312 L926 325 L912 338 Z" fill="#f97316"/>
+  <g opacity="0.96">
+    <rect x="895" y="322" width="18" height="6" rx="3" fill="#f97316"/>
+    <path d="M913 317 L923 325 L913 333 Z" fill="#f97316"/>
   </g>
 
-  <rect x="72" y="510" width="1060" height="76" rx="18" fill="#ffffff" opacity="0.78"/>
-  <text x="100" y="546" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">命令入口：python3 scripts/run.py fetch &lt;url&gt;</text>
-  <text x="100" y="574" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">或：python3 scripts/run.py publish-feishu &lt;url&gt;</text>
+  <rect x="72" y="506" width="1060" height="82" rx="18" fill="#ffffff" opacity="0.82"/>
+  <text x="100" y="542" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="21" fill="#7c2d12">命令入口：python3 scripts/run.py fetch &lt;url&gt;</text>
+  <text x="100" y="570" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="21" fill="#7c2d12">或：python3 scripts/run.py publish-feishu &lt;url&gt;</text>
 </svg>
