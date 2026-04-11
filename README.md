@@ -88,7 +88,7 @@
 
 ### BrowserUse 版抓取器预览
 
-![wechat-article-browseruse workflow preview](./wechat-article-browseruse/assets/workflow-preview.svg)
+![wechat-article-browseruse workflow preview](./wechat-article-browseruse/assets/workflow-preview-v2.svg)
 
 快速开始：
 

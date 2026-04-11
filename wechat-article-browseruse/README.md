@@ -7,7 +7,7 @@
 >
 > 发布定位：**可独立运行的 early standalone release**
 
-![workflow preview](./assets/workflow-preview.svg)
+![workflow preview](./assets/workflow-preview-v2.svg)
 
 ## 它能做什么
 
@@ -159,7 +159,7 @@ wechat-article-browseruse/
 │   ├── test_fetch_wechat_article.py
 │   └── test_publish_wechat_article_to_feishu.py
 └── assets/
-    └── workflow-preview.svg
+    └── workflow-preview-v2.svg
 ```
 
 ## 已验证的路径
