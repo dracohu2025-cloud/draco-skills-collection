@@ -13,9 +13,6 @@
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#fb923c" flood-opacity="0.18"/>
     </filter>
-    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="7" orient="auto">
-      <path d="M0 0 L14 7 L0 14 Z" fill="#f97316"/>
-    </marker>
   </defs>
 
   <rect x="0" y="0" width="1200" height="640" rx="28" fill="url(#bg)"/>
@@ -66,9 +63,18 @@
     <tspan x="956" dy="32">飞书文档链接</tspan>
   </text>
 
-  <path d="M310 325 H338" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
-  <path d="M600 325 H628" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
-  <path d="M890 325 H918" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="316" y="320" width="16" height="10" rx="5" fill="#f97316"/>
+    <path d="M332 312 L346 325 L332 338 Z" fill="#f97316"/>
+  </g>
+  <g>
+    <rect x="606" y="320" width="16" height="10" rx="5" fill="#f97316"/>
+    <path d="M622 312 L636 325 L622 338 Z" fill="#f97316"/>
+  </g>
+  <g>
+    <rect x="896" y="320" width="16" height="10" rx="5" fill="#f97316"/>
+    <path d="M912 312 L926 325 L912 338 Z" fill="#f97316"/>
+  </g>
 
   <rect x="72" y="510" width="1060" height="76" rx="18" fill="#ffffff" opacity="0.78"/>
   <text x="100" y="546" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">命令入口：python3 scripts/run.py fetch &lt;url&gt;</text>
