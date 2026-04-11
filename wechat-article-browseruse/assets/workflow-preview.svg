@@ -1,6 +1,6 @@
 <svg width="1200" height="640" viewBox="0 0 1200 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">wechat-article-browseruse workflow preview</title>
-  <desc id="desc">微信公众号文章通过 BrowserUse 抓取后，转换为 Markdown 并导入飞书原生文档的流程图。</desc>
+  <desc id="desc">微信公众号文章通过 BrowserUse 抓取后，清洗转换为 Markdown，再发布到飞书原生文档并完成回读校验的流程图。</desc>
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0%" stop-color="#fff7ed"/>
@@ -17,41 +17,60 @@
       <path d="M0 0 L14 7 L0 14 Z" fill="#f97316"/>
     </marker>
   </defs>
+
   <rect x="0" y="0" width="1200" height="640" rx="28" fill="url(#bg)"/>
   <text x="72" y="88" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="42" font-weight="700" fill="#7c2d12">BrowserUse 抓公众号 → 飞书原生文档</text>
-  <text x="72" y="128" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#9a3412">一个目录即可独立运行：抓取、清洗、发布、回读校验。</text>
+  <text x="72" y="128" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#9a3412">一个目录即可独立运行：抓取、清洗、发布、校验。</text>
 
   <g filter="url(#shadow)">
-    <rect x="70" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
-    <rect x="370" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
-    <rect x="670" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
-    <rect x="970" y="210" width="170" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
+    <rect x="60" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
+    <rect x="350" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
+    <rect x="640" y="210" width="250" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
+    <rect x="930" y="210" width="210" height="230" rx="28" fill="url(#card)" stroke="#fdba74" stroke-width="2"/>
   </g>
 
-  <text x="100" y="270" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700" fill="#9a3412">1. BrowserUse 云浏览器</text>
-  <text x="100" y="315" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">打开 mp.weixin.qq.com</text>
-  <text x="100" y="347" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">连接 Playwright CDP</text>
-  <text x="100" y="379" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">读取 #js_content / 图片</text>
+  <text x="86" y="262" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="26" font-weight="700" fill="#9a3412">
+    <tspan x="86" dy="0">1. BrowserUse</tspan>
+    <tspan x="86" dy="32">云浏览器抓取</tspan>
+  </text>
+  <text x="86" y="332" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">
+    <tspan x="86" dy="0">打开公众号页面</tspan>
+    <tspan x="86" dy="32">连接 Playwright CDP</tspan>
+    <tspan x="86" dy="32">提取正文与图片</tspan>
+  </text>
 
-  <text x="400" y="270" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700" fill="#9a3412">2. 清洗与转换</text>
-  <text x="400" y="315" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">去掉噪音节点</text>
-  <text x="400" y="347" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">HTML → Markdown</text>
-  <text x="400" y="379" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">保留标题、作者、发布时间</text>
+  <text x="376" y="262" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="26" font-weight="700" fill="#9a3412">
+    <tspan x="376" dy="0">2. 清洗与转换</tspan>
+  </text>
+  <text x="376" y="332" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">
+    <tspan x="376" dy="0">去掉噪音节点</tspan>
+    <tspan x="376" dy="32">HTML → Markdown</tspan>
+    <tspan x="376" dy="32">保留标题 / 作者 / 时间</tspan>
+  </text>
 
-  <text x="700" y="270" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700" fill="#9a3412">3. 发布到飞书</text>
-  <text x="700" y="315" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">drive +import 导入原生文档</text>
-  <text x="700" y="347" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">支持指定 folder token</text>
-  <text x="700" y="379" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">返回 doc_url 并回读校验</text>
+  <text x="666" y="262" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="26" font-weight="700" fill="#9a3412">
+    <tspan x="666" dy="0">3. 发布并校验</tspan>
+  </text>
+  <text x="666" y="332" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">
+    <tspan x="666" dy="0">导入飞书原生文档</tspan>
+    <tspan x="666" dy="32">支持 folder token</tspan>
+    <tspan x="666" dy="32">返回链接并回读</tspan>
+  </text>
 
-  <text x="998" y="270" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="700" fill="#9a3412">产物</text>
-  <text x="998" y="315" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">Markdown</text>
-  <text x="998" y="347" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">JSON</text>
-  <text x="998" y="379" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">Feishu Doc URL</text>
+  <text x="956" y="262" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="26" font-weight="700" fill="#9a3412">
+    <tspan x="956" dy="0">4. 输出结果</tspan>
+  </text>
+  <text x="956" y="332" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" fill="#7c2d12">
+    <tspan x="956" dy="0">Markdown</tspan>
+    <tspan x="956" dy="32">JSON</tspan>
+    <tspan x="956" dy="32">飞书文档链接</tspan>
+  </text>
 
-  <path d="M320 325 H355" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
-  <path d="M620 325 H655" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
-  <path d="M920 325 H955" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+  <path d="M310 325 H338" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+  <path d="M600 325 H628" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+  <path d="M890 325 H918" stroke="#f97316" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
 
   <rect x="72" y="510" width="1060" height="76" rx="18" fill="#ffffff" opacity="0.78"/>
-  <text x="100" y="557" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">命令入口：python3 scripts/run.py fetch &lt;url&gt; ｜ python3 scripts/run.py publish-feishu &lt;url&gt;</text>
+  <text x="100" y="546" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">命令入口：python3 scripts/run.py fetch &lt;url&gt;</text>
+  <text x="100" y="574" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#7c2d12">或：python3 scripts/run.py publish-feishu &lt;url&gt;</text>
 </svg>
