@@ -1,0 +1,5 @@
+browser-use-sdk
+playwright
+beautifulsoup4
+markdownify
+pytest

@@ -16,6 +16,7 @@
 | 目录 | 适合做什么 | 核心输出 |
 |---|---|---|
 | [`wechat-article-camofox/`](./wechat-article-camofox/) | 抓取微信公众号文章并清洗 | Markdown / JSON / 飞书文档 |
+| [`wechat-article-browseruse/`](./wechat-article-browseruse/) | 用 BrowserUse 云浏览器抓公众号并发布飞书 | Markdown / JSON / 飞书文档 |
 | [`nano-banana-image/`](./nano-banana-image/) | 用 Nano Banana 2 / Gemini Flash Image 直接出图 | 单图 / 批量图 / workflow |
 | [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
@@ -76,12 +77,37 @@
 ### 1）你主要做公众号内容
 推荐这条链路：
 
-1. 用 [`wechat-article-camofox`](./wechat-article-camofox/) 抓文章
+1. 抓文章时二选一：
+   - 偏本机浏览器稳定链路：[`wechat-article-camofox`](./wechat-article-camofox/)
+   - 想走 BrowserUse 云浏览器：[`wechat-article-browseruse`](./wechat-article-browseruse/)
 2. 需要封面时：
    - 想直接写 prompt 出图，用 [`nano-banana-image`](./nano-banana-image/)
    - 想走更省钱路线，用 [`jimeng-image`](./jimeng-image/)
    - 想让系统先理解文章，再出封面，用 [`article-to-wechat-cover`](./article-to-wechat-cover/)
 3. 最后用 [`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/) 发到公众号草稿箱
+
+### BrowserUse 版抓取器预览
+
+![wechat-article-browseruse workflow preview](./wechat-article-browseruse/assets/workflow-preview.svg)
+
+快速开始：
+
+```bash
+cd wechat-article-browseruse
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+playwright install chromium
+
+# 抓取公众号文章
+python3 scripts/run.py fetch \
+  "https://mp.weixin.qq.com/s/xxxxxxxxxxxxxxxx"
+
+# 发布到飞书原生文档
+python3 scripts/run.py publish-feishu \
+  "https://mp.weixin.qq.com/s/xxxxxxxxxxxxxxxx"
+```
+
+更多详情查看 [`wechat-article-browseruse/README.md`](./wechat-article-browseruse/README.md)
 
 ### 2）你主要做批量视觉实验
 优先看：
