@@ -1,6 +1,6 @@
 # Draco Skills Collection
 
-一个面向内容生产、飞书协作、公众号发布和多媒体自动化的工具仓库。
+一个面向内容生产、飞书协作、公众号发布、多媒体自动化和代码视频制作的工具仓库。
 
 这里收的东西，目标都很直接：
 - 能单独看懂
@@ -11,7 +11,7 @@
 
 ## 仓库里有什么
 
-目前主要分成 6 类能力：
+目前主要包括这些目录：
 
 | 目录 | 适合做什么 | 核心输出 |
 |---|---|---|
@@ -22,6 +22,10 @@
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / Slide / MP4 |
+| [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
+| [`manim-video/`](./manim-video/) | 做数学、公式、对象变换和算法过程解释视频 | 分镜 / `script.py` / MP4 |
+| [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
+| [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
 
 ---
 
@@ -129,6 +133,19 @@ python3 scripts/run.py publish-feishu \
 
 它更适合把书、长文、系列内容变成更容易传播的播客视频。
 
+### 4）你主要做视频 / 动画
+推荐这样走：
+
+1. 先用 [`video-framework-selector`](./video-framework-selector/) 判断这次该选哪条路线
+2. 如果重点是数学、公式、对象变换、算法过程：看 [`manim-video`](./manim-video/)
+3. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
+4. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
+
+一句话判断：
+- **对象怎么变** → `manim-video`
+- **场景怎么演** → `motion-canvas`
+- **页面这一帧长什么样** → `remotion`
+
 ---
 
 ## 每个目录的使用方式
@@ -173,9 +190,13 @@ python3 scripts/run.py --help
 - 想自动做公众号封面：[`article-to-wechat-cover`](./article-to-wechat-cover/)
 - 想发公众号草稿：[`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/)
 - 想做长内容播客视频：[`epub2podcast`](./epub2podcast/)
+- 想先判断视频框架：[`video-framework-selector`](./video-framework-selector/)
+- 想做数学 / 对象变换视频：[`manim-video`](./manim-video/)
+- 想做 TS 场景动画：[`motion-canvas`](./motion-canvas/)
+- 想做 React 页面型视频：[`remotion`](./remotion/)
 
 ---
 
 ## 一句话总结
 
-**如果你想把“抓内容、出图、做封面、发公众号、做播客”这些动作逐步自动化，这个仓库就是一组能直接上手、也能继续扩展的实用工具。**
+**如果你想把“抓内容、出图、做封面、发公众号、做播客、做代码视频”这些动作逐步自动化，这个仓库就是一组能直接上手、也能继续扩展的实用工具。**
