@@ -71,3 +71,20 @@ print('hi')
     assert '登录微信公众平台</section>' in html
     assert '方法三：使用代码上传' in html
     assert '<pre class="code-block md-pre md-pre-mac"' in html or '<pre class="code-block md-pre"' in html
+
+
+def test_nested_unordered_lists_render_as_nested_blocks() -> None:
+    md = """目前有三个Hermes Agents：
+
+- Hermes：
+  - 模型：GPT-5.4 High；
+  - 用来完成各种需要复杂coding的任务，例如网站建设、封装复杂skills、Remote/Manim等复杂动效生成；
+  - 宿主：腾讯云轻应用服务器4核8G版本实例 - 曼谷节点；
+"""
+    html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
+    assert html.count('class="md-list md-list-unordered"') >= 2
+    assert '<ul class="md-ul"' not in html
+    assert '<li class="md-li"' not in html
+    assert '<section class="md-bullet-text" style="flex: 1 1 auto; min-width: 0;">Hermes：' in html
+    assert '模型：GPT-5.4 High；' in html
+    assert '宿主：腾讯云轻应用服务器4核8G版本实例 - 曼谷节点；' in html

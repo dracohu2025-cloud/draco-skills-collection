@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html as html_lib
 import re
+import xml.etree.ElementTree as ET
 
 from markdown_it import MarkdownIt
 from pygments import highlight
@@ -153,29 +154,54 @@ def _compact_nested_paragraphs(html: str, options: RenderOptions) -> str:
 
 
 def _rewrite_unordered_lists(html: str, options: RenderOptions) -> str:
-    list_pattern = re.compile(r'<ul class="md-ul"[^>]*>(.*?)</ul>', re.S)
-    item_pattern = re.compile(r'<li class="md-li"[^>]*>(.*?)</li>', re.S)
+    try:
+        root = ET.fromstring(f'<root>{html}</root>')
+    except ET.ParseError:
+        return html
+    return _serialize_children_with_unordered_lists(root, options)
 
-    def repl(match: re.Match[str]) -> str:
-        body = match.group(1)
-        items = item_pattern.findall(body)
-        if not items:
-            return match.group(0)
-        margin = '0' if options.theme == 'default' else '.8em 0'
-        item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
-        parts = [f'<section class="md-list md-list-unordered" style="margin: {margin};">']
-        for item in items:
-            item = item.strip()
-            parts.append(
-                f'<p class="md-bullet-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit;">'
-                '<span class="md-bullet-dot" style="display: inline-block; width: 1.1em; font-weight: 700;">•</span>'
-                f'<span class="md-bullet-text">{item}</span>'
-                '</p>'
-            )
-        parts.append('</section>')
-        return ''.join(parts)
 
-    return list_pattern.sub(repl, html)
+def _serialize_children_with_unordered_lists(node: ET.Element, options: RenderOptions) -> str:
+    parts: list[str] = []
+    if node.text:
+        parts.append(html_lib.escape(node.text))
+    for child in node:
+        parts.append(_serialize_node_with_unordered_lists(child, options))
+        if child.tail:
+            parts.append(html_lib.escape(child.tail))
+    return ''.join(parts)
+
+
+def _serialize_node_with_unordered_lists(node: ET.Element, options: RenderOptions) -> str:
+    if node.tag == 'ul' and node.attrib.get('class') == 'md-ul':
+        return _render_unordered_list_node(node, options)
+
+    attrs = ''.join(
+        f' {key}="{html_lib.escape(value, quote=True)}"'
+        for key, value in node.attrib.items()
+    )
+    if node.tag in {'hr', 'img', 'br'}:
+        return f'<{node.tag}{attrs} />'
+    inner = _serialize_children_with_unordered_lists(node, options)
+    return f'<{node.tag}{attrs}>{inner}</{node.tag}>'
+
+
+def _render_unordered_list_node(node: ET.Element, options: RenderOptions) -> str:
+    margin = '0' if options.theme == 'default' else '.8em 0'
+    item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
+    parts = [f'<section class="md-list md-list-unordered" style="margin: {margin};">']
+    for child in node:
+        if child.tag != 'li':
+            continue
+        body = _serialize_children_with_unordered_lists(child, options)
+        parts.append(
+            f'<section class="md-bullet-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start;">'
+            '<span class="md-bullet-dot" style="display: inline-block; width: 1.1em; font-weight: 700; flex: 0 0 auto;">•</span>'
+            f'<section class="md-bullet-text" style="flex: 1 1 auto; min-width: 0;">{body}</section>'
+            '</section>'
+        )
+    parts.append('</section>')
+    return ''.join(parts)
 
 
 def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
