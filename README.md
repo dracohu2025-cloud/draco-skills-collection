@@ -26,6 +26,7 @@
 | [`manim-video/`](./manim-video/) | 做数学、公式、对象变换和算法过程解释视频 | 分镜 / `script.py` / MP4 |
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
+| [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
 
 ---
 
@@ -68,9 +69,18 @@
       <p><strong>epub2podcast</strong><br/>把电子书转成双人中文播客脚本、音频、Slides 和最终视频。</p>
     </td>
     <td width="50%" valign="top">
+      <a href="./vocabulary-video-pipeline/README.md">
+        <img src="./vocabulary-video-pipeline/assets/preview-breakfast.jpg" alt="vocabulary-video-pipeline 示例帧" />
+      </a>
+      <p><strong>vocabulary-video-pipeline</strong><br/>一键生成面向中小学生的英文单词解释视频，含 TTS、节拍同步和自动上传。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
       <p><strong>feishu-doc-to-wechat-draft</strong><br/>把飞书文档转成公众号草稿，处理图片、样式和预览，适合真正临门一脚的发布环节。</p>
       <p>详情见：<a href="./feishu-doc-to-wechat-draft/README.md">feishu-doc-to-wechat-draft/README.md</a></p>
     </td>
+    <td width="50%" valign="top"></td>
   </tr>
 </table>
 
@@ -140,11 +150,13 @@ python3 scripts/run.py publish-feishu \
 2. 如果重点是数学、公式、对象变换、算法过程：看 [`manim-video`](./manim-video/)
 3. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
 4. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
+5. 如果重点是英文单词解释视频（带 TTS 同步）：看 [`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
 
 一句话判断：
 - **对象怎么变** → `manim-video`
 - **场景怎么演** → `motion-canvas`
 - **页面这一帧长什么样** → `remotion`
+- **英文单词视频流水线** → `vocabulary-video-pipeline`
 
 ---
 
@@ -190,6 +202,7 @@ python3 scripts/run.py --help
 - 想自动做公众号封面：[`article-to-wechat-cover`](./article-to-wechat-cover/)
 - 想发公众号草稿：[`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/)
 - 想做长内容播客视频：[`epub2podcast`](./epub2podcast/)
+- 想做英文单词解释视频：[`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
 - 想先判断视频框架：[`video-framework-selector`](./video-framework-selector/)
 - 想做数学 / 对象变换视频：[`manim-video`](./manim-video/)
 - 想做 TS 场景动画：[`motion-canvas`](./motion-canvas/)
