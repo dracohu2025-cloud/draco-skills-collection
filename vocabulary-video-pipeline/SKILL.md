@@ -24,9 +24,11 @@ metadata:
 ```
 输入单词
     ↓
-diagnose → 推荐模板 + 生成草稿 JSON
+diagnose → 推荐模板 + 生成草稿 JSON（强制包含 origin-chain）
     ↓
-generate_audio_beats → TTS + 静音检测 + 节奏数据
+generate_audio_beats → TTS + 静音检测 + 节奏数据 + 尾部静音填充
+    ↓
+Director signoff → 校验 beats/视觉/音频匹配，不通过则阻断
     ↓
 Remotion render → MP4
     ↓
@@ -41,6 +43,7 @@ Feishu upload + 成本报告
 2. 已安装 Node.js、npm、Python 3
 3. 已配置 `.env` 中的火山引擎 TTS 参数
 4. 已安装 `lark-cli` 并登录（用于飞书上传）
+5. 已安装 Python 依赖：`pip install pydub`
 
 ### 配置环境变量
 
@@ -74,6 +77,12 @@ python3 scripts/generate_word_video.py --word breakfast --audio-only
 python3 scripts/generate_word_video.py --word breakfast --skip-render --skip-upload
 ```
 
+### 强制跳过 Director 校验（不推荐）
+
+```bash
+python3 scripts/generate_word_video.py --word breakfast --skip-director
+```
+
 ## 目录结构
 
 ```
@@ -81,7 +90,11 @@ vocabulary-video-pipeline/
   SKILL.md                          # 本文件
   README.md                         # 面向外部用户的说明
   scripts/
-    generate_word_video.py          # 统一入口脚本
+    generate_word_video.py          # 统一入口脚本（6步流程）
+    director_validate.py            # Director 校验器
+    generate_audio_beats.py         # TTS + 静音检测
+    diagnose_word.py                # 模板诊断引擎
+    tts_cost_report.py              # 成本统计
   assets/
     preview-*.jpg                   # 效果预览图
 ```
@@ -119,28 +132,28 @@ python3 scripts/generate_word_video.py --word breakfast
 
 ### TTS 口播稿风格要求
 
-- 不要念 PPT：不能是“第一点…第二点…”的生硬拼揅
+- 不要念 PPT：不能是"第一点…第二点…"的生硬拼凑
 - 必须是连贯的、有起承转合的叙事性讲解
 - 视觉元素只是配合音频节奏出现的辅助，而不是被念出来的标签
 
-## 常见坑位（Pitfalls）
+## 强制约束
 
-### 1. ending-summary 的 beats 必须与视觉 point 严格一一对应
-`ending-summary` 页面通常会展示 3 个带颜色的要点卡片（如“希望之光 / 日常之美 / 相信的力量”）。**TTS 口播稿不能绕开这些标签去讲别的例子**（比如“雨后的彩虹 / 陌生人的善意 / 深夜的水饺”），否则观众会看到文字 A 却听到语音讲 B，产生强烈的错位感。
+### 1. 每个单词必须包含 origin-chain
 
-**正确做法**：
-- beat 1：解释公式 / 核心词义
-- beat 2~4：逐字对应三个 point（每个 point 一句话）
-- beat 5：closing 收尾句
+`diagnose_word.py` 会在任何策略下自动插入 `origin-chain`。如果某个单词的词源不明确，可以写它的派生历史或语义演变，不能空着。
 
-### 2. 结尾 closing 句容易被“截断”
-如果 ending-summary 的最后一个 beat 结束得太靠近场景末尾，Remotion 的场景切换会在语音完全落定前就切走，导致收尾听起来像被掐掉。
+### 2. Director 校验是必经之门
 
-**正确做法**：
-- 确保 closing 句有足够长的 `endFrame`（通常让静默检测自然分配即可）
-- 如果仍被截断，检查 `player.tsx` 中 `sceneDurations` 的尾帧 padding 是否充足
+`director_validate.py` 在渲染之前执行，校验以下内容：
 
-## 注意事项
+- **词源强制**：检查是否包含 `origin-chain`
+- **beats 数量**：按场景类型验证 beats 数量是否匹配（如 ending-summary = points + 2）
+- **关键词匹配**：检查 beats 文案中是否包含对应的 point/card/node 关键词
+- **音频时长**：确保每个 scene 的音频时长 ≥ lastBeat.endFrame + 40帧
 
-- TTS 成本约 ¥0.3 / 千字，每次生成后会自动统计
-- 视频渲染时间较长（一分钟视频约 10-15 分钟），建议后台执行
+未通过 Director signoff 的 draft，pipeline 会被强制中断，不会进入渲染。
+
+### 3. TTS 截断已自动防护
+
+`generate_audio_beats.py` 会自动给每个 scene 的 MP3 追加静音尾部，`player.tsx` 与 `Root.tsx` 的时长计算也已统一为 `lastBeat.endFrame + 40`。
+所以只要草稿正确，不需要手动调整就能避免截断。
