@@ -123,6 +123,23 @@ python3 scripts/generate_word_video.py --word breakfast
 - 必须是连贯的、有起承转合的叙事性讲解
 - 视觉元素只是配合音频节奏出现的辅助，而不是被念出来的标签
 
+## 常见坑位（Pitfalls）
+
+### 1. ending-summary 的 beats 必须与视觉 point 严格一一对应
+`ending-summary` 页面通常会展示 3 个带颜色的要点卡片（如“希望之光 / 日常之美 / 相信的力量”）。**TTS 口播稿不能绕开这些标签去讲别的例子**（比如“雨后的彩虹 / 陌生人的善意 / 深夜的水饺”），否则观众会看到文字 A 却听到语音讲 B，产生强烈的错位感。
+
+**正确做法**：
+- beat 1：解释公式 / 核心词义
+- beat 2~4：逐字对应三个 point（每个 point 一句话）
+- beat 5：closing 收尾句
+
+### 2. 结尾 closing 句容易被“截断”
+如果 ending-summary 的最后一个 beat 结束得太靠近场景末尾，Remotion 的场景切换会在语音完全落定前就切走，导致收尾听起来像被掐掉。
+
+**正确做法**：
+- 确保 closing 句有足够长的 `endFrame`（通常让静默检测自然分配即可）
+- 如果仍被截断，检查 `player.tsx` 中 `sceneDurations` 的尾帧 padding 是否充足
+
 ## 注意事项
 
 - TTS 成本约 ¥0.3 / 千字，每次生成后会自动统计
