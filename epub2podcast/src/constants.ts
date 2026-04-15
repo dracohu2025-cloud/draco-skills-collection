@@ -37,8 +37,8 @@ export const MINIMAX_CONFIG = {
 
 // --- VOLCENGINE CONFIGURATION ---
 export const VOLCENGINE_CONFIG = {
-  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || 'REDACTED_VOLCENGINE_TOKEN',
-  appId: process.env.VOLCENGINE_TTS_APP_ID || 'REDACTED_APP_ID',
+  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || '',
+  appId: process.env.VOLCENGINE_TTS_APP_ID || '',
   voiceIdMale: 'zh_male_dayi_saturn_bigtts',
   voiceIdFemale: 'zh_female_mizai_saturn_bigtts',
   resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || 'seed-tts-2.0',
