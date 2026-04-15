@@ -101,6 +101,15 @@ def collect_errors(config: dict, project_root: Path) -> list[str]:
                     if node["label"] not in beat_text:
                         errors.append(f"Scene {idx} ({stype}): 第 {i+1} 个 beat 不含 node label '{node['label']}'")
 
+        # 5. 防止 ending-summary 重复词源内容
+        if stype == "ending-summary" and "origin-chain" in scene_types and bcount >= 1:
+            etymology_keywords = ["拉丁语", "古希腊语", "古英语", "源自", "来自", "源于", "词源", "演变", "词根", "前缀", "后缀"]
+            for i, beat in enumerate(beats):
+                bt = beat["text"]
+                for kw in etymology_keywords:
+                    if kw in bt:
+                        errors.append(f"Scene {idx} ({stype}): 第 {i+1} 个 beat 含有词源关键词 '{kw}'，但词源已在 origin-chain 中阐述，ending-summary 不应重复")
+
         # 4. 音频时长校验（对应 -with-beats 配置）
         if audio_prefix and AudioSegment is not None:
             audio_path = public_dir / audio_prefix / f"scene{idx}.mp3"
