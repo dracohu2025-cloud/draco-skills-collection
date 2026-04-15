@@ -98,8 +98,32 @@ vocabulary-video-pipeline/
 | `answer-cards` | 问答 | 三问答卡片 |
 | `ending-summary` | 总结 | 公式 + 要点 + 结语 |
 
+## 关键经验：草稿内容需要人工/LLM 填充
+
+`npm run diagnose:word` 只会生成一个带有 `props` 和 `beats` 空壳的骨架 JSON。在执行 TTS 和渲染之前，必须填充以下内容：
+
+1. **每个 scene 的 `props`**：标题、副标题、卡片文案、颜色等
+2. **每个 scene 的 `beats`**：这是 TTS 的口播稿，必须是 **流畅的叙事讲解**，不是碎片化的要点列表
+
+### 推荐实际步骤
+
+```bash
+# 1. 生成草稿骨架
+python3 scripts/generate_word_video.py --word breakfast --draft-only
+
+# 2. 手动或请 LLM 填充 data/breakfast-draft.json 中的 props 和 beats
+
+# 3. 再继续执行完整流程
+python3 scripts/generate_word_video.py --word breakfast
+```
+
+### TTS 口播稿风格要求
+
+- 不要念 PPT：不能是“第一点…第二点…”的生硬拼揅
+- 必须是连贯的、有起承转合的叙事性讲解
+- 视觉元素只是配合音频节奏出现的辅助，而不是被念出来的标签
+
 ## 注意事项
 
-- 生成草稿后，你可以手动修改 `data/{word}-draft.json` 中的文案再继续
 - TTS 成本约 ¥0.3 / 千字，每次生成后会自动统计
 - 视频渲染时间较长（一分钟视频约 10-15 分钟），建议后台执行
