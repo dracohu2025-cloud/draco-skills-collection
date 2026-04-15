@@ -157,3 +157,22 @@ python3 scripts/generate_word_video.py --word breakfast
 
 `generate_audio_beats.py` 会自动给每个 scene 的 MP3 追加静音尾部，`player.tsx` 与 `Root.tsx` 的时长计算也已统一为 `lastBeat.endFrame + 40`。
 所以只要草稿正确，不需要手动调整就能避免截断。
+
+## 已知陷阱
+
+### TTS 语言必须是 `zh-CN`
+
+火山引擎 Seed-TTS 2.0 在不指定 `language` 时，可能会默认输出**繁体中文**发音（如把"吗"读成"嗎"、"话"读成"話"）。
+
+**修复方式**：在调用火山 TTS API 的 `audio` 参数中显式指定：
+
+```json
+{
+  "audio": {
+    "voice_type": "...",
+    "language": "zh-CN"
+  }
+}
+```
+
+已在 `generate_audio_beats.py` 中固定此参数。如果未来换用其他 TTS 服务，也需要确认有类似的 Simplified Chinese 锁定机制。
