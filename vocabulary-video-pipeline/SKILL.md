@@ -150,6 +150,7 @@ python3 scripts/generate_word_video.py --word breakfast
 - **beats 数量**：按场景类型验证 beats 数量是否匹配（如 ending-summary = points + 2）
 - **关键词匹配**：检查 beats 文案中是否包含对应的 point/card/node 关键词
 - **音频时长**：确保每个 scene 的音频时长 ≥ lastBeat.endFrame + 40帧
+- **防止词源重复**：若已存在 `origin-chain`，`ending-summary` 的 beats 中禁止再出现"拉丁语""源自古英语""词根""演变"等词源关键词（避免叙事断裂）
 
 未通过 Director signoff 的 draft，pipeline 会被强制中断，不会进入渲染。
 
