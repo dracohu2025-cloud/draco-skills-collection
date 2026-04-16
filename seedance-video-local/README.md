@@ -32,6 +32,28 @@
 
 ---
 
+## Profile 速查表（Prompt Generator / Workflow）
+
+用于 `--profile strict|stable|cinematic`：
+
+| Profile | 适用场景 | 行为特点 |
+|---|---|---|
+| `strict` | 商业交付、剧情必须完整复现 | 约束最强、非 timeline 默认单主镜头、最稳但更保守 |
+| `stable` | 日常生产（默认） | 稳定性与表现力平衡 |
+| `cinematic` | 风格探索、氛围片 | 默认约束更轻，非 timeline 可保留最多两个镜头指令 |
+
+示例：
+
+```bash
+python3 scripts/seedance_workflow.py \
+  --mode preview \
+  --brief "9:16 动作短片，女孩举枪，子弹飞行，结尾收枪离场" \
+  --profile stable \
+  --json
+```
+
+---
+
 ## 快速开始
 
 ### 1) 先检查环境
