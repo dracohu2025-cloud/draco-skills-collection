@@ -8,7 +8,6 @@
   <img src="./assets/preview-breakfast.jpg" width="45%" />
   <img src="./assets/preview-lemonade.jpg" width="45%" />
   <br><br>
-  <img src="./assets/preview-tariff.jpg" width="92%" />
 </div>
 
 ## 为什么做这个 skill
