@@ -14,10 +14,27 @@ spec.loader.exec_module(mod)
 
 
 class DummyPromptModule:
-    @staticmethod
-    def generate_structured_prompt(brief, include_default_constraints=True, extra_constraints=None):
+    def __init__(self):
+        self.calls = []
+
+    def generate_structured_prompt(
+        self,
+        brief,
+        include_default_constraints=True,
+        extra_constraints=None,
+        profile="stable",
+    ):
+        self.calls.append(
+            {
+                "brief": brief,
+                "include_default_constraints": include_default_constraints,
+                "extra_constraints": extra_constraints,
+                "profile": profile,
+            }
+        )
         return {
             "method": "subject > action > camera > style > constraints",
+            "profile": profile,
             "rewrite_notes": [],
             "layers": {"subject": "demo"},
             "timeline": [],
@@ -100,6 +117,7 @@ class TestSeedanceWorkflow(unittest.TestCase):
             brief_file=None,
             extra_constraint=[],
             no_default_constraints=False,
+            profile="stable",
             api_key="k-test",
             base_url="https://ark.cn-beijing.volces.com/api/v3",
             model="doubao-seedance-2-0-260128",
@@ -144,6 +162,7 @@ class TestSeedanceWorkflow(unittest.TestCase):
         self.assertGreater(out["cost_estimate"]["tokens"], 0)
         self.assertIn("cost_summary_human", out)
         self.assertIn("预计 ¥", out["cost_summary_human"])
+        self.assertEqual(pmod.calls[-1]["profile"], "stable")
 
     def test_submit_mode_creates_task(self):
         pmod = DummyPromptModule()
@@ -233,6 +252,30 @@ class TestSeedanceWorkflow(unittest.TestCase):
         self.assertEqual(first_payload["duration"], 9)
         self.assertEqual(first_payload["ref_image_url"], ["https://example.com/ref1.jpg"])
         self.assertEqual(second_payload["resolution"], "720p")
+
+    def test_batch_item_can_override_profile(self):
+        pmod = DummyPromptModule()
+        vmod = DummyVideoModule()
+        args = self._args("preview")
+
+        with tempfile.TemporaryDirectory() as td:
+            batch_file = Path(td) / "batch.json"
+            batch_file.write_text(
+                json.dumps(
+                    [
+                        {"brief": "第一条需求", "profile": "strict"},
+                        {"brief": "第二条需求", "profile": "cinematic"},
+                    ],
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            args.auto_submit_from_file = str(batch_file)
+            out = mod.run_batch_workflow(args, pmod, vmod, DummyCostModule())
+
+        self.assertEqual(out["summary"]["ok"], 2)
+        self.assertEqual(pmod.calls[0]["profile"], "strict")
+        self.assertEqual(pmod.calls[1]["profile"], "cinematic")
 
 
 if __name__ == "__main__":

@@ -47,6 +47,26 @@ class TestSeedancePromptGenerator(unittest.TestCase):
         self.assertIn("steady intensity diffuse light", repaired)
         self.assertTrue(any("fast" in n for n in notes))
 
+    def test_cinematic_profile_keeps_glow_words(self):
+        text = "cinematic fast camera with glow and glimmer highlights"
+        repaired, _ = mod.repair_vague_words(text, profile="cinematic")
+        self.assertIn("single fast element", repaired)
+        self.assertIn("glow", repaired.lower())
+        self.assertNotIn("cinematic film tone, 35mm", repaired)
+
+    def test_strict_profile_injects_extra_constraints(self):
+        brief = "角色站在街头，镜头推近"
+        result = mod.generate_structured_prompt(brief, profile="strict")
+        constraints = result["layers"]["constraints"]
+        self.assertIn("preserve subject identity across all shots", constraints)
+        self.assertEqual(result["profile"], "strict")
+
+    def test_cinematic_profile_allows_two_camera_directives_without_timeline(self):
+        brief = "角色在街道奔跑，镜头推近并环绕拍摄，golden hour"
+        result = mod.generate_structured_prompt(brief, profile="cinematic")
+        self.assertIn("slow dolly-in", result["layers"]["camera"])
+        self.assertIn("orbit", result["layers"]["camera"])
+
     def test_generate_structured_prompt_has_five_layers(self):
         brief = "第一视角少女在茶饮店摇果茶，镜头推近，golden hour，避免抖动"
         result = mod.generate_structured_prompt(brief)

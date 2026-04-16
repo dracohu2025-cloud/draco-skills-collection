@@ -27,6 +27,15 @@ metadata:
 - 默认 `duration=5`（更省）
 - 默认 `watermark=false`
 - 默认模型：`doubao-seedance-2-0-260128`
+- 默认 `profile=stable`（质量与自由度平衡）
+
+### Profile 选型速查
+
+- `strict`：交付优先，强约束，最稳；非 timeline 场景仅保留一个主镜头运动。
+- `stable`：默认档，稳定与表现力平衡；适合日常生产。
+- `cinematic`：风格优先，约束更松；非 timeline 场景可保留最多两个镜头指令。
+
+批量模式可在每条 item 内单独覆盖 `profile`，用于同一批任务做 A/B 对比。
 
 ## 鉴权与环境变量
 
@@ -65,12 +74,17 @@ metadata:
 - 遵循 Seedance Prompt Bible 的实战规则：非时间轴场景默认只保留一个主摄像机运动（避免冲突）
 - 自动修复退化关键词（如 `fast`、`glow/glimmer/glints`、单独 `cinematic`、`lots of movement`）
 - 自动补默认约束（防抖动、防形变、防闪烁等）
+- 支持 `--profile strict|stable|cinematic` 三档：
+  - `strict`：交付优先，强约束，最稳
+  - `stable`：默认档，质量与自由度平衡
+  - `cinematic`：风格优先，约束更松
 
 示例：
 
 ```bash
 python3 scripts/seedance_prompt_generator.py \
   --brief '第一视角果茶广告，2-4 秒摇杯，4-6 秒成品特写，golden hour，避免抖动' \
+  --profile stable \
   --json
 ```
 
@@ -157,6 +171,7 @@ python3 scripts/seedance_workflow.py \
 - 每条 item 可覆盖全局参数，常用覆盖字段：
   - `brief` / `brief_file`
   - `mode`（preview/submit/run）
+  - `profile`（strict/stable/cinematic）
   - `resolution` / `ratio` / `duration` / `seed`
   - `fps` / `video_count` / `token_price_cny_per_1k`
   - `width` / `height`
@@ -240,7 +255,7 @@ python3 scripts/seedance_workflow.py \
 - 当需求包含“后半段关键剧情”（如子弹飞行→击中目标→爆裂→人物收枪离场）时，必须写成显式分镜时间线；不要只给长段叙述，否则模型易压缩后半段动作
 - 结构化标题优先：可直接写 `Core Subject / Main Action / Action Sequence / Cinematography / Visual Style / Camera Settings / Quality`，也支持 `【角色】/【风格】/【场景】`
 - 长句解析支持分号切分（`；`/`;`），可降低 `subject` 与 `action` 重复
-- 非 timeline 场景默认单主镜头运动，减少镜头冲突
+- 非 timeline 场景：`strict/stable` 默认单主镜头运动，`cinematic` 可保留最多两个镜头指令
 - 对退化词做自动修复：
   - `fast` → `single fast element, keep all other elements steady`
   - `glow/glimmer/glints` → `steady intensity diffuse light`
@@ -330,3 +345,4 @@ python3 scripts/seedance_video.py get \
 3. 回复用户该 `https://*.feishu.cn/file/<token>` 链接
 
 这一步建议作为默认交付收尾，避免只给本地路径。
+

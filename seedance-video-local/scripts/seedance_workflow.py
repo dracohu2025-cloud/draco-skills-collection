@@ -19,6 +19,7 @@ BATCH_OVERRIDABLE_FIELDS = {
     "brief_file",
     "extra_constraint",
     "no_default_constraints",
+    "profile",
     "model",
     "resolution",
     "ratio",
@@ -130,6 +131,7 @@ def run_workflow(
         brief,
         include_default_constraints=not args.no_default_constraints,
         extra_constraints=args.extra_constraint,
+        profile=args.profile,
     )
     final_prompt = prompt_package["final_prompt"]
 
@@ -333,6 +335,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p.add_argument("--extra-constraint", action="append", default=[], help="追加约束，可重复")
     p.add_argument("--no-default-constraints", action="store_true", help="不注入默认约束")
+    p.add_argument(
+        "--profile",
+        choices=["strict", "stable", "cinematic"],
+        default="stable",
+        help="prompt 风格档位：strict(最稳) / stable(平衡) / cinematic(风格优先)",
+    )
 
     p.add_argument("--api-key", help="Ark API Key（submit/run 必填）")
     p.add_argument("--base-url", default="https://ark.cn-beijing.volces.com/api/v3")
@@ -411,6 +419,7 @@ def main() -> int:
 
         print(f"mode: {out['mode']}")
         print(f"method: {out['prompt_package']['method']}")
+        print(f"profile: {out['prompt_package'].get('profile', args.profile)}")
         print("\n[final_prompt]")
         print(out["prompt_package"]["final_prompt"])
         if out.get("cost_estimate"):

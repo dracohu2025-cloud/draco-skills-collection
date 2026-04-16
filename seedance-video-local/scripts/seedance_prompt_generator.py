@@ -16,6 +16,7 @@ import re
 from typing import Any
 
 METHOD = "subject > action > camera > style > constraints"
+PROFILE_CHOICES = ("strict", "stable", "cinematic")
 
 CAMERA_MAP = [
     ("第一视角", "first-person POV"),
@@ -90,6 +91,21 @@ DEFAULT_CONSTRAINTS = [
     "no flickering",
 ]
 
+PROFILE_DEFAULT_CONSTRAINTS: dict[str, list[str]] = {
+    "strict": DEFAULT_CONSTRAINTS
+    + [
+        "preserve subject identity across all shots",
+        "consistent anatomy and limb geometry",
+        "camera motion should be physically plausible",
+    ],
+    "stable": DEFAULT_CONSTRAINTS,
+    "cinematic": [
+        "avoid temporal flicker",
+        "maintain face consistency",
+        "no distortion",
+    ],
+}
+
 BAD_WORD_RULES = [
     (r"\blots of movement\b", "one primary movement only", "replaced 'lots of movement' with one specific movement"),
     (r"\bepic\b", "high-contrast cinematic composition", "replace emotional adjective with visual instruction"),
@@ -101,6 +117,15 @@ BAD_WORD_RULES = [
     (r"\bglimmer\b", "steady intensity diffuse light", "replaced flicker-prone keyword 'glimmer'"),
     (r"\bglints\b", "steady intensity diffuse light", "replaced flicker-prone keyword 'glints'"),
 ]
+
+BAD_WORD_RULES_BY_PROFILE: dict[str, list[tuple[str, str, str]]] = {
+    "strict": BAD_WORD_RULES,
+    "stable": BAD_WORD_RULES,
+    "cinematic": [
+        BAD_WORD_RULES[0],
+        BAD_WORD_RULES[5],
+    ],
+}
 
 SECTION_ALIASES: dict[str, list[str]] = {
     "subject": ["core subject", "subject", "主体", "主角", "角色", "character", "characters"],
@@ -210,16 +235,23 @@ def extract_sections(text: str) -> dict[str, str]:
     return {k: " ".join(v).strip() for k, v in sections.items() if v}
 
 
-def repair_vague_words(text: str) -> tuple[str, list[str]]:
+def repair_vague_words(text: str, profile: str = "stable") -> tuple[str, list[str]]:
+    if profile not in PROFILE_CHOICES:
+        raise ValueError(f"未知 profile: {profile}")
+
     fixed = text
     notes: list[str] = []
 
-    for pat, repl, note in BAD_WORD_RULES:
+    for pat, repl, note in BAD_WORD_RULES_BY_PROFILE[profile]:
         if re.search(pat, fixed, flags=re.I):
             fixed = re.sub(pat, repl, fixed, flags=re.I)
             notes.append(note)
 
-    if re.search(r"\bcinematic\b", fixed, flags=re.I) and "35mm" not in fixed.lower():
+    if (
+        profile in {"strict", "stable"}
+        and re.search(r"\bcinematic\b", fixed, flags=re.I)
+        and "35mm" not in fixed.lower()
+    ):
         fixed = re.sub(r"\bcinematic\b", "cinematic film tone, 35mm", fixed, flags=re.I)
         notes.append("expanded 'cinematic' to explicit film anchor")
 
@@ -277,15 +309,17 @@ def detect_keywords(text: str, mapping: list[tuple[str, str]]) -> list[str]:
     return dedupe_keep_order(out)
 
 
-def normalize_camera_directive(camera: str) -> str:
-    """Keep one primary camera movement to reduce instruction conflicts."""
+def normalize_camera_directive(camera: str, profile: str = "stable") -> str:
+    """Reduce camera conflicts by profile: strict/stable keeps one, cinematic keeps up to two."""
     parts = [x.strip() for x in re.split(r"[,，;；]+", camera) if x.strip()]
     if not parts:
         return "locked-off"
-    primary = parts[0]
-    # normalize dangerous speed wording if present
-    primary = re.sub(r"\bfast\b", "slow controlled", primary, flags=re.I)
-    return primary
+
+    normalized = [re.sub(r"\bfast\b", "slow controlled", p, flags=re.I) for p in parts]
+    if profile == "cinematic":
+        return ", ".join(dedupe_keep_order(normalized)[:2])
+
+    return normalized[0]
 
 
 def guess_subject(text: str, shots: list[dict[str, Any]], sections: dict[str, str] | None = None) -> str:
@@ -346,7 +380,12 @@ def guess_action(text: str, shots: list[dict[str, Any]], sections: dict[str, str
     return clauses[0] if clauses else "one primary movement only"
 
 
-def guess_camera(text: str, shots: list[dict[str, Any]], sections: dict[str, str] | None = None) -> str:
+def guess_camera(
+    text: str,
+    shots: list[dict[str, Any]],
+    sections: dict[str, str] | None = None,
+    profile: str = "stable",
+) -> str:
     sections = sections or {}
     if sections.get("camera"):
         return sections["camera"]
@@ -360,7 +399,7 @@ def guess_camera(text: str, shots: list[dict[str, Any]], sections: dict[str, str
         cams = ["locked-off", "slow gentle movement"]
     if shots:
         return ", ".join(cams)
-    return normalize_camera_directive(", ".join(cams))
+    return normalize_camera_directive(", ".join(cams), profile=profile)
 
 
 def guess_style(text: str, shots: list[dict[str, Any]], sections: dict[str, str] | None = None) -> str:
@@ -385,12 +424,13 @@ def build_constraints(
     include_default_constraints: bool = True,
     extra_constraints: list[str] | None = None,
     sections: dict[str, str] | None = None,
+    profile: str = "stable",
 ) -> str:
     sections = sections or {}
     marked = extract_marked_field(text, ["约束", "constraints", "限制"])
     out: list[str] = []
     if include_default_constraints:
-        out.extend(DEFAULT_CONSTRAINTS)
+        out.extend(PROFILE_DEFAULT_CONSTRAINTS[profile])
     if marked:
         out.extend([x.strip() for x in re.split(r"[,，;；]", marked) if x.strip()])
     if sections.get("constraints"):
@@ -424,20 +464,25 @@ def generate_structured_prompt(
     *,
     include_default_constraints: bool = True,
     extra_constraints: list[str] | None = None,
+    profile: str = "stable",
 ) -> dict[str, Any]:
-    cleaned, notes = repair_vague_words(brief.strip())
+    if profile not in PROFILE_CHOICES:
+        raise ValueError(f"未知 profile: {profile}，可选: {', '.join(PROFILE_CHOICES)}")
+
+    cleaned, notes = repair_vague_words(brief.strip(), profile=profile)
     sections = extract_sections(cleaned)
     shots = parse_timecoded_shots(cleaned)
 
     subject = guess_subject(cleaned, shots, sections)
     action = guess_action(cleaned, shots, sections)
-    camera = guess_camera(cleaned, shots, sections)
+    camera = guess_camera(cleaned, shots, sections, profile=profile)
     style = guess_style(cleaned, shots, sections)
     constraints = build_constraints(
         cleaned,
         include_default_constraints=include_default_constraints,
         extra_constraints=extra_constraints,
         sections=sections,
+        profile=profile,
     )
 
     if sections.get("environment"):
@@ -476,6 +521,7 @@ def generate_structured_prompt(
 
     return {
         "method": METHOD,
+        "profile": profile,
         "rewrite_notes": notes,
         "layers": layers,
         "timeline": shots,
@@ -499,6 +545,12 @@ def main() -> int:
     p.add_argument("--brief-file", help="从文件读取需求")
     p.add_argument("--extra-constraint", action="append", default=[], help="追加约束，可重复")
     p.add_argument("--no-default-constraints", action="store_true", help="不注入默认约束")
+    p.add_argument(
+        "--profile",
+        default="stable",
+        choices=list(PROFILE_CHOICES),
+        help="提示词风格档位：strict(最稳) / stable(平衡) / cinematic(风格优先)",
+    )
     p.add_argument("--json", action="store_true", help="输出 JSON")
 
     args = p.parse_args()
@@ -509,6 +561,7 @@ def main() -> int:
             brief,
             include_default_constraints=not args.no_default_constraints,
             extra_constraints=args.extra_constraint,
+            profile=args.profile,
         )
 
         if args.json:
@@ -516,6 +569,7 @@ def main() -> int:
             return 0
 
         print(f"Method: {result['method']}")
+        print(f"Profile: {result['profile']}")
         print("\n[Layers]")
         for k, v in result["layers"].items():
             print(f"- {k}: {v}")
