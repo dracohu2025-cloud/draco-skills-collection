@@ -24,6 +24,7 @@
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / Slide / MP4 |
 | [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
 | [`manim-video/`](./manim-video/) | 做数学、公式、对象变换和算法过程解释视频 | 分镜 / `script.py` / MP4 |
+| [`manim-video-with-tts/`](./manim-video-with-tts/) | **Manim + 火山 TTS**：制作带中文旁白的数学解释视频 | 分镜 / TTS / `script.py` / MP4 |
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
@@ -153,13 +154,15 @@ python3 scripts/run.py publish-feishu \
 
 1. 先用 [`video-framework-selector`](./video-framework-selector/) 判断这次该选哪条路线
 2. 如果重点是数学、公式、对象变换、算法过程：看 [`manim-video`](./manim-video/)
-3. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
+3. 如果需要中文旁白/语音同步：看 [`manim-video-with-tts`](./manim-video-with-tts/)
+4. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
 4. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
 5. 如果重点是英文单词解释视频（带 TTS 同步）：看 [`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
 6. 如果重点是“参考首帧 + 分镜 + 成本可控”的 Seedance 成片链路：看 [`seedance-video-local`](./seedance-video-local/)
 
 一句话判断：
 - **对象怎么变** → `manim-video`
+- **数学视频 + 中文旁白** → `manim-video-with-tts`
 - **场景怎么演** → `motion-canvas`
 - **页面这一帧长什么样** → `remotion`
 - **英文单词视频流水线** → `vocabulary-video-pipeline`
@@ -211,6 +214,7 @@ python3 scripts/run.py --help
 - 想做英文单词解释视频：[`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
 - 想先判断视频框架：[`video-framework-selector`](./video-framework-selector/)
 - 想做数学 / 对象变换视频：[`manim-video`](./manim-video/)
+- 想做数学视频 + 中文旁白同步：[`manim-video-with-tts`](./manim-video-with-tts/)
 - 想做 TS 场景动画：[`motion-canvas`](./motion-canvas/)
 - 想做 React 页面型视频：[`remotion`](./remotion/)
 - 想用 Seedance 生成短视频：[`seedance-video-local`](./seedance-video-local/)
