@@ -30,6 +30,7 @@
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
 | [`seedance-video-local/`](./seedance-video-local/) | 用火山引擎 Seedance 2.0 生成短视频 | 任务ID / 成本估算 / MP4 |
+| [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
 
 ---
 
@@ -83,7 +84,12 @@
       <p><strong>feishu-doc-to-wechat-draft</strong><br/>把飞书文档转成公众号草稿，处理图片、样式和预览，适合真正临门一脚的发布环节。</p>
       <p>详情见：<a href="./feishu-doc-to-wechat-draft/README.md">feishu-doc-to-wechat-draft/README.md</a></p>
     </td>
-    <td width="50%" valign="top"></td>
+    <td width="50%" valign="top">
+      <a href="./daily-ai-agent-aigc-top-news/README.md">
+        <img src="./daily-ai-agent-aigc-top-news/assets/daily-ai-agent-aigc-top-news-flow.svg" alt="daily-ai-agent-aigc-top-news 工作流预览" />
+      </a>
+      <p><strong>daily-ai-agent-aigc-top-news</strong><br/>每天自动生成 AI / Agent / AIGC 早报，发布飞书文档并归档到多维表。</p>
+    </td>
   </tr>
 </table>
 
@@ -95,7 +101,13 @@
 
 ## 按场景选工具
 
-### 1）你主要做公众号内容
+### 1）你每天追 AI / Agent / AIGC
+优先看：
+- [`daily-ai-agent-aigc-top-news`](./daily-ai-agent-aigc-top-news/)
+
+它适合做每天固定时间的 AI 早报：抓候选、核验来源、写中文摘要、发布飞书文档，再归档到多维表。
+
+### 2）你主要做公众号内容
 推荐这条链路：
 
 1. 抓文章时二选一：
@@ -130,7 +142,7 @@ python3 scripts/run.py publish-feishu \
 
 更多详情查看 [`wechat-article-browseruse/README.md`](./wechat-article-browseruse/README.md)
 
-### 2）你主要做批量视觉实验
+### 3）你主要做批量视觉实验
 优先看：
 - [`nano-banana-image`](./nano-banana-image/)
 - [`jimeng-image`](./jimeng-image/)
@@ -144,13 +156,13 @@ python3 scripts/run.py publish-feishu \
 - `nano-banana-image`：更适合高质量营销视觉和结构化 JSON prompt 控制
 - `jimeng-image`：更适合火山引擎路线，支持图生图、多参考图和连续组图
 
-### 3）你主要做长内容再加工
+### 4）你主要做长内容再加工
 优先看：
 - [`epub2podcast`](./epub2podcast/)
 
 它更适合把书、长文、系列内容变成更容易传播的播客视频。
 
-### 4）你主要做视频 / 动画
+### 5）你主要做视频 / 动画
 推荐这样走：
 
 1. 先用 [`video-framework-selector`](./video-framework-selector/) 判断这次该选哪条路线
@@ -208,6 +220,7 @@ python3 scripts/run.py --help
 
 如果你是第一次进这个仓库，我建议按这个顺序看：
 
+- 想看每日 AI / Agent / AIGC 早报：[`daily-ai-agent-aigc-top-news`](./daily-ai-agent-aigc-top-news/)
 - 想抓内容：[`wechat-article-camofox`](./wechat-article-camofox/)
 - 想直接出图：[`nano-banana-image`](./nano-banana-image/)
 - 想试火山即梦：[`jimeng-image`](./jimeng-image/)
