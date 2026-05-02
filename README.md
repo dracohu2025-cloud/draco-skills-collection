@@ -31,6 +31,9 @@
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
 | [`seedance-video-local/`](./seedance-video-local/) | 用火山引擎 Seedance 2.0 生成短视频 | 任务ID / 成本估算 / MP4 |
 | [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
+| [`news-aggregator-skill/`](./news-aggregator-skill/) | 抓取 AI / 技术新闻候选线索 | JSON 候选池 / 趋势信号 |
+| [`ai-news-bitable-archive/`](./ai-news-bitable-archive/) | 把飞书日报归档到多维表 | record_id / 可检索归档 |
+| [`feishu-lark-workflows/`](./feishu-lark-workflows/) | 飞书文档、云盘、多维表自动化路线 | Docs / Drive / Bitable 操作指南 |
 
 ---
 
@@ -103,7 +106,10 @@
 
 ### 1）你每天追 AI / Agent / AIGC
 优先看：
-- [`daily-ai-agent-aigc-top-news`](./daily-ai-agent-aigc-top-news/)
+- [`daily-ai-agent-aigc-top-news`](./daily-ai-agent-aigc-top-news/)：早报总入口
+- [`news-aggregator-skill`](./news-aggregator-skill/)：候选抓取
+- [`feishu-lark-workflows`](./feishu-lark-workflows/)：飞书发布/回读
+- [`ai-news-bitable-archive`](./ai-news-bitable-archive/)：多维表归档
 
 它适合做每天固定时间的 AI 早报：抓候选、核验来源、写中文摘要、发布飞书文档，再归档到多维表。
 
@@ -221,6 +227,9 @@ python3 scripts/run.py --help
 如果你是第一次进这个仓库，我建议按这个顺序看：
 
 - 想看每日 AI / Agent / AIGC 早报：[`daily-ai-agent-aigc-top-news`](./daily-ai-agent-aigc-top-news/)
+- 想单独抓新闻候选：[`news-aggregator-skill`](./news-aggregator-skill/)
+- 想把日报写入多维表：[`ai-news-bitable-archive`](./ai-news-bitable-archive/)
+- 想做飞书文档/多维表自动化：[`feishu-lark-workflows`](./feishu-lark-workflows/)
 - 想抓内容：[`wechat-article-camofox`](./wechat-article-camofox/)
 - 想直接出图：[`nano-banana-image`](./nano-banana-image/)
 - 想试火山即梦：[`jimeng-image`](./jimeng-image/)

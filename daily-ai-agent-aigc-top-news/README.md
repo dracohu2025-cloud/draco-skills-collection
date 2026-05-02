@@ -57,15 +57,16 @@ flowchart LR
 - Python 3
 - `git`
 - `lark-cli`，并完成飞书/Lark 登录授权
-- 可选：本地新闻聚合脚本
-- 可选：飞书多维表归档脚本
+- [`news-aggregator-skill`](../news-aggregator-skill/)：抓取新闻候选
+- [`feishu-lark-workflows`](../feishu-lark-workflows/)：飞书文档发布、回读、多维表字段检查
+- [`ai-news-bitable-archive`](../ai-news-bitable-archive/)：归档日报到多维表
 
 如果要完整跑飞书发布和多维表归档，需要准备：
 
 ```text
 FEISHU_BITABLE_BASE_TOKEN=<你的多维表 app token>
 FEISHU_BITABLE_TABLE_ID=<你的 table id>
-FEISHU_FOLDER_TOKEN=<可选，文档目标文件夹 token>
+FEISHU_FOLDER_TOKEN=<你的飞书云盘 folder token>
 ```
 
 不要把这些 token 写进公开仓库。
@@ -77,8 +78,8 @@ FEISHU_FOLDER_TOKEN=<可选，文档目标文件夹 token>
 ```text
 daily-ai-agent-aigc-top-news
 news-aggregator-skill
-ai-news-bitable-archive
 feishu-lark-workflows
+ai-news-bitable-archive
 ```
 
 最小 cron prompt：
