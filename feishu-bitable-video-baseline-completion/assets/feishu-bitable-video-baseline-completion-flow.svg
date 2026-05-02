@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-label="Feishu Bitable video baseline completion workflow">
+  <rect width="1200" height="520" fill="#0f172a"/>
+  <text x="60" y="70" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif" font-weight="700">飞书多维表视频基线补全流程</text>
+  <text x="60" y="110" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">把合格视频行补成可复盘、可审计、可复用的 baseline record</text>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#38bdf8"/>
+    </marker>
+    <style>
+      .box{fill:#1e293b;stroke:#38bdf8;stroke-width:2;rx:18;}
+      .title{fill:#e2e8f0;font:700 20px Arial, sans-serif;}
+      .body{fill:#94a3b8;font:15px Arial, sans-serif;}
+      .num{fill:#0f172a;font:700 18px Arial, sans-serif;}
+      .badge{fill:#38bdf8;}
+      .line{stroke:#38bdf8;stroke-width:3;marker-end:url(#arrow);fill:none;}
+    </style>
+  </defs>
+  <g transform="translate(60 160)">
+    <rect class="box" width="210" height="120"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">1</text>
+    <text class="title" x="55" y="37">定位视频行</text>
+    <text class="body" x="24" y="72">record-get</text>
+    <text class="body" x="24" y="96">检查缺失字段</text>
+  </g>
+  <path class="line" d="M280 220 H345"/>
+  <g transform="translate(360 160)">
+    <rect class="box" width="210" height="120"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">2</text>
+    <text class="title" x="55" y="37">找来源资产</text>
+    <text class="body" x="24" y="72">角色参考图</text>
+    <text class="body" x="24" y="96">场景参考图</text>
+  </g>
+  <path class="line" d="M580 220 H645"/>
+  <g transform="translate(660 160)">
+    <rect class="box" width="210" height="120"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">3</text>
+    <text class="title" x="55" y="37">核验文件</text>
+    <text class="body" x="24" y="72">payload URL</text>
+    <text class="body" x="24" y="96">hash 一致性</text>
+  </g>
+  <path class="line" d="M880 220 H945"/>
+  <g transform="translate(960 160)">
+    <rect class="box" width="180" height="120"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">4</text>
+    <text class="title" x="55" y="37">写回表格</text>
+    <text class="body" x="24" y="72">附件上传</text>
+    <text class="body" x="24" y="96">文本 patch</text>
+  </g>
+  <path class="line" d="M1050 285 V345 H215"/>
+  <g transform="translate(60 345)">
+    <rect class="box" width="260" height="105"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">5</text>
+    <text class="title" x="55" y="37">回读验证</text>
+    <text class="body" x="24" y="72">missing_count = 0</text>
+  </g>
+  <path class="line" d="M330 398 H425"/>
+  <g transform="translate(440 345)">
+    <rect class="box" width="300" height="105"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">6</text>
+    <text class="title" x="55" y="37">安全交付</text>
+    <text class="body" x="24" y="72">不输出 token / table id / signed URL</text>
+  </g>
+  <path class="line" d="M750 398 H845"/>
+  <g transform="translate(860 345)">
+    <rect class="box" width="280" height="105"/>
+    <circle class="badge" cx="30" cy="30" r="16"/><text class="num" x="24" y="36">7</text>
+    <text class="title" x="55" y="37">得到 Baseline</text>
+    <text class="body" x="24" y="72">可复盘 / 可审计 / 可复用</text>
+  </g>
+</svg>

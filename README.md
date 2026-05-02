@@ -34,6 +34,7 @@
 | [`news-aggregator-skill/`](./news-aggregator-skill/) | 抓取 AI / 技术新闻候选线索 | JSON 候选池 / 趋势信号 |
 | [`ai-news-bitable-archive/`](./ai-news-bitable-archive/) | 把飞书日报归档到多维表 | record_id / 可检索归档 |
 | [`feishu-lark-workflows/`](./feishu-lark-workflows/) | 飞书文档、云盘、多维表自动化路线 | Docs / Drive / Bitable 操作指南 |
+| [`feishu-bitable-video-baseline-completion/`](./feishu-bitable-video-baseline-completion/) | 补全已验收视频的多维表基线记录 | 资产链路 / Prompt / 附件 / QA 映射 |
 
 ---
 
@@ -92,6 +93,20 @@
         <img src="./daily-ai-agent-aigc-top-news/assets/daily-ai-agent-aigc-top-news-flow.svg" alt="daily-ai-agent-aigc-top-news 工作流预览" />
       </a>
       <p><strong>daily-ai-agent-aigc-top-news</strong><br/>每天自动生成 AI / Agent / AIGC 早报，发布飞书文档并归档到多维表。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./feishu-lark-workflows/README.md">
+        <img src="./feishu-lark-workflows/assets/feishu-lark-workflows-flow.svg" alt="feishu-lark-workflows 工作流预览" />
+      </a>
+      <p><strong>feishu-lark-workflows</strong><br/>飞书文档、云盘、多维表自动化路线，适合先把平台动作走稳。</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./feishu-bitable-video-baseline-completion/README.md">
+        <img src="./feishu-bitable-video-baseline-completion/assets/feishu-bitable-video-baseline-completion-flow.svg" alt="feishu-bitable-video-baseline-completion 工作流预览" />
+      </a>
+      <p><strong>feishu-bitable-video-baseline-completion</strong><br/>把已验收视频行补成完整 baseline：资产链路、Prompt、附件、QA 和成本都能回看。</p>
     </td>
   </tr>
 </table>
