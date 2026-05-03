@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Feishu + Seedance Video Pipeline</title>
+  <desc id="desc">A workflow diagram showing Feishu Base as the source of truth for assets, prompt, payload, Seedance generation, QA, and backfill.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#101828"/>
+      <stop offset="100%" stop-color="#182230"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1D2939"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#7DD3FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .title{font:700 38px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#F8FAFC}
+      .sub{font:500 18px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#CBD5E1}
+      .card-title{font:700 22px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#F8FAFC}
+      .card-text{font:500 15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#CBD5E1}
+      .badge{font:700 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#082F49}
+      .note{font:600 16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#A7F3D0}
+      .line{stroke:#7DD3FC;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" rx="0" fill="url(#bg)"/>
+  <circle cx="1020" cy="100" r="180" fill="#0EA5E9" opacity="0.10"/>
+  <circle cx="150" cy="600" r="220" fill="#22C55E" opacity="0.08"/>
+
+  <text x="70" y="72" class="title">Feishu + Seedance 视频产线</text>
+  <text x="70" y="106" class="sub">飞书多维表格做资产台账与工作流；Seedance 负责视频生成；QA 与成本回填闭环。</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="160" width="210" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="92" y="182" width="42" height="26" rx="13" fill="#7DD3FC"/>
+    <text x="106" y="201" class="badge">1</text>
+    <text x="92" y="232" class="card-title">Base 行</text>
+    <text x="92" y="258" class="card-text">脚本 / 字段 / 状态</text>
+  </g>
+
+  <path class="line" d="M280 220 H345"/>
+
+  <g filter="url(#shadow)">
+    <rect x="365" y="160" width="210" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="387" y="182" width="42" height="26" rx="13" fill="#7DD3FC"/>
+    <text x="401" y="201" class="badge">2</text>
+    <text x="387" y="232" class="card-title">参考资产</text>
+    <text x="387" y="258" class="card-text">角色 / 场景 / 动作</text>
+  </g>
+
+  <path class="line" d="M575 220 H640"/>
+
+  <g filter="url(#shadow)">
+    <rect x="660" y="160" width="210" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="682" y="182" width="42" height="26" rx="13" fill="#7DD3FC"/>
+    <text x="696" y="201" class="badge">3</text>
+    <text x="682" y="232" class="card-title">导演稿</text>
+    <text x="682" y="258" class="card-text">镜头 / 时序 / 限制</text>
+  </g>
+
+  <path class="line" d="M870 220 H935"/>
+
+  <g filter="url(#shadow)">
+    <rect x="955" y="160" width="175" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="977" y="182" width="42" height="26" rx="13" fill="#7DD3FC"/>
+    <text x="991" y="201" class="badge">4</text>
+    <text x="977" y="232" class="card-title">Payload</text>
+    <text x="977" y="258" class="card-text">Fast / 480p / 顺序</text>
+  </g>
+
+  <path class="line" d="M1042 280 V348"/>
+
+  <g filter="url(#shadow)">
+    <rect x="870" y="368" width="260" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="892" y="390" width="42" height="26" rx="13" fill="#A7F3D0"/>
+    <text x="906" y="409" class="badge">5</text>
+    <text x="892" y="440" class="card-title">Seedance 生成</text>
+    <text x="892" y="466" class="card-text">提交 / 轮询 / 下载</text>
+  </g>
+
+  <path class="line" d="M870 428 H785"/>
+
+  <g filter="url(#shadow)">
+    <rect x="505" y="368" width="260" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="527" y="390" width="42" height="26" rx="13" fill="#A7F3D0"/>
+    <text x="541" y="409" class="badge">6</text>
+    <text x="527" y="440" class="card-title">QA 自审</text>
+    <text x="527" y="466" class="card-text">ffprobe / 抽帧 / 转写</text>
+  </g>
+
+  <path class="line" d="M505 428 H420"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="368" width="330" height="120" rx="22" fill="url(#card)" stroke="#334155"/>
+    <rect x="92" y="390" width="42" height="26" rx="13" fill="#A7F3D0"/>
+    <text x="106" y="409" class="badge">7</text>
+    <text x="92" y="440" class="card-title">回填与验收</text>
+    <text x="92" y="466" class="card-text">成片 / QA / tokens / 成本 / lineage</text>
+  </g>
+
+  <path d="M235 368 C235 322 170 322 170 288" stroke="#34D399" stroke-width="3" fill="none" marker-end="url(#arrow)" opacity="0.9"/>
+  <text x="432" y="585" class="note">默认：Seedance 2.0 Fast · 480p · 中文细导演稿 · 提交前补表 · 生成后回填</text>
+</svg>

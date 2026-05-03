@@ -29,12 +29,11 @@
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
-| [`seedance-video-local/`](./seedance-video-local/) | 用火山引擎 Seedance 2.0 生成短视频 | 任务ID / 成本估算 / MP4 |
+| [`feishu-seedance-video-pipeline/`](./feishu-seedance-video-pipeline/) | 用飞书多维表格管理 Seedance 视频产线 | 资产 / Prompt / Payload / QA / Tokens / 成本 |
 | [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
 | [`news-aggregator-skill/`](./news-aggregator-skill/) | 抓取 AI / 技术新闻候选线索 | JSON 候选池 / 趋势信号 |
 | [`ai-news-bitable-archive/`](./ai-news-bitable-archive/) | 把飞书日报归档到多维表 | record_id / 可检索归档 |
 | [`feishu-lark-workflows/`](./feishu-lark-workflows/) | 飞书文档、云盘、多维表自动化路线 | Docs / Drive / Bitable 操作指南 |
-| [`feishu-bitable-video-baseline-completion/`](./feishu-bitable-video-baseline-completion/) | 端到端生成并归档视频多维表基线 | CRS / SES / Payload / QA / Prompt_Output_Map |
 
 ---
 
@@ -103,17 +102,17 @@
       <p><strong>feishu-lark-workflows</strong><br/>飞书文档、云盘、多维表自动化路线，适合先把平台动作走稳。</p>
     </td>
     <td width="50%" valign="top">
-      <a href="./feishu-bitable-video-baseline-completion/README.md">
-        <img src="./feishu-bitable-video-baseline-completion/assets/feishu-bitable-video-baseline-completion-flow.svg" alt="feishu-bitable-video-baseline-completion 工作流预览" />
+      <a href="./feishu-seedance-video-pipeline/README.md">
+        <img src="./feishu-seedance-video-pipeline/assets/feishu-seedance-video-pipeline-flow.svg" alt="feishu-seedance-video-pipeline 工作流预览" />
       </a>
-      <p><strong>feishu-bitable-video-baseline-completion</strong><br/>从 Brief 生成 CRS/SES、整理 Seedance payload、做视频 QA，再归档成一条完整可复盘的飞书多维表 baseline。</p>
+      <p><strong>feishu-seedance-video-pipeline</strong><br/>用飞书多维表格管理 Seedance 视频产线：资产、Prompt、payload、成片、QA、tokens 和成本都回到一条可追溯记录。</p>
     </td>
   </tr>
 </table>
 
-### Seedance 2.0 预览
+### Seedance 产线预览
 
-![seedance-video-local 架构预览](./seedance-video-local/assets/seedance-architecture-preview.png)
+![feishu-seedance-video-pipeline 架构预览](./feishu-seedance-video-pipeline/assets/feishu-seedance-video-pipeline-flow.svg)
 
 ---
 
@@ -192,7 +191,7 @@ python3 scripts/run.py publish-feishu \
 4. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
 4. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
 5. 如果重点是英文单词解释视频（带 TTS 同步）：看 [`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
-6. 如果重点是"参考首帧 + 分镜 + 成本可控"的 Seedance 成片链路：看 [`seedance-video-local`](./seedance-video-local/)
+6. 如果重点是“飞书多维表格 + Seedance 生成 + 资产/QA/成本回填”的视频产线：看 [`feishu-seedance-video-pipeline`](./feishu-seedance-video-pipeline/)
 7. 如果重点是用 HTML+GSAP+Canvas 做讲解/介绍类视频（音频驱动、组件库编排）：看 [`hyperframes-explainer-video`](./hyperframes-explainer-video/)
 
 一句话判断：
