@@ -1,8 +1,8 @@
 # Feishu + Seedance 视频产线
 
-用飞书多维表格管理 Seedance 视频生产：资产、Prompt、payload、成片、QA、tokens、成本，全在一条可追溯链路里。
+用飞书多维表格管理 Seedance 视频生产：Director 决策、资产、Prompt、payload、成片、QA、tokens、成本，全在一条可追溯链路里。
 
-这不是单纯调用视频 API。它把“生成前补表”和“生成后回填”当成产线的一部分，避免烧完钱后找不到输入、Prompt、参考图和质量结论。
+这不是单纯调用视频 API。核心是 Director Module：先判断主要角色、CRS、SES、调度图、镜头拆分和细导演稿，再进入生成与回填。
 
 ![Feishu + Seedance pipeline](./assets/feishu-seedance-video-pipeline-flow.svg)
 
@@ -20,9 +20,12 @@
 
 ```text
 飞书 Base 行
-→ 读取字段和记录
-→ 准备角色 / 场景 / 动作参考资产
-→ 写 Row-24 式中文细导演稿
+→ Director Module
+   ├─ 判断主要角色 → CRS 计划 / Prompt
+   ├─ 判断环境空间 → SES 计划 / Prompt
+   ├─ 判断复杂走位 → Top-Down Blocking Map / keyframes
+   └─ 拆 4-6 组镜头 → Seedance 中文细导演稿
+→ 生成 / 复用参考资产
 → 生成 Seedance payload
 → 提交前补表并 record-get 复核
 → 用户确认后提交 Seedance
@@ -40,20 +43,36 @@
 - 未经确认不提交 billable Seedance 任务
 - 成功后必须报告 tokens 和估算成本
 
+## Director Module
+
+Director 是大脑，负责把脚本变成执行方案：
+
+- 判断有几个主要角色，谁需要 CRS，谁只是背景/配角。
+- 为每个主要角色确定 `official_asset / existing_crs / generate_crs / text_only`。
+- 判断环境是否需要 SES，锁空间锚点、灯光、材质、道具状态。
+- 判断是否需要 Top-Down Blocking Map 或 keyframes。
+- 把 12 秒视频拆成 4-6 组镜头，每组都有景别、构图、运镜、动作、表情、空间连续性、对白/音效。
+
+先输出 `director_plan`，再写 CRS / SES / Seedance Prompt。没有 Director 方案就直接写 Prompt，不合格。
+
 ## Prompt 模板
 
-这个 skill 不是只写“原则”，还带三份可直接套用的模板：
+这个 skill 带五份可直接套用的模板/参考文件：
 
 ```text
+references/director-module.md
+templates/director-decision-output-template.md
 templates/character-reference-sheet-prompt-template.md
 templates/scene-environment-settings-prompt-template.md
 templates/seedance-row24-director-template.md
 ```
 
-对应三类物料：
+对应五类输出：
 
+- Director 结构化方案 `director_plan`
 - 主要角色 Character Reference Sheet
 - Scene, Environment, and Settings reference image
+- Top-Down Blocking Map / keyframes 需求判断
 - 驱动 Seedance 的第24行/第28行风格中文细导演稿
 
 ## Prompt 标准
