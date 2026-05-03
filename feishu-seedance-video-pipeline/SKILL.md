@@ -109,14 +109,22 @@ Read `data.record`. Do not assume every CLI response uses `data.record.fields`.
 
 ### 2. Prepare references
 
+This skill includes three reusable prompt templates. A fresh Hermes instance should load them when asked to create assets or video prompts:
+
+- `templates/character-reference-sheet-prompt-template.md` — complete Character Reference Sheet prompt template and QA gate.
+- `templates/scene-environment-settings-prompt-template.md` — complete Scene, Environment, and Settings reference image prompt template and QA gate.
+- `templates/seedance-row24-director-template.md` — detailed Row-24 / Row-28 style Chinese Seedance director prompt template.
+
 Character Reference Sheet:
 
 - One main character per sheet unless the user requests a cast sheet.
+- Use the linked Character Reference Sheet template for the full board layout: MAIN IDENTITY + SCALE SHEET, expressions, head details, posture, wardrobe/accessories, prop, and hand/paw gestures.
 - Use clean readable boards; avoid scene backgrounds, watermarks, logos, fake text, and extra characters.
 - If the sheet has multiple panels, the video prompt must state that all panels describe the same character and that labels/layout must not appear in the final video.
 
 Scene, Environment, and Settings reference image:
 
+- Use the linked Scene, Environment, and Settings template for setting, spatial layout, anchor object, key props, lighting, palette, materials, camera feel, and mood.
 - Locks environment, lighting, spatial anchor, material palette, and key props.
 - Usually should not include main characters, readable text, signs, labels, arrows, or storyboard panels.
 - Use one coherent 16:9 cinematic frame.

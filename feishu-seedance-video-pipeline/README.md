@@ -40,6 +40,22 @@
 - 未经确认不提交 billable Seedance 任务
 - 成功后必须报告 tokens 和估算成本
 
+## Prompt 模板
+
+这个 skill 不是只写“原则”，还带三份可直接套用的模板：
+
+```text
+templates/character-reference-sheet-prompt-template.md
+templates/scene-environment-settings-prompt-template.md
+templates/seedance-row24-director-template.md
+```
+
+对应三类物料：
+
+- 主要角色 Character Reference Sheet
+- Scene, Environment, and Settings reference image
+- 驱动 Seedance 的第24行/第28行风格中文细导演稿
+
 ## Prompt 标准
 
 一个合格的 Seedance Prompt 至少包含：
