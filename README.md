@@ -29,7 +29,7 @@
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
-| [`feishu-seedance-video-pipeline/`](./feishu-seedance-video-pipeline/) | 用 Director + Reviewer 管理 Seedance 视频产线 | 物料台账 / Prompt / Payload / 成片 / QA / 成本 |
+| [`feishu-seedance-video-pipeline/`](./feishu-seedance-video-pipeline/) | 用 Director + Ledger Guard + Reviewer 管理 Seedance 视频产线 | 物料台账 / Prompt / Payload / 成片 / QA / 成本 |
 | [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
 | [`news-aggregator-skill/`](./news-aggregator-skill/) | 抓取 AI / 技术新闻候选线索 | JSON 候选池 / 趋势信号 |
 | [`ai-news-bitable-archive/`](./ai-news-bitable-archive/) | 把飞书日报归档到多维表 | record_id / 可检索归档 |
@@ -105,7 +105,7 @@
       <a href="./feishu-seedance-video-pipeline/README.md">
         <img src="./feishu-seedance-video-pipeline/assets/feishu-seedance-video-pipeline-flow.svg" alt="feishu-seedance-video-pipeline 工作流预览" />
       </a>
-      <p><strong>feishu-seedance-video-pipeline</strong><br/>用 Director Module 拆解角色、场景、服装和镜头，再由 Reviewer Module 做烧钱前门禁，最后生成 Seedance 视频并回填 QA、tokens 和成本。</p>
+      <p><strong>feishu-seedance-video-pipeline</strong><br/>用 Director Module 拆解角色、场景、服装和镜头，用 Base Asset Ledger Write Guard 防止资产台账误填，再由 Reviewer Module 做烧钱前门禁，最后生成 Seedance 视频并回填 QA、tokens 和成本。</p>
     </td>
   </tr>
 </table>

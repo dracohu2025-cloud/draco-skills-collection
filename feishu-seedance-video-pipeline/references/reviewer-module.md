@@ -25,6 +25,18 @@ Reviewer 必须读取并核验：
 
 ## Review Gates
 
+### Gate 0 — Base Asset Ledger Write Guard
+
+必须先执行 `references/base-asset-ledger-write-guard.md`：
+
+- 当前行必须有本地 `asset_manifest.json` 或等价资产清单。
+- Base 写入必须由清单机械生成，禁止手写摘要。
+- 写入后必须 `record-get` 并产出审计结果。
+- 每个 Prompt 字段必须包含原始完整 Prompt，或明确 canonical prompt file + sha256 指针；不能只有摘要说明。
+- Reviewer 报告必须引用 manifest、write payload、record_get_after_write、audit result。
+
+无审计证据或审计失败：`BLOCKED`。
+
 ### Gate 1 — Base Material Ledger
 
 必须确认当前行已经完整维护物料台账：
@@ -108,6 +120,7 @@ model: doubao-seedance-2-0-260128
 
 ## Gate Results
 
+- Base Asset Ledger Write Guard: PASS | BLOCKED — evidence
 - Base Material Ledger: PASS | BLOCKED — evidence
 - Baseline Prompt Comparison: PASS | BLOCKED | N/A — evidence
 - Reference Binding: PASS | BLOCKED — evidence
@@ -125,6 +138,10 @@ model: doubao-seedance-2-0-260128
 
 ## Evidence
 
+- asset_manifest: path
+- ledger_write_payload: path
+- record_get_after_write: path
+- ledger_audit_result: path
 - current_record_get: path
 - baseline_record_get: path | none
 - prompt_files: path list
@@ -135,5 +152,6 @@ model: doubao-seedance-2-0-260128
 ## Enforcement
 
 - Reviewer 报告必须上传 Base。
+- Reviewer PASS 必须包含 Base Asset Ledger Write Guard 审计证据；没有 manifest/read-after-write/audit 三件套，一律无效。
 - `result=BLOCKED` 时，不得提交 Seedance。
 - 如果已经误提交，必须立即把该 Base 行状态改为失败/废片，并上传 postmortem。

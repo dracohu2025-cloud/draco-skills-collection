@@ -27,7 +27,10 @@
    ├─ 判断官方人像 → Wardrobe Reference image 门禁
    ├─ 判断复杂走位 → Top-Down Blocking Map / keyframes
    └─ 拆镜头 → Seedance 中文细导演稿
-→ 生成 / 复用参考资产，并回填当前 Base 行物料台账
+→ 生成 / 复用参考资产
+→ 写入 asset_manifest.json
+→ 由 manifest 机械回填当前 Base 行物料台账
+→ record-get 回读 + ledger audit
 → 生成 Seedance Prompt + Payload
 → Reviewer Module 强制审查
    ├─ 物料台账
@@ -66,7 +69,7 @@ Director 是创作前的工程化拆解：
 
 ## Reviewer Module
 
-Reviewer 是烧钱前的硬门禁。报告只能是：
+Reviewer 是烧钱前的硬门禁。它不信口头承诺，只信 Base 回读和审计证据。报告只能是：
 
 ```text
 PASS_TO_SUBMIT
@@ -80,7 +83,8 @@ BLOCKED
 3. Prompt 里的参考图顺序是否和 payload.content[] 完全一致。
 4. 对白是否逐字锁定，标点、语气词、顺序都不能变。
 5. 可见角色数量、站位、道具状态、禁止项是否写清楚。
-6. Prompt、Payload、Prompt_Output_Map、计划参数、附件是否已经提交前回填。
+6. Base Asset Ledger Write Guard 是否 PASS：manifest、写入 payload、record-get、audit result 是否齐全。
+7. Prompt、Payload、Prompt_Output_Map、计划参数、附件是否已经提交前回填。
 
 `BLOCKED` 就禁止提交 Seedance。这个规则很粗暴，也很有用。
 
@@ -115,7 +119,10 @@ feishu-seedance-video-pipeline/
 │   └── feishu-seedance-video-pipeline-flow.svg
 ├── references/
 │   ├── director-module.md
+│   ├── base-asset-ledger-write-guard.md
 │   └── reviewer-module.md
+├── scripts/
+│   └── base_asset_ledger_audit.py
 └── templates/
     ├── character-reference-sheet-prompt-template.md
     ├── director-decision-output-template.md
@@ -144,5 +151,6 @@ feishu-seedance-video-pipeline/
 ## 安全注意
 
 - 不要把 Base Token、Table ID、API Key、签名 URL 写进仓库。
+- Base 资产字段不要手填摘要；用 manifest 生成并审计。
 - 公开文档里用 `<BASE_TOKEN>`、`<TABLE_ID>`、`<RECORD_ID>` 这类占位符。
 - 推送前扫描 staged diff。凭据零容忍。

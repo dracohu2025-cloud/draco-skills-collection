@@ -18,7 +18,7 @@ metadata:
 
 目标不是“生成一条视频”这么窄，而是完成一条可复用、可追溯、可验收的 Base 行：脚本、角色资产、场景资产、参考图、Prompt、payload、Task ID、成片、抽帧、QA、tokens、成本、Prompt_Output_Map 都在同一行或可追溯链路里。
 
-核心是 Director Module + Reviewer Module：Director 先判断主要角色、角色参考资产、场景环境资产、空间调度和镜头拆分；Reviewer 在任何 billable Seedance POST 前做强制门禁，核验 Base 物料台账、baseline Prompt 对照、reference_image 绑定、Dialogue Lock、Prompt/Payload 一致性。Reviewer 不出 `PASS_TO_SUBMIT`，禁止提交。Seedance API 只是执行层。
+核心是 Director Module + Base Asset Ledger Write Guard + Reviewer Module：Director 先判断主要角色、角色参考资产、场景环境资产、空间调度和镜头拆分；Base 写入只能由 `asset_manifest.json` 机械生成并回读审计；Reviewer 在任何 billable Seedance POST 前做强制门禁，核验 Base 物料台账、baseline Prompt 对照、reference_image 绑定、Dialogue Lock、Prompt/Payload 一致性和 ledger audit。Reviewer 不出 `PASS_TO_SUBMIT`，禁止提交。Seedance API 只是执行层。
 
 ## When to Use
 
@@ -115,6 +115,7 @@ Director Module 是本 skill 的第一步，也是核心决策层。
 配套文件：
 
 - `references/director-module.md`：Director 的职责、判断规则、输出 schema、门禁。
+- `references/base-asset-ledger-write-guard.md`：Base 资产台账写入门禁；要求 `asset_manifest.json`、写入 payload、`record-get` 回读和机械审计。
 - `references/reviewer-module.md`：Reviewer 强制门禁；任何 billable Seedance POST 前必须产出并上传 `reviewer_report.md`，结论为 `PASS_TO_SUBMIT` 才能提交。
 - `templates/director-decision-output-template.md`：每次处理新 Base 行时先填写的结构化导演方案模板。
 - `templates/reviewer-report-template.md`：Reviewer 报告模板。
@@ -365,7 +366,7 @@ ffmpeg -y -hide_banner -loglevel error \
 
 - 已指定或创建目标行。
 - 若需求要求“看第N行/沿用之前成功版本/参考baseline”，必须先 `record-list` / `record-get` 拉取该行 Prompt、Prompt文件、Prompt_Output_Map、Reference_URLs 和资产附件，对比后再写新 Prompt；不得凭记忆重写。
-- 对任何新视频，即使复用旧资产，也必须在当前 Base 行完成物料台账：Character Reference Sheet、Scene, Environment, and Settings reference image、Wardrobe Reference image（如适用）的工具、Prompt、附件或明确复用来源、URL/asset、payload引用顺序。当前行对应输入资产字段不能空着跳过。
+- 对任何新视频，即使复用旧资产，也必须在当前 Base 行完成物料台账：Character Reference Sheet、Scene, Environment, and Settings reference image、Wardrobe Reference image（如适用）的工具、**原始完整生成 Prompt**、附件或明确复用来源、URL/asset、payload引用顺序。不能只写“用途说明”“风格摘要”“真实猫身体”等摘要；当前行对应输入资产字段不能空着跳过。
 - Prompt、Seedance视频_Prompt、payload 本地文件一致。
 - Prompt 文件和 Payload 文件已上传或待上传路径明确。
 - 角色、场景、动作参考的工具、Prompt、附件、URL 已填或明确 `未使用`。
@@ -373,6 +374,7 @@ ffmpeg -y -hide_banner -loglevel error \
 - 视频计划参数已写：模型、时长、比例、分辨率、音频、参考图顺序。
 - 只有生成后才知道的字段可空：Task ID、成片、抽帧、tokens、成本、最终 QA、转写。
 - `record-get` 已复核。
+- 已产出 Base Asset Ledger Write Guard 审计：`asset_manifest.json`、写入 payload、post-write `record-get`、audit result，且结果为 PASS。
 - 已产出 Reviewer 报告并上传当前 Base 行；只有 `result=PASS_TO_SUBMIT` 才允许提交。
 - 需求明确确认“开始生成”或等价授权。
 
@@ -511,7 +513,9 @@ PY
 - [ ] shot_breakdown 覆盖完整时长，每段都有镜头语言。
 - [ ] 已确认角色、场景、动作参考。
 - [ ] 已生成/复用并 QA 参考资产。
-- [ ] 当前 Base 行已上传或明确登记 CRS / Scene, Environment, and Settings reference image / Wardrobe Reference image 等输入资产；不是只把 URL 塞在 payload 里。
+- [ ] 当前 Base 行已上传或明确登记 Character Reference Sheet / Scene, Environment, and Settings reference image / Wardrobe Reference image 等输入资产；不是只把 URL 塞在 payload 里。
+- [ ] 已生成 `asset_manifest.json` 或等价清单；Base 写入由清单机械生成，不是手写摘要。
+- [ ] 已完成 post-write `record-get` 与 ledger audit，结果 PASS；Reviewer 报告引用 manifest / write payload / record-get / audit result。
 - [ ] 参考 URL 或 asset:// 可用。
 - [ ] 中文完整 Prompt 已写成 Row-24 细导演稿。
 - [ ] Dialogue Lock 已通过：项目输入给出的每句对白逐字、标点、语气词、波浪号和顺序完全一致。
