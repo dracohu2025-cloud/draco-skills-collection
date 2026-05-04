@@ -1,113 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
-  <title id="title">Feishu + Seedance Director Pipeline</title>
-  <desc id="desc">A workflow diagram showing Feishu Base feeding a Director Module, which decides CRS, SES, blocking, shot breakdown, then builds payload, generates video, QA, and backfills results.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#101828"/>
-      <stop offset="100%" stop-color="#182230"/>
-    </linearGradient>
-    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1D2939"/>
-      <stop offset="100%" stop-color="#111827"/>
-    </linearGradient>
-    <linearGradient id="director" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0F766E"/>
-      <stop offset="100%" stop-color="#164E63"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.28"/>
-    </filter>
-    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#7DD3FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111827"/><stop offset="1" stop-color="#020617"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f2937"/><stop offset="1" stop-color="#0f172a"/></linearGradient>
     <style>
-      .title{font:700 36px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#F8FAFC}
-      .sub{font:500 17px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#CBD5E1}
-      .card-title{font:700 21px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#F8FAFC}
-      .card-text{font:500 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#CBD5E1}
-      .small{font:600 13px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#D1FAE5}
-      .badge{font:700 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#082F49}
-      .note{font:700 16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#A7F3D0}
-      .line{stroke:#7DD3FC;stroke-width:3;fill:none;marker-end:url(#arrow)}
-      .branch{stroke:#34D399;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','Microsoft YaHei',sans-serif;fill:#e5e7eb}
+      .title{font-size:40px;font-weight:800}.sub{font-size:20px;fill:#94a3b8}.box-title{font-size:22px;font-weight:700}.box-text{font-size:16px;fill:#cbd5e1}.small{font-size:14px;fill:#93c5fd}.arrow{stroke:#38bdf8;stroke-width:4;fill:none;marker-end:url(#arrow)}.box{fill:url(#card);stroke:#334155;stroke-width:2;rx:18}.gate{fill:#172554;stroke:#60a5fa;stroke-width:3;rx:18}.warn{fill:#3b1d1d;stroke:#f97316;stroke-width:2;rx:18}
     </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/></marker>
   </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <text x="64" y="70" class="title">Feishu + Seedance 视频产线</text>
+  <text x="64" y="105" class="sub">Director 决策 · Reviewer 门禁 · 资产台账 · 多幕拼接 · QA/成本回填</text>
 
-  <rect width="1200" height="675" fill="url(#bg)"/>
-  <circle cx="1020" cy="100" r="180" fill="#0EA5E9" opacity="0.10"/>
-  <circle cx="120" cy="610" r="220" fill="#22C55E" opacity="0.08"/>
+  <rect x="64" y="155" width="190" height="120" class="box"/>
+  <text x="86" y="190" class="box-title">1. 飞书 Base 行</text>
+  <text x="86" y="222" class="box-text">脚本 / 角色 / 场景</text>
+  <text x="86" y="250" class="box-text">目标行是唯一账本</text>
 
-  <text x="70" y="68" class="title">Feishu + Seedance 视频产线</text>
-  <text x="70" y="101" class="sub">核心：Director Module 先做角色、场景、调度与镜头决策；API 只是执行层。</text>
+  <path d="M254 215 H320" class="arrow"/>
+  <rect x="320" y="155" width="210" height="120" class="box"/>
+  <text x="342" y="190" class="box-title">2. Director Module</text>
+  <text x="342" y="222" class="box-text">角色、场景、服装</text>
+  <text x="342" y="250" class="box-text">逐秒导演稿</text>
 
-  <g filter="url(#shadow)">
-    <rect x="70" y="145" width="210" height="112" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="92" y="167" width="42" height="26" rx="13" fill="#7DD3FC"/>
-    <text x="106" y="186" class="badge">1</text>
-    <text x="92" y="217" class="card-title">飞书 Base 行</text>
-    <text x="92" y="242" class="card-text">脚本 / 字段 / 附件 / 约束</text>
-  </g>
+  <path d="M530 215 H596" class="arrow"/>
+  <rect x="596" y="155" width="230" height="120" class="box"/>
+  <text x="618" y="190" class="box-title">3. 参考资产</text>
+  <text x="618" y="222" class="box-text">Character Reference Sheet</text>
+  <text x="618" y="250" class="box-text">Scene + Wardrobe</text>
 
-  <path class="line" d="M280 201 H350"/>
+  <path d="M826 215 H892" class="arrow"/>
+  <rect x="892" y="155" width="250" height="120" class="gate"/>
+  <text x="914" y="190" class="box-title">4. Reviewer Gate</text>
+  <text x="914" y="222" class="box-text">PASS_TO_SUBMIT / BLOCKED</text>
+  <text x="914" y="250" class="small">烧钱前硬门禁</text>
 
-  <g filter="url(#shadow)">
-    <rect x="370" y="125" width="300" height="152" rx="26" fill="url(#director)" stroke="#5EEAD4"/>
-    <rect x="395" y="148" width="42" height="26" rx="13" fill="#A7F3D0"/>
-    <text x="409" y="167" class="badge">2</text>
-    <text x="395" y="199" class="card-title">Director Module</text>
-    <text x="395" y="225" class="card-text">判断角色 / 环境 / 调度 / 拆镜头</text>
-    <text x="395" y="250" class="small">输出 director_plan，再生成资产与Prompt</text>
-  </g>
+  <path d="M1017 275 V350" class="arrow"/>
+  <rect x="892" y="350" width="250" height="120" class="box"/>
+  <text x="914" y="385" class="box-title">5. Seedance 执行</text>
+  <text x="914" y="417" class="box-text">标准版 / 480p / 音频</text>
+  <text x="914" y="445" class="box-text">每幕独立 Task ID</text>
 
-  <path class="branch" d="M520 277 V330"/>
-  <path class="branch" d="M520 330 H205 V372"/>
-  <path class="branch" d="M520 330 H520 V372"/>
-  <path class="branch" d="M520 330 H835 V372"/>
+  <path d="M892 410 H826" class="arrow"/>
+  <rect x="596" y="350" width="230" height="120" class="box"/>
+  <text x="618" y="385" class="box-title">6. 轮询与下载</text>
+  <text x="618" y="417" class="box-text">保存结果 / 视频 URL</text>
+  <text x="618" y="445" class="box-text">避免重复 POST</text>
 
-  <g filter="url(#shadow)">
-    <rect x="70" y="392" width="270" height="118" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="92" y="414" width="42" height="26" rx="13" fill="#7DD3FC"/>
-    <text x="106" y="433" class="badge">3</text>
-    <text x="92" y="464" class="card-title">角色资产</text>
-    <text x="92" y="489" class="card-text">主角数量 → CRS / 官方asset / text</text>
-  </g>
+  <path d="M596 410 H530" class="arrow"/>
+  <rect x="320" y="350" width="210" height="120" class="box"/>
+  <text x="342" y="385" class="box-title">7. QA / 拼接</text>
+  <text x="342" y="417" class="box-text">ffprobe / 抽帧</text>
+  <text x="342" y="445" class="box-text">多幕 ffmpeg concat</text>
 
-  <g filter="url(#shadow)">
-    <rect x="385" y="392" width="270" height="118" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="407" y="414" width="42" height="26" rx="13" fill="#7DD3FC"/>
-    <text x="421" y="433" class="badge">4</text>
-    <text x="407" y="464" class="card-title">环境与调度</text>
-    <text x="407" y="489" class="card-text">SES / Top-Down Blocking Map / keyframes</text>
-  </g>
+  <path d="M320 410 H254" class="arrow"/>
+  <rect x="64" y="350" width="190" height="120" class="box"/>
+  <text x="86" y="385" class="box-title">8. 回填验收</text>
+  <text x="86" y="417" class="box-text">成片 / QA / tokens</text>
+  <text x="86" y="445" class="box-text">成本 / Prompt Map</text>
 
-  <g filter="url(#shadow)">
-    <rect x="700" y="392" width="270" height="118" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="722" y="414" width="42" height="26" rx="13" fill="#7DD3FC"/>
-    <text x="736" y="433" class="badge">5</text>
-    <text x="722" y="464" class="card-title">镜头导演稿</text>
-    <text x="722" y="489" class="card-text">4-6组镜头 · 逐秒 · 镜头语言</text>
-  </g>
-
-  <path class="line" d="M970 451 H1040 V285"/>
-
-  <g filter="url(#shadow)">
-    <rect x="810" y="145" width="250" height="112" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="832" y="167" width="42" height="26" rx="13" fill="#7DD3FC"/>
-    <text x="846" y="186" class="badge">6</text>
-    <text x="832" y="217" class="card-title">Payload Builder</text>
-    <text x="832" y="242" class="card-text">Fast / 480p / content顺序</text>
-  </g>
-
-  <path class="line" d="M1060 201 H1115 V360"/>
-
-  <g filter="url(#shadow)">
-    <rect x="910" y="380" width="220" height="110" rx="22" fill="url(#card)" stroke="#334155"/>
-    <rect x="932" y="402" width="42" height="26" rx="13" fill="#A7F3D0"/>
-    <text x="946" y="421" class="badge">7</text>
-    <text x="932" y="452" class="card-title">Seedance / QA</text>
-    <text x="932" y="477" class="card-text">提交、轮询、抽帧、转写、成本</text>
-  </g>
-
-  <path class="line" d="M910 435 C795 560 440 560 250 515"/>
-  <text x="340" y="605" class="note">默认：Seedance 2.0 Fast · 480p · 中文细导演稿 · 未确认不烧钱 · 生成后回填</text>
+  <rect x="64" y="535" width="1078" height="92" class="warn"/>
+  <text x="92" y="572" class="box-title">关键原则</text>
+  <text x="92" y="604" class="box-text">新视频先补齐当前行物料台账；官方人像必须加入 Wardrobe Reference image；Reviewer 未 PASS 禁止提交。</text>
 </svg>

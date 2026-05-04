@@ -22,6 +22,10 @@ Director 必须先产出结构化方案，再写 Prompt。
 director_plan:
   summary: "这一条视频的导演意图，一句话"
   duration_seconds: 12
+  duration_strategy:
+    recommended_seconds: 12
+    reason: "根据剧情信息量、对白密度、反转节奏、平台短视频完播率取舍"
+    user_locked: false
   ratio: "16:9"
   resolution: "480p"
   model_default: "doubao-seedance-2-0-fast-260128"
@@ -68,6 +72,36 @@ director_plan:
   needs_user_review:
     - "是否接受 text_only 角色而不生成 CRS"
 ```
+
+## Duration Decision Rules
+
+Director 必须先判断“建议时长”，再拆镜头；除非 Base 或用户已经锁死时长。
+
+判断维度：
+
+- 笑点类型：单一视觉梗更短；对白反转/误会梗需要更长铺垫。
+- 台词密度：中文对白每句至少留出可听清的节奏和反应停顿。
+- 动作复杂度：拿放、追逐、跌倒、遮挡、多人互动需要额外秒数。
+- 资产稳定性：角色/场景漂移风险高时，宁可少镜头、少动作，不盲目加长。
+- 平台完播：短视频优先保证完播率，能 12 秒讲完不要拉到 20 秒。
+- 成本：更长时长通常增加 tokens/成本；超出默认 12 秒要标记 `needs_user_review`。
+- Seedance API 限制：Seedance 2.0 / 2.0 Fast 的 `duration` 支持整数 `[4,15]` 或 `-1` 智能时长；不得规划 15 秒以上单条视频。
+
+默认建议：
+
+```text
+6-8秒：单动作、单反应、无复杂对白的短梗。
+9-12秒：默认档；一组铺垫 + 一次反转 + 一个落点，适合短对白喜剧。
+13-16秒：多句对白、两段反转、动作与表情都要读清。
+15秒：Seedance 2.0 / 2.0 Fast 当前 API 上限；只用于多句对白、两段反转或动作较复杂的单场景。超过 15 秒不提交，必须拆成多条视频或改脚本。
+```
+
+输出要求：
+
+- `duration_strategy.recommended_seconds` 写建议秒数。
+- `duration_strategy.reason` 写一句理由。
+- 用户/Base 已指定时长时，`user_locked: true`，只在风险说明里给备选建议。
+- 建议改变 billable 时长时，必须进 `needs_user_review`，不得直接提交。
 
 ## Character Decision Rules
 

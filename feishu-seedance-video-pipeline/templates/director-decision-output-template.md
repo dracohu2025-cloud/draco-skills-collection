@@ -8,6 +8,11 @@ director_plan:
     base_row: "<row number or record label>"
     story_goal: "<一句话剧情/笑点>"
     required_duration_seconds: 12
+    duration_strategy:
+      recommended_seconds: 12
+      user_locked: false
+      reason: "<根据剧情信息量、对白密度、反转节奏、完播率、成本和 Seedance 2.0 的 4-15 秒限制给出建议>"
+      alternative_seconds: "<如需更快节奏/更完整铺垫，可选秒数；没有则 none>"
     aspect_ratio: "16:9"
     generate_audio: true
     user_locked_constraints:
