@@ -1,32 +1,25 @@
 ---
 name: daily-ai-agent-aigc-top-news
-description: Use when generating a daily 24h AI / Agent / AIGC top-news briefing, publishing it as a DingTalk document, validating it, and optionally archiving it to a DingTalk multidimensional table.
+description: Use when generating a daily 24h AI / Agent / AIGC top-news briefing, publishing it as a Feishu/Lark native document, validating it, and optionally archiving it to Bitable.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
+platforms: [linux]
+prerequisites:
+  commands: [python3, lark-cli]
 metadata:
   hermes:
-    tags:
-    - news
-    - ai
-    - agent
-    - aigc
-    - briefing
-    - cron
-    - dingtalk
-    - dws
-    - aitable
-    related_skills:
-    - news-aggregator-skill
-    - ai-news-bitable-archive
+    tags: [news, ai, agent, aigc, briefing, cron, feishu, lark, bitable]
+    related_skills: [news-aggregator-skill, feishu-lark-workflows, ai-news-bitable-archive]
 ---
+
 # Daily AI / Agent / AIGC Top News Briefing
 
 ## Overview
 
 This skill runs a daily AI / Agent / AIGC morning briefing workflow.
 
-It collects candidates from news aggregators and source-of-truth pages, filters for high-signal items, writes a Chinese 24h report, publishes it as a DingTalk document, fetches it back for validation, and optionally archives the result to a DingTalk multidimensional table.
+It collects candidates from news aggregators and source-of-truth pages, filters for high-signal items, writes a Chinese 24h report, publishes it as a Feishu/Lark native document, fetches it back for validation, and optionally archives the result to Feishu Bitable.
 
 Core rule: **truth first, no quota-filling**. If there are only a few important items, keep the report short.
 
@@ -37,15 +30,15 @@ Use this skill when the task asks for any of these:
 - daily AI / Agent / AIGC top news
 - 过去24小时 AI / Agent / AIGC 早报
 - cron-generated AI morning briefing
-- DingTalk document delivery
-- AI news archive into DingTalk multidimensional table
+- Feishu/Lark native document delivery
+- AI news archive into Feishu Bitable
 - recurring report that must include Agent, AIGC image/video, GitHub Trending, and a mandatory project check
 
 Do not use this for:
 
 - broad weekly reports with a different time window
 - pure finance/news briefings unrelated to AI / Agent / AIGC
-- one-off research notes that do not need DingTalk publishing or multidimensional table archival
+- one-off research notes that do not need Feishu publishing or Bitable archival
 
 ## Required Inputs
 
@@ -54,14 +47,14 @@ A cron prompt should be self-contained and include:
 ```text
 Task: Generate the past-24h AI / Agent / AIGC Top News briefing.
 Timezone: Asia/Shanghai.
-Delivery: create DingTalk doc, fetch-back validate, optionally archive to DingTalk multidimensional table, send result to origin chat.
-Archive base_id: <DINGTALK_BASE_ID>
-Archive table_id: <DINGTALK_TABLE_ID>
-Aitable URL: https://alidocs.dingtalk.com/i/nodes/<DINGTALK_BASE_ID>
+Delivery: create Feishu/Lark native doc, fetch-back validate, optionally archive to Feishu Bitable, send result to origin chat.
+Archive base_token: <FEISHU_BITABLE_BASE_TOKEN>
+Archive table_id: <FEISHU_BITABLE_TABLE_ID>
+Bitable URL: https://www.feishu.cn/base/<FEISHU_BITABLE_BASE_TOKEN>?table=<FEISHU_BITABLE_TABLE_ID>
 Required project check: <owner>/<repo>
 ```
 
-If no DingTalk folder ID is supplied, create the document in the default DingTalk location. Do not block.
+If no Feishu folder token is supplied, create the document in the default Feishu location. Do not block.
 
 ## Output Contract
 
@@ -72,7 +65,7 @@ Final answer must include:
 
 - 文档标题：...
 - doc_url：...
-- aitable_url：...  # if archival is enabled
+- bitable_url：...  # if archival is enabled
 - record_id：...    # if archival is enabled
 - 摘要：
   - ...
@@ -82,108 +75,23 @@ Final answer must include:
 
 If archival fails but doc publishing succeeds, say so explicitly and include the doc URL plus a short error summary.
 
-## DingTalk Adaptation (Complete)
-
-When the task runs on DingTalk instead of Feishu/Lark, replace all Feishu-specific commands with DingTalk equivalents. Report content logic (AI/Agent/AIGC news selection) remains unchanged.
-
-### Phase 1 — Preflight (DingTalk)
-
-```bash
-date -u '+UTC=%Y-%m-%d %H:%M:%S' && TZ='Asia/Shanghai' date '+CST=%Y-%m-%d %H:%M:%S %Z'
-```
-
-No Feishu auth check needed. DingTalk document and multidimensional table operations go through `dws` CLI which handles auth automatically.
-
-### Phase 6 — Publish DingTalk Doc
-
-Write the report to a local temporary Markdown file, then create the DingTalk doc:
-
-```bash
-dws doc create \
-  --name 'AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00' \
-  --markdown "$(cat /tmp/daily_report.md)" \
-  --format json
-```
-
-If a folder is specified:
-
-```bash
-dws doc create \
-  --name 'AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00' \
-  --markdown "$(cat /tmp/daily_report.md)" \
-  --folder '<DINGTALK_FOLDER_ID>' \
-  --format json
-```
-
-Extract `nodeId` from the response. The doc URL is:
-
-```text
-https://alidocs.dingtalk.com/i/nodes/{nodeId}
-```
-
-### Phase 7 — Fetch-Back Validation (DingTalk)
-
-```bash
-dws doc read --node '<NODE_ID>' --format json
-```
-
-Validate from the returned `content`:
-- title is correct
-- opening metadata contains 更新时间 / 统计窗口 / 筛选口径
-- `## 最值得注意的 3 条` exists
-- `## AIGC 生图 / 生视频` exists
-- `## GitHub Trending / 开源趋势信号` exists
-- `## 一句话结论` exists
-- mandatory project check was performed and is represented if material
-- paragraphs are not glued together
-
-### Phase 8 — Optional Archive to DingTalk Multidimensional Table
-
-Use the dedicated DingTalk archive script from the `ai-news-bitable-archive` skill:
-
-```bash
-python3 scripts/sync_doc_to_dingtable.py \
-  --doc-url 'https://alidocs.dingtalk.com/i/nodes/<NODE_ID>' \
-  --base-id '<DINGTALK_BASE_ID>' \
-  --table-id '<DINGTALK_TABLE_ID>' \
-  --date 'YYYY-MM-DD' \
-  --status '已归档'
-```
-
-The script returns `record_id`. Validate:
-
-```bash
-dws aitable record query \
-  --base-id '<DINGTALK_BASE_ID>' \
-  --table-id '<DINGTALK_TABLE_ID>' \
-  --record-ids '<RECORD_ID>' \
-  --format json
-```
-
-Verify fields: 标题, 文档链接, 文档Token, 统计窗口, Top1-3, 一句话结论, 摘要, 状态.
-
-### Output Contract (DingTalk)
-
-```md
-已完成。
-
-- 文档标题：...
-- doc_url：https://alidocs.dingtalk.com/i/nodes/...
-- aitable_url：https://alidocs.dingtalk.com/i/nodes/...  # if archival is enabled
-- record_id：...    # if archival is enabled
-- 摘要：
-  - ...
-  - ...
-  - ...
-```
-
 ## Phase 1 — Preflight
 
-Always check live time. Do not infer time mentally.
+Always check live time and Feishu/Lark auth. Do not infer time mentally.
 
 ```bash
 date -u '+UTC=%Y-%m-%d %H:%M:%S' && TZ='Asia/Shanghai' date '+CST=%Y-%m-%d %H:%M:%S %Z'
+lark-cli auth status
+lark-cli auth scopes
 ```
+
+Minimum expected capabilities:
+
+- document create/import capability
+- document fetch/read capability
+- Bitable record read/write capability, if archival is enabled
+
+If scope output is noisy, continue if the actual create/fetch/API calls work.
 
 ## Phase 2 — Source Collection
 
@@ -292,7 +200,7 @@ Use this priority order:
 Hard rules:
 
 - Do not write rumors as releases.
-- Do not convert GitHub Trending Today into "past 24h launched". Say "今日趋势信号".
+- Do not convert GitHub Trending Today into “past 24h launched”. Say “今日趋势信号”.
 - HN Algolia is noisy. Treat it as discovery, not proof.
 - Verify important HN links using original `objectID` / `hn_url`; do not guess item IDs.
 - If official naming differs from media naming, state the official name clearly.
@@ -358,10 +266,102 @@ Formatting rules:
 - Avoid hype words and generic filler.
 - Links must point to the actual source when possible.
 
+## Phase 6 — Publish Feishu/Lark Native Doc
+
+Prefer writing the report to a local temporary Markdown file, then pass the file content via Python/subprocess or safe argv. Avoid shell-embedded huge markdown.
+
+Minimal create command:
+
+```bash
+lark-cli docs +create \
+  --as user \
+  --title 'AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00' \
+  --markdown '<content>'
+```
+
+If a folder token is provided:
+
+```bash
+lark-cli docs +create \
+  --as user \
+  --folder-token '<FEISHU_FOLDER_TOKEN>' \
+  --title 'AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00' \
+  --markdown '<content>'
+```
+
+After creation, extract `doc_url` from stdout.
+
+## Phase 7 — Fetch-Back Validation
+
+Always fetch the created document before reporting success.
+
+```bash
+lark-cli docs +fetch --as user --doc '<doc_url>' --format pretty
+```
+
+Validate:
+
+- title is correct
+- opening metadata contains 更新时间 / 统计窗口 / 筛选口径
+- `## 最值得注意的 3 条` exists
+- `## AIGC 生图 / 生视频` exists
+- `## GitHub Trending / 开源趋势信号` exists
+- `## 一句话结论` exists
+- mandatory project check was performed and is represented if material
+- paragraphs are not glued together
+
+Pretty fetch may normalize ordered lists to `1.`. That is display-layer behavior; do not treat it as failure if structure is intact.
+
+## Phase 8 — Optional Archive to Feishu Bitable
+
+Use a dedicated archive script if available. Do not hand-build shell JSON.
+
+Example command:
+
+```bash
+python3 path/to/sync_doc_to_bitable.py \
+  --doc-url '<doc_url>' \
+  --base-token '<FEISHU_BITABLE_BASE_TOKEN>' \
+  --table-id '<FEISHU_BITABLE_TABLE_ID>' \
+  --date 'YYYY-MM-DD' \
+  --status '已归档'
+```
+
+Bitable URL format:
+
+```text
+https://www.feishu.cn/base/<FEISHU_BITABLE_BASE_TOKEN>?table=<FEISHU_BITABLE_TABLE_ID>
+```
+
+The script should return `record_id`. Fetch that exact record:
+
+```bash
+lark-cli api GET "/open-apis/bitable/v1/apps/<FEISHU_BITABLE_BASE_TOKEN>/tables/<FEISHU_BITABLE_TABLE_ID>/records/<record_id>" --as user
+```
+
+Validate fields:
+
+- 标题
+- 文档链接
+- 文档Token
+- 统计窗口
+- Top1 / Top2 / Top3
+- 一句话结论
+- 摘要
+- 状态
+
+If the table schema changes, inspect fields:
+
+```bash
+lark-cli api GET "/open-apis/bitable/v1/apps/<FEISHU_BITABLE_BASE_TOKEN>/tables/<FEISHU_BITABLE_TABLE_ID>/fields?page_size=100" --as user
+```
+
+Remember: Feishu URL fields require `{link, text}`, not a raw string.
+
 ## Cron Prompt Template
 
 ```text
-任务：生成"过去24小时 AI / Agent / AIGC Top News 早报"，发布到钉钉文档，并在发布成功后自动归档到钉钉多维表。完成后把结果回传到当前聊天。
+任务：生成“过去24小时 AI / Agent / AIGC Top News 早报”，发布到飞书原生文档，并在发布成功后自动归档到飞书多维表。完成后把结果回传到当前聊天。
 
 必须使用已加载的 daily-ai-agent-aigc-top-news skill 执行完整流程。
 
@@ -369,15 +369,15 @@ Formatting rules:
 1. 时间窗口：过去24小时，时区 Asia/Shanghai。
 2. 内容范围：AI / Agent / coding agent / eval / workflow / toolchain / AIGC 生图生视频。
 3. 必须单独核查 <owner>/<repo>：release、最近24小时 commits、merged PR、重要用户可感知变化。
-4. 必须检查 GitHub Trending Today；只能写成"今日趋势信号"，不能冒充过去24小时正式发布。
+4. 必须检查 GitHub Trending Today；只能写成“今日趋势信号”，不能冒充过去24小时正式发布。
 5. 必须检查 AIGC 生图 / 生视频官方源：OpenAI、Google、Runway、Pika、Kling、字节/即梦/Seedance、Midjourney、Ideogram、Adobe Firefly、Stability。
 6. 真实性优先；不要硬凑条数。
 7. 输出中文。
-8. 发布为钉钉文档，标题：AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00。
-9. 创建后必须 dws doc read 回读验收。
-10. 如启用归档，归档到钉钉多维表：base_id <DINGTALK_BASE_ID>，table_id <DINGTALK_TABLE_ID>。
+8. 发布为飞书原生文档，标题：AI / Agent / AIGC Top News 24h｜YYYY-MM-DD 08:00。
+9. 创建后必须 docs +fetch 回读验收。
+10. 如启用归档，归档到飞书多维表：base_token <FEISHU_BITABLE_BASE_TOKEN>，table_id <FEISHU_BITABLE_TABLE_ID>。
 11. 如启用归档，归档后必须按 record_id 回读验收。
-12. 最终回复包含：文档标题、doc_url（alidocs.dingtalk.com）、aitable_url、record_id、3～6条摘要。
+12. 最终回复包含：文档标题、doc_url、bitable_url、record_id、3～6条摘要。
 ```
 
 Attach these skills to the cron job if available:
@@ -386,6 +386,7 @@ Attach these skills to the cron job if available:
 daily-ai-agent-aigc-top-news
 news-aggregator-skill
 ai-news-bitable-archive
+feishu-lark-workflows
 ```
 
 ## Common Pitfalls
@@ -400,24 +401,24 @@ ai-news-bitable-archive
 
 5. **Forgetting the mandatory project check.** It is a separate check, not just another candidate.
 
-6. **Shell JSON pain.** For DingTalk multidimensional table, prefer Python subprocess with argv and JSON serialization.
+6. **Shell JSON pain.** For Feishu/Bitable, prefer Python subprocess with argv and JSON serialization.
 
-7. **Reporting before validation.** Doc creation alone is not enough. Fetch back the doc and the multidimensional table record.
+7. **Reporting before validation.** Doc creation alone is not enough. Fetch back the doc and the Bitable record.
 
 8. **Writing glued Markdown.** Keep blank lines between intro paragraphs and before every `##` heading.
 
 ## Verification Checklist
 
 - [ ] Live CST time checked
-- [ ] DingTalk auth handled by dws CLI
+- [ ] Feishu/Lark auth checked or actual calls succeeded
 - [ ] Aggregator ran or fallback search was used
 - [ ] Official/source checks performed
 - [ ] GitHub Trending Today checked and labeled as trend
 - [ ] AIGC image/video official sources checked
 - [ ] Mandatory project checked separately
 - [ ] Report written in Chinese with required sections
-- [ ] DingTalk doc created via `dws doc create`
-- [ ] `dws doc read` validation passed
-- [ ] DingTalk multidimensional table archive script ran, if archival is enabled
+- [ ] Feishu/Lark native doc created
+- [ ] `docs +fetch` validation passed
+- [ ] Bitable archive script ran, if archival is enabled
 - [ ] Archived record fetched by `record_id`, if archival is enabled
-- [ ] Final reply includes title, doc_url (alidocs.dingtalk.com), archive info when enabled, and summaries
+- [ ] Final reply includes title, doc_url, archive info when enabled, and summaries
