@@ -44,7 +44,8 @@ def fetch_doc(doc_url: str) -> str:
     node_id = extract_node_id(doc_url)
     result = run(['dws', 'doc', 'read', '--node', node_id, '--format', 'json'])
     if isinstance(result, dict):
-        return result.get('markdown', result.get('content', ''))
+        # 优先取 content，markdown 仅做 fallback（markdown 可能为 null）
+        return result.get('content') or result.get('markdown') or ''
     return str(result)
 
 
@@ -65,7 +66,11 @@ def get_table_schema(base_id: str, table_id: str) -> Dict[str, str]:
 def parse_doc(doc_text: str, explicit_date: Optional[str] = None) -> Dict[str, str]:
     """解析日报文档，提取各字段。"""
     lines = doc_text.splitlines()
+
+    # 标题：优先取 # 开头行，fallback 取第一个非空行
     title = next((l[2:].strip() for l in lines if l.startswith('# ')), '')
+    if not title:
+        title = next((l.strip() for l in lines if l.strip()), '')
     window = next(
         (l.replace('统计窗口：', '').strip() for l in lines if l.startswith('统计窗口：')),
         '',
