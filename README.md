@@ -28,6 +28,7 @@
 | [`hyperframes-explainer-video/`](./hyperframes-explainer-video/) | 用 HyperFrames 制作讲解/介绍类视频（HTML+GSAP+TTS 全链路） | 脚本 / TTS / HTML / MP4 |
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
+| [`open-design-to-open-slide/`](./open-design-to-open-slide/) | 把 Open Design 视觉模板转成 Open Slide React 幻灯片套件 | 20 页模板 album / 截图 QA / contact sheet |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
 | [`feishu-seedance-video-pipeline/`](./feishu-seedance-video-pipeline/) | 用 Director + Ledger Guard + Reviewer 管理 Seedance 视频产线 | 物料台账 / Prompt / Payload / 成片 / QA / 成本 |
 | [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
@@ -107,6 +108,15 @@
       </a>
       <p><strong>feishu-seedance-video-pipeline</strong><br/>用 Director Module 拆解角色、场景、服装和镜头，用 Base Asset Ledger Write Guard 防止资产台账误填，再由 Reviewer Module 做烧钱前门禁，最后生成 Seedance 视频并回填 QA、tokens 和成本。</p>
     </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./open-design-to-open-slide/README.md">
+        <img src="./open-design-to-open-slide/assets/workflow-preview.svg" alt="open-design-to-open-slide 工作流预览" />
+      </a>
+      <p><strong>open-design-to-open-slide</strong><br/>把 Open Design 的视觉系统，改造成 Open Slide 可运行的 20 页 React 模板套件。</p>
+    </td>
+    <td width="50%" valign="top"></td>
   </tr>
 </table>
 
@@ -189,16 +199,18 @@ python3 scripts/run.py publish-feishu \
 2. 如果重点是数学、公式、对象变换、算法过程：看 [`manim-video`](./manim-video/)
 3. 如果需要中文旁白/语音同步：看 [`manim-video-with-tts`](./manim-video-with-tts/)
 4. 如果重点是 TS 场景动画、时间轴编排、讲解型 motion graphics：看 [`motion-canvas`](./motion-canvas/)
-4. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
-5. 如果重点是英文单词解释视频（带 TTS 同步）：看 [`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
-6. 如果重点是“Director Module + Reviewer Module + 飞书多维表格 + Seedance 生成 + 资产/QA/成本回填”的视频产线：看 [`feishu-seedance-video-pipeline`](./feishu-seedance-video-pipeline/)
-7. 如果重点是用 HTML+GSAP+Canvas 做讲解/介绍类视频（音频驱动、组件库编排）：看 [`hyperframes-explainer-video`](./hyperframes-explainer-video/)
+5. 如果重点是 React 页面、组件、卡片、模板化批量视频：看 [`remotion`](./remotion/)
+6. 如果重点是把 Open Design 视觉系统变成 Open Slide 演示模板：看 [`open-design-to-open-slide`](./open-design-to-open-slide/)
+7. 如果重点是英文单词解释视频（带 TTS 同步）：看 [`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
+8. 如果重点是“Director Module + Reviewer Module + 飞书多维表格 + Seedance 生成 + 资产/QA/成本回填”的视频产线：看 [`feishu-seedance-video-pipeline`](./feishu-seedance-video-pipeline/)
+9. 如果重点是用 HTML+GSAP+Canvas 做讲解/介绍类视频（音频驱动、组件库编排）：看 [`hyperframes-explainer-video`](./hyperframes-explainer-video/)
 
 一句话判断：
 - **对象怎么变** → `manim-video`
 - **数学视频 + 中文旁白** → `manim-video-with-tts`
 - **场景怎么演** → `motion-canvas`
 - **页面这一帧长什么样** → `remotion`
+- **Open Design 视觉模板转 Open Slide** → `open-design-to-open-slide`
 - **英文单词视频流水线** → `vocabulary-video-pipeline`
 - **讲解视频全链路（HTML+GSAP+TTS）** → `hyperframes-explainer-video`
 
@@ -256,8 +268,9 @@ python3 scripts/run.py --help
 - 想做数学视频 + 中文旁白同步：[`manim-video-with-tts`](./manim-video-with-tts/)
 - 想做 TS 场景动画：[`motion-canvas`](./motion-canvas/)
 - 想做 React 页面型视频：[`remotion`](./remotion/)
+- 想把 Open Design 视觉模板变成 Open Slide 模板：[`open-design-to-open-slide`](./open-design-to-open-slide/)
 - 想用 HyperFrames 做讲解/介绍类视频：[`hyperframes-explainer-video`](./hyperframes-explainer-video/)
-- 想用 Seedance 生成短视频：[`seedance-video-local`](./seedance-video-local/)
+- 想用 Seedance 生成短视频：[`feishu-seedance-video-pipeline`](./feishu-seedance-video-pipeline/)
 
 ---
 
