@@ -24,6 +24,28 @@ Quality baseline:
 - Treat OD-derived suites as supplemental style expansion, not the flagship standard.
 - When improving OD suites, compare them against official Open-Slide examples before shipping.
 
+## Open-Slide Official Baseline Inventory
+
+The playground includes 11 official/starter Open-Slide decks. Use these as the first reference set when judging layout, motion, hierarchy, and polish.
+
+| Slug | Source | Pages | Role |
+|---|---|---:|---|
+| `getting-started` | CLI starter template | 13 | Starter / baseline primitives |
+| `open-slide-launch` | Official demo | 7 | Product launch narrative |
+| `open-slide-anatomy` | Official demo | 1 | Single-page anatomy explainer |
+| `vercel-ai-sdk` | Official demo | 8 | Technical product explainer |
+| `ssh-explained` | Official demo | 10 | Concept teaching deck |
+| `material-design-2014` | Official demo | 7 | Design history / visual storytelling |
+| `claude-code-intro` | Official demo | 9 | Product intro / workflow |
+| `harness-engineering` | Official demo | 8 | Engineering/product narrative |
+| `llm-fundamentals` | Official demo | 12 | Knowledge explainer |
+| `nextjs-ppr-cache` | Official demo | 2 | Short technical comparison |
+| `raycast-api` | Official demo | 9 | API/product explainer |
+
+Official/starter total: **11 decks, 86 pages**.
+
+Current full playground inventory: **54 decks** = 11 official/starter + 38 standalone OD suites + 2 OD kit decks + 3 local custom decks.
+
 ## When to Use
 
 Use this skill when you need to:

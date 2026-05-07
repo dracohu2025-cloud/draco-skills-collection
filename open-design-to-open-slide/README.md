@@ -8,6 +8,29 @@
 
 重要口径：**Open-Slide 官方模板是更高质量的视觉基线；Open-Design 移植版更适合扩充风格和场景。**
 
+## 当前模板盘点
+
+| 分类 | 数量 | 页数 | 用法 |
+|---|---:|---:|---|
+| Open-Slide 官方/Starter | 11 套 | 86 页 | 主质量基线，优先参考 |
+| Open-Design 独立移植套件 | 38 套 | 760 页 | 扩充风格和业务场景 |
+| Open-Design 汇总 kit | 2 套 | - | 索引/展示 |
+| 本地自制 | 3 套 | - | demo / 辅助 |
+
+Open-Slide 官方/Starter 清单：
+
+- `getting-started` — 13 页
+- `open-slide-launch` — 7 页
+- `open-slide-anatomy` — 1 页
+- `vercel-ai-sdk` — 8 页
+- `ssh-explained` — 10 页
+- `material-design-2014` — 7 页
+- `claude-code-intro` — 9 页
+- `harness-engineering` — 8 页
+- `llm-fundamentals` — 12 页
+- `nextjs-ppr-cache` — 2 页
+- `raycast-api` — 9 页
+
 ## 适合做什么
 
 - 把 Open Design 里的设计系统改造成 Open Slide 模板
