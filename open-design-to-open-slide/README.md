@@ -6,6 +6,8 @@
 
 一句话：**借 Open Design 的审美和页面范式，用 Open Slide 的 React runtime 重新实现。**
 
+重要口径：**Open-Slide 官方模板是更高质量的视觉基线；Open-Design 移植版更适合扩充风格和场景。**
+
 ## 适合做什么
 
 - 把 Open Design 里的设计系统改造成 Open Slide 模板

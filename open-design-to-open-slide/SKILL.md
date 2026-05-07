@@ -18,6 +18,12 @@ This skill captures a practical workflow: use **Open Design** as a visual templa
 
 Core rule: **Open Design is a source of design language, not a runtime dependency.** Mine its palettes, typography, page recipes, examples, and component rhythm; implement the output as Open Slide `Page[]` with React primitives.
 
+Quality baseline:
+
+- Treat original Open-Slide official examples as the stronger visual baseline.
+- Treat OD-derived suites as supplemental style expansion, not the flagship standard.
+- When improving OD suites, compare them against official Open-Slide examples before shipping.
+
 ## When to Use
 
 Use this skill when you need to:
