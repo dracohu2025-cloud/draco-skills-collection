@@ -10,15 +10,18 @@
 
 这不是把两个 runtime 混在一起。最终产物仍然是 Open Slide 的 React slides。
 
+**现在这个 skill 已内置完整资产包**：`templates/open-slide-template-pack/`，包含 11 套 Open-Slide 官方 / starter deck + 38 套 Open-Design 移植 suite，共 49 套。
+
 ---
 
 ## 当前模板资产
 
 | 分类 | 数量 | 页数 | 定位 |
 |---|---:|---:|---|
-| Open-Slide 官方 / Starter | **11 套** | **86 页** | 主质量基线，优先参考 |
+| Open-Slide 官方 / Starter | **11 套** | **107 页** | 主质量基线，优先参考 |
 | Open-Design 独立移植套件 | **38 套** | **760 页** | 风格扩展库，覆盖更多场景 |
 | Open-Design 汇总 kit | **2 套** | - | 展示 / 索引 |
+| 随 skill 分发的资产包 | **49 套** | **867 页** | `templates/open-slide-template-pack/` |
 | 本地自制 demo | **3 套** | - | 实验 / 辅助 |
 
 最干净的口径：
@@ -36,14 +39,14 @@
 |---|---:|---|
 | `getting-started` | 13 | starter 结构、基础 primitives |
 | `open-slide-launch` | 7 | 产品发布叙事 |
-| `open-slide-anatomy` | 1 | 单页结构解释 |
+| `open-slide-anatomy` | 16 | 深度结构解释 |
 | `vercel-ai-sdk` | 8 | 技术产品讲解 |
 | `ssh-explained` | 10 | 概念教学 |
 | `material-design-2014` | 7 | 设计史、强视觉叙事 |
 | `claude-code-intro` | 9 | 产品介绍、工作流表达 |
 | `harness-engineering` | 8 | 工程产品叙事 |
 | `llm-fundamentals` | 12 | 知识解释型 deck |
-| `nextjs-ppr-cache` | 2 | 短技术对比 |
+| `nextjs-ppr-cache` | 8 | 短技术对比 |
 | `raycast-api` | 9 | API / 产品能力介绍 |
 
 ---
@@ -153,6 +156,37 @@
 - 无白屏 / 空页
 - 截图 hash 无异常重复
 - contact sheet 可人工扫一眼
+
+---
+
+## 直接安装 49 套模板资产
+
+下载这个 skill 后，可以把内置模板复制到任意 Open Slide 项目：
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project
+```
+
+只安装 OD 移植模板：
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project --od
+```
+
+查看内置清单：
+
+```bash
+python3 open-design-to-open-slide/scripts/list-template-pack.py
+```
+
+资产位置：
+
+```text
+open-design-to-open-slide/templates/open-slide-template-pack/
+  manifest.json
+  README.md
+  slides/<49 deck slugs>/index.tsx
+```
 
 ---
 

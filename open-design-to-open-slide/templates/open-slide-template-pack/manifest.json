@@ -1,0 +1,360 @@
+{
+  "name": "open-design-to-open-slide-template-pack",
+  "version": "1.0.0",
+  "description": "49 Open Slide template decks: 11 official/starter baselines + 38 Open Design-derived 20-page suites.",
+  "source": "Extracted from /home/ubuntu/projects/open-slide-playground/slides on 2026-05-09.",
+  "license_note": "See repository LICENSE and per-slide provenance comments/notes. Open Design-derived suites port visual language into React primitives; no Open Design runtime is bundled.",
+  "counts": {
+    "total_decks": 49,
+    "open_slide_official_decks": 11,
+    "open_design_ported_suites": 38,
+    "open_design_ported_pages": 760,
+    "open_slide_official_pages": 107,
+    "total_pages": 867
+  },
+  "decks": [
+    {
+      "slug": "getting-started",
+      "category": "open-slide-official",
+      "pages": 13,
+      "path": "slides/getting-started",
+      "index_sha256_16": "b0541feb36428154"
+    },
+    {
+      "slug": "open-slide-launch",
+      "category": "open-slide-official",
+      "pages": 7,
+      "path": "slides/open-slide-launch",
+      "index_sha256_16": "8f3865f8672503cb"
+    },
+    {
+      "slug": "open-slide-anatomy",
+      "category": "open-slide-official",
+      "pages": 16,
+      "path": "slides/open-slide-anatomy",
+      "index_sha256_16": "041818e93cece1f7"
+    },
+    {
+      "slug": "vercel-ai-sdk",
+      "category": "open-slide-official",
+      "pages": 8,
+      "path": "slides/vercel-ai-sdk",
+      "index_sha256_16": "3e3768f79ea4da3a"
+    },
+    {
+      "slug": "ssh-explained",
+      "category": "open-slide-official",
+      "pages": 10,
+      "path": "slides/ssh-explained",
+      "index_sha256_16": "ab3ffb633632ab6f"
+    },
+    {
+      "slug": "material-design-2014",
+      "category": "open-slide-official",
+      "pages": 7,
+      "path": "slides/material-design-2014",
+      "index_sha256_16": "b2a01f4201fd12bd"
+    },
+    {
+      "slug": "claude-code-intro",
+      "category": "open-slide-official",
+      "pages": 9,
+      "path": "slides/claude-code-intro",
+      "index_sha256_16": "321b187eeaa7c6d5"
+    },
+    {
+      "slug": "harness-engineering",
+      "category": "open-slide-official",
+      "pages": 8,
+      "path": "slides/harness-engineering",
+      "index_sha256_16": "d11b8fcc2fd34de2"
+    },
+    {
+      "slug": "llm-fundamentals",
+      "category": "open-slide-official",
+      "pages": 12,
+      "path": "slides/llm-fundamentals",
+      "index_sha256_16": "399ec5a382771a92"
+    },
+    {
+      "slug": "nextjs-ppr-cache",
+      "category": "open-slide-official",
+      "pages": 8,
+      "path": "slides/nextjs-ppr-cache",
+      "index_sha256_16": "31b2a52f6a4c6a9a"
+    },
+    {
+      "slug": "raycast-api",
+      "category": "open-slide-official",
+      "pages": 9,
+      "path": "slides/raycast-api",
+      "index_sha256_16": "e157081fa394ddc4"
+    },
+    {
+      "slug": "od-brutalist-deck-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-brutalist-deck-suite",
+      "index_sha256_16": "9d79a56061236424"
+    },
+    {
+      "slug": "od-course-module-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-course-module-suite",
+      "index_sha256_16": "b1857f1419d64f39"
+    },
+    {
+      "slug": "od-cyber-terminal-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-cyber-terminal-suite",
+      "index_sha256_16": "9497bf5e0c5a6d81"
+    },
+    {
+      "slug": "od-dashboard-brief-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-dashboard-brief-suite",
+      "index_sha256_16": "fb4cec86bdfe3962"
+    },
+    {
+      "slug": "od-docs-page-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-docs-page-suite",
+      "index_sha256_16": "83598db739e09422"
+    },
+    {
+      "slug": "od-editorial-taste-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-editorial-taste-suite",
+      "index_sha256_16": "015eced7e8c2185d"
+    },
+    {
+      "slug": "od-email-marketing-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-email-marketing-suite",
+      "index_sha256_16": "584f2c854f76c338"
+    },
+    {
+      "slug": "od-eng-runbook-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-eng-runbook-suite",
+      "index_sha256_16": "08ae4363500adcb4"
+    },
+    {
+      "slug": "od-finance-report-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-finance-report-suite",
+      "index_sha256_16": "569d5debddcc54f2"
+    },
+    {
+      "slug": "od-graphify-dark-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-graphify-dark-suite",
+      "index_sha256_16": "607fb3a2a5b42a23"
+    },
+    {
+      "slug": "od-hr-onboarding-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-hr-onboarding-suite",
+      "index_sha256_16": "0f80b2bdaeae7ea2"
+    },
+    {
+      "slug": "od-kami-paper-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-kami-paper-suite",
+      "index_sha256_16": "69a570e1718f2d74"
+    },
+    {
+      "slug": "od-kanban-board-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-kanban-board-suite",
+      "index_sha256_16": "2b711810951745f9"
+    },
+    {
+      "slug": "od-knowledge-blueprint-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-knowledge-blueprint-suite",
+      "index_sha256_16": "d90641311c73a8f5"
+    },
+    {
+      "slug": "od-magazine-poster-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-magazine-poster-suite",
+      "index_sha256_16": "b517a97c3571cfd0"
+    },
+    {
+      "slug": "od-mobile-onboarding-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-mobile-onboarding-suite",
+      "index_sha256_16": "3c977e08aed0c0ce"
+    },
+    {
+      "slug": "od-motion-frames-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-motion-frames-suite",
+      "index_sha256_16": "23a0252f4160083e"
+    },
+    {
+      "slug": "od-pitch-deck-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-pitch-deck-suite",
+      "index_sha256_16": "9b9fbfc2418bda89"
+    },
+    {
+      "slug": "od-pm-spec-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-pm-spec-suite",
+      "index_sha256_16": "7cb2bf628e732a0a"
+    },
+    {
+      "slug": "od-pricing-page-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-pricing-page-suite",
+      "index_sha256_16": "2c62a0befd015569"
+    },
+    {
+      "slug": "od-product-launch-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-product-launch-suite",
+      "index_sha256_16": "49ad7f8cf679a36f"
+    },
+    {
+      "slug": "od-replit-atlas-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-atlas-suite",
+      "index_sha256_16": "c1165def350e583c"
+    },
+    {
+      "slug": "od-replit-bevel-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-bevel-suite",
+      "index_sha256_16": "419378272ab2329e"
+    },
+    {
+      "slug": "od-replit-bluehouse-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-bluehouse-suite",
+      "index_sha256_16": "a81742980e07e591"
+    },
+    {
+      "slug": "od-replit-helix-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-helix-suite",
+      "index_sha256_16": "d34cccda36a8f18c"
+    },
+    {
+      "slug": "od-replit-holm-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-holm-suite",
+      "index_sha256_16": "1cbd3856e7fea76b"
+    },
+    {
+      "slug": "od-replit-vance-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-vance-suite",
+      "index_sha256_16": "137f71c96022b624"
+    },
+    {
+      "slug": "od-replit-world-dark-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-world-dark-suite",
+      "index_sha256_16": "e791433dfe5d03e8"
+    },
+    {
+      "slug": "od-replit-world-mint-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-replit-world-mint-suite",
+      "index_sha256_16": "e3ca22e8a383bb64"
+    },
+    {
+      "slug": "od-saas-landing-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-saas-landing-suite",
+      "index_sha256_16": "aac35898bb26c5b4"
+    },
+    {
+      "slug": "od-social-carousel-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-social-carousel-suite",
+      "index_sha256_16": "36a0192cff4588bc"
+    },
+    {
+      "slug": "od-team-okrs-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-team-okrs-suite",
+      "index_sha256_16": "d554c1ace2b5d3a9"
+    },
+    {
+      "slug": "od-tech-sharing-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-tech-sharing-suite",
+      "index_sha256_16": "e6934396972959c5"
+    },
+    {
+      "slug": "od-testing-safety-alert-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-testing-safety-alert-suite",
+      "index_sha256_16": "84594a4fdebc2bc2"
+    },
+    {
+      "slug": "od-weekly-update-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-weekly-update-suite",
+      "index_sha256_16": "3bc13dee309462c7"
+    },
+    {
+      "slug": "od-xhs-editorial-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-xhs-editorial-suite",
+      "index_sha256_16": "45a470aadfb8fb13"
+    },
+    {
+      "slug": "od-xhs-pastel-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-xhs-pastel-suite",
+      "index_sha256_16": "fa0b2d5975fa82cf"
+    },
+    {
+      "slug": "od-xhs-post-suite",
+      "category": "open-design-ported",
+      "pages": 20,
+      "path": "slides/od-xhs-post-suite",
+      "index_sha256_16": "2a15f330c8ce9807"
+    }
+  ]
+}

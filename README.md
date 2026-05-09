@@ -28,7 +28,7 @@
 | [`hyperframes-explainer-video/`](./hyperframes-explainer-video/) | 用 HyperFrames 制作讲解/介绍类视频（HTML+GSAP+TTS 全链路） | 脚本 / TTS / HTML / MP4 |
 | [`motion-canvas/`](./motion-canvas/) | 做 TS 场景动画、时间轴讲解和 motion graphics | 场景代码 / 模板 / 视频项目 |
 | [`remotion/`](./remotion/) | 做 React 页面型视频、模板化视频和批量视频 | Composition / still 图 / MP4 |
-| [`open-design-to-open-slide/`](./open-design-to-open-slide/) | 把 Open Design 视觉模板转成 Open Slide React 幻灯片套件 | 20 页模板 album / 截图 QA / contact sheet |
+| [`open-design-to-open-slide/`](./open-design-to-open-slide/) | 把 Open Design 视觉模板转成 Open Slide React 幻灯片套件 | 内置 49 套模板资产 / 安装脚本 / 截图 QA |
 | [`vocabulary-video-pipeline/`](./vocabulary-video-pipeline/) | 做面向中小学生的英文单词解释视频（Remotion 流水线） | 草稿 JSON / TTS / Beats / MP4 |
 | [`feishu-seedance-video-pipeline/`](./feishu-seedance-video-pipeline/) | 用 Director + Ledger Guard + Reviewer 管理 Seedance 视频产线 | 物料台账 / Prompt / Payload / 成片 / QA / 成本 |
 | [`daily-ai-agent-aigc-top-news/`](./daily-ai-agent-aigc-top-news/) | 每天生成 AI / Agent / AIGC 早报并发布到飞书 | 飞书文档 / 多维表归档 / 摘要回传 |
@@ -114,7 +114,7 @@
       <a href="./open-design-to-open-slide/README.md">
         <img src="./open-design-to-open-slide/assets/workflow-preview.svg" alt="open-design-to-open-slide 工作流预览" />
       </a>
-      <p><strong>open-design-to-open-slide</strong><br/>把 Open Design 的视觉系统，改造成 Open Slide 可运行的 20 页 React 模板套件。</p>
+      <p><strong>open-design-to-open-slide</strong><br/>内置 49 套 Open Slide React 模板资产：11 套官方基线 + 38 套 Open Design 移植 suite，可一键复制到任意 Open Slide 项目。</p>
     </td>
     <td width="50%" valign="top"></td>
   </tr>

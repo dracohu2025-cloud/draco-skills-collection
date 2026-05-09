@@ -18,6 +18,8 @@ This skill captures a practical workflow: use **Open Design** as a visual templa
 
 Core rule: **Open Design is a source of design language, not a runtime dependency.** Mine its palettes, typography, page recipes, examples, and component rhythm; implement the output as Open Slide `Page[]` with React primitives.
 
+This skill also bundles a ready-to-copy asset pack at `templates/open-slide-template-pack/`: **49 decks, 867 pages** = 11 Open-Slide official/starter decks + 38 Open-Design-derived suites.
+
 Quality baseline:
 
 - Treat original Open-Slide official examples as the stronger visual baseline.
@@ -32,19 +34,21 @@ The playground includes 11 official/starter Open-Slide decks. Use these as the f
 |---|---|---:|---|
 | `getting-started` | CLI starter template | 13 | Starter / baseline primitives |
 | `open-slide-launch` | Official demo | 7 | Product launch narrative |
-| `open-slide-anatomy` | Official demo | 1 | Single-page anatomy explainer |
+| `open-slide-anatomy` | Official demo | 16 | Deep anatomy explainer |
 | `vercel-ai-sdk` | Official demo | 8 | Technical product explainer |
 | `ssh-explained` | Official demo | 10 | Concept teaching deck |
 | `material-design-2014` | Official demo | 7 | Design history / visual storytelling |
 | `claude-code-intro` | Official demo | 9 | Product intro / workflow |
 | `harness-engineering` | Official demo | 8 | Engineering/product narrative |
 | `llm-fundamentals` | Official demo | 12 | Knowledge explainer |
-| `nextjs-ppr-cache` | Official demo | 2 | Short technical comparison |
+| `nextjs-ppr-cache` | Official demo | 8 | Short technical comparison |
 | `raycast-api` | Official demo | 9 | API/product explainer |
 
-Official/starter total: **11 decks, 86 pages**.
+Official/starter total: **11 decks, 107 pages**.
 
-Current full playground inventory: **54 decks** = 11 official/starter + 38 standalone OD suites + 2 OD kit decks + 3 local custom decks.
+Bundled template pack inventory: **49 decks, 867 pages** = 11 official/starter decks + 38 standalone OD suites.
+
+Local playground inventory may include extra kit/demo decks, but the public skill pack intentionally ships only the clean 49-deck template set.
 
 ## When to Use
 
@@ -102,6 +106,58 @@ Important learned preference:
 - Keep the first 9 pages visually stable.
 - Add coverage by appending pages 10–20.
 - Do not mass-rewrite many suites into heavily scene-specific layouts unless screenshots prove the result is better.
+
+## Bundled 49-Deck Asset Pack
+
+The skill ships a complete Open Slide template pack:
+
+```text
+open-design-to-open-slide/templates/open-slide-template-pack/
+  manifest.json
+  README.md
+  slides/
+    getting-started/index.tsx
+    open-slide-launch/index.tsx
+    ...
+    od-xhs-post-suite/index.tsx
+```
+
+Install into any Open Slide project:
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project
+```
+
+Install only OD-derived suites:
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project --od
+```
+
+Install only official/starter decks:
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project --official
+```
+
+Overwrite existing same-slug decks only when explicit:
+
+```bash
+bash open-design-to-open-slide/scripts/install-template-pack.sh /path/to/open-slide-project --overwrite
+```
+
+Inspect the bundled manifest:
+
+```bash
+python3 open-design-to-open-slide/scripts/list-template-pack.py
+```
+
+Pack rules:
+
+- Keep slides as plain Open Slide React source under `slides/<slug>/index.tsx`.
+- Do not include Open Design runtime code.
+- Do not include local deployment output, screenshots, caches, or credentials.
+- `manifest.json` is the count source of truth for consumers.
 
 ## Workflow: Create a New OD-Derived Suite
 
@@ -281,3 +337,5 @@ Use Python/Pillow to compute hashes, detect near-blank images via image variance
 - [ ] No near-blank pages by variance check.
 - [ ] Contact sheet generated.
 - [ ] Public version contains no secrets, private IDs, or machine-specific absolute paths.
+- [ ] `templates/open-slide-template-pack/manifest.json` reports 49 decks.
+- [ ] `scripts/install-template-pack.sh` copies decks into a clean Open Slide project.
