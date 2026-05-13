@@ -80,8 +80,8 @@ cp .env.example .env
 `.env` 内容示例：
 
 ```bash
-WECHAT_APP_ID=wx1234567890abcdef
-WECHAT_APP_SECRET=your_secret_here
+WECHAT_APP_ID=your_wechat_app_id_here
+WECHAT_APP_SECRET=your_wechat_app_secret_here
 ```
 
 ### 3. 生成预览（可选）
