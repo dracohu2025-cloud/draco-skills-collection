@@ -200,8 +200,8 @@ def available_style_payload() -> dict:
                     "label": "字号",
                     "control": "segmented",
                     "bind": "font_size",
-                    "default": 16,
-                    "recommended": 16,
+                    "default": 15,
+                    "recommended": 15,
                     "options": [
                         {"value": 14, "label": "更小"},
                         {"value": 15, "label": "稍小"},
@@ -215,8 +215,8 @@ def available_style_payload() -> dict:
                     "label": "主题色",
                     "control": "color-grid",
                     "bind": "primary_color",
-                    "default": "classic-blue",
-                    "recommended": "classic-blue",
+                    "default": "vitality-orange",
+                    "recommended": "vitality-orange",
                     "options": [
                         {"value": key, "label": meta["label"], "hex": meta["hex"]}
                         for key, meta in colors_ui.items()
@@ -476,6 +476,7 @@ def main() -> int:
             "dry_run": bool(args.dry_run),
             "draft_media_id": result["draft_media_id"],
             "payload": result["payload"],
+            "video_materials": result.get("video_materials", []),
             "style": resolved_style,
         }
         if "doc" in result:

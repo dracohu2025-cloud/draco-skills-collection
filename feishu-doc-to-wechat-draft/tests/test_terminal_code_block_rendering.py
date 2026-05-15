@@ -41,3 +41,26 @@ def test_mac_code_block_keeps_pre_as_horizontal_scroll_container() -> None:
     assert 'overflow-x: auto; overflow-y: hidden;' in html
     assert '-webkit-overflow-scrolling: touch;' in html
     assert 'overflow: hidden;' not in html
+
+
+def test_plain_prompt_code_block_wraps_instead_of_horizontal_clipping() -> None:
+    md = '''```sql
+生成一张专业电影角色设定表：CHARACTER REFERENCE SHEET。只画一只黑猫。
+重点：底部必须清楚出现一个独立大区块，英文标题必须是 HAND/PAW GESTURE。
+- Top row left: CHARACTER REFERENCE SHEET title + horizontal info block.
+- Center largest section: MAIN IDENTITY + SCALE SHEET. Same subject.
+```\n'''
+    html = render_markdown(
+        md,
+        profile="doocs",
+        theme="grace",
+        code_theme="github",
+        mac_code_block=True,
+        code_line_numbers=False,
+    ).html
+
+    assert 'white-space: pre-wrap' in html
+    assert 'overflow-wrap: anywhere' in html
+    assert 'min-width: max-content' not in html
+    assert 'CHARACTER REFERENCE SHEET title + horizontal info block' in html
+    assert 'CHARACTER&nbsp;REFERENCE' not in html

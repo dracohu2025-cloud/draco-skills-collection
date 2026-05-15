@@ -33,7 +33,9 @@ def validate_publish_inputs(*, article: ArticleInput, article_dir: Path, thumb_m
     if thumb_media_id:
         return
     if not article.cover_image:
-        raise ValueError("cover_image or thumb_media_id is required for publish")
+        if "!" in (article.content_markdown or "") and "](" in (article.content_markdown or ""):
+            return
+        raise ValueError("cover_image, thumb_media_id, or first article image is required for publish")
     cover_path = (article_dir / article.cover_image).resolve()
     if not cover_path.exists():
         raise FileNotFoundError(str(cover_path))

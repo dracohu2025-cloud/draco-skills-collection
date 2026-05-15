@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import html as html_lib
 import mimetypes
+import os
+import re
+import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -113,6 +117,16 @@ class WechatClient:
         )
         return payload["media_id"]
 
+    def upload_video_material(self, path: str, access_token: str, *, title: str, introduction: str) -> str:
+        payload = self.transport.request(
+            method="POST",
+            url="https://api.weixin.qq.com/cgi-bin/material/add_material",
+            params={"access_token": access_token, "type": "video"},
+            data={"description": json.dumps({"title": title, "introduction": introduction}, ensure_ascii=False)},
+            files={"media": _prepare_file_tuple(path)},
+        )
+        return payload["media_id"]
+
     def add_draft(self, payload: dict, access_token: str) -> str:
         response = self.transport.request(
             method="POST",
@@ -151,83 +165,199 @@ def _get_feishu_access_token() -> str:
     return result["tenant_access_token"]
 
 
-def _download_lark_image(token: str, output_dir: Path) -> Path:
-    """Download image from Lark document using lark-cli."""
-    import subprocess
-    import json
-    import os
-    
-    # lark-cli requires relative paths, so we need to change to the output directory
-    output_filename = f"lark_img_{token[:16]}.jpg"
-    output_path = output_dir / output_filename
-    
-    # Change to output directory and use relative path
-    original_cwd = os.getcwd()
+def _download_lark_media(token: str, output_dir: Path, filename: str | None = None) -> Path:
+    """Download media/file token from Lark docs to a local path."""
+    safe_filename = _safe_local_filename(filename or f"lark_media_{token[:16]}.bin")
+    output_path = output_dir / safe_filename
+
+    original_cwd = Path.cwd()
     try:
+        output_dir.mkdir(parents=True, exist_ok=True)
         os.chdir(output_dir)
-        
-        # Use lark-cli docs +media-download command with relative path
         result = subprocess.run(
-            ["lark-cli", "docs", "+media-download", 
-             "--token", token,
-             "--output", output_filename,
-             "--overwrite"],
+            [
+                "lark-cli",
+                "docs",
+                "+media-download",
+                "--token",
+                token,
+                "--output",
+                f"./{safe_filename}",
+                "--overwrite",
+            ],
             capture_output=True,
             text=True,
         )
-        
         if result.returncode != 0:
-            raise RuntimeError(f"Failed to download Lark image: {result.stderr}")
-        
-        # Parse the output to verify success
-        try:
-            response = json.loads(result.stdout)
-            if not response.get("ok"):
-                raise RuntimeError(f"Lark download error: {response}")
-        except json.JSONDecodeError:
-            # If output is not JSON, check if file was created
-            if not output_path.exists():
-                raise RuntimeError(f"Image download failed: {result.stdout}")
+            raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "failed to download Lark media")
+        payload = json.loads(result.stdout)
+        if not payload.get("ok"):
+            raise RuntimeError(f"Lark media download error: {payload}")
     finally:
         os.chdir(original_cwd)
-    
+
     return output_path
 
 
+def _download_lark_image(token: str, output_dir: Path) -> Path:
+    """Download image from Lark document using lark-cli."""
+    return _download_lark_media(token, output_dir, filename=f"lark_img_{token[:16]}.jpg")
+
+
+def _extract_video_poster(video_path: Path, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    poster_path = output_dir / f"{video_path.stem}-cover.jpg"
+    result = subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video_path),
+            "-vf",
+            "thumbnail,scale='min(1280,iw)':-2",
+            "-frames:v",
+            "1",
+            str(poster_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not poster_path.exists():
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "failed to extract video poster")
+    return poster_path
+
+
 def rewrite_html_images(*, html: str, article_dir: Path, client, access_token: str | None = None) -> str:
-    import re
+    rewritten_html, _ = rewrite_html_assets(
+        html=html,
+        article_dir=article_dir,
+        client=client,
+        access_token=access_token,
+        source_url=None,
+    )
+    return rewritten_html
 
-    pattern = re.compile(r'(<img\b[^>]*?src=")([^"]+)("[^>]*>)')
 
-    def replacer(match):
+def rewrite_html_assets(*, html: str, article_dir: Path, client, access_token: str, source_url: str | None = None) -> tuple[str, list[dict]]:
+    image_pattern = re.compile(r'(<img\b[^>]*?src=")([^"]+)("[^>]*>)')
+    video_pattern = re.compile(r'<figure class="md-video-card"(?P<attrs>[^>]*)>.*?</figure>', re.S)
+    video_materials: list[dict] = []
+
+    def replace_image(match):
         prefix, src, suffix = match.groups()
         if src.startswith("http://") or src.startswith("https://"):
             return match.group(0)
-        
-        # Handle Lark image URLs
+
         if src.startswith("lark-image://"):
             token = src.replace("lark-image://", "")
             try:
                 image_path = _download_lark_image(token, article_dir)
-                if access_token is None:
-                    uploaded = client.upload_content_image(str(image_path))
-                else:
-                    uploaded = client.upload_content_image(str(image_path), access_token)
+                image_path = _ensure_wechat_supported_image(image_path)
+                uploaded = client.upload_content_image(str(image_path), access_token)
                 return f"{prefix}{uploaded}{suffix}"
             except Exception as e:
-                # If download fails, return the original and log warning
-                print(f"Warning: Failed to download Lark image {token}: {e}")
-                return match.group(0)
-        
-        # Handle local image paths
-        image_path = (article_dir / src).resolve()
-        if access_token is None:
-            uploaded = client.upload_content_image(str(image_path))
-        else:
-            uploaded = client.upload_content_image(str(image_path), access_token)
+                raise RuntimeError(f"Failed to sync Lark image {token}; aborting draft publish to avoid missing images") from e
+
+        image_path = _ensure_wechat_supported_image((article_dir / src).resolve())
+        uploaded = client.upload_content_image(str(image_path), access_token)
         return f"{prefix}{uploaded}{suffix}"
 
-    return pattern.sub(replacer, html)
+    def replace_video(match):
+        attrs = match.group('attrs')
+        token_match = re.search(r'data-video-token="([^"]+)"', attrs)
+        name_match = re.search(r'data-video-name="([^"]+)"', attrs)
+        if not token_match or not name_match:
+            return match.group(0)
+
+        token = html_lib.unescape(token_match.group(1))
+        name = html_lib.unescape(name_match.group(1))
+        introduction = f"来自飞书文档同步的视频素材：{name}"
+        title = Path(name).stem[:64] or "Feishu video"
+
+        try:
+            video_path = _download_lark_media(token, article_dir, filename=name)
+            media_id = client.upload_video_material(str(video_path), access_token, title=title, introduction=introduction)
+            poster_path = _extract_video_poster(video_path, article_dir)
+            cover_url = client.upload_content_image(str(poster_path), access_token)
+        except Exception as e:
+            print(f"Warning: Failed to sync Lark video {token}: {e}")
+            return _render_failed_video_card(name)
+
+        video_materials.append(
+            {
+                "token": token,
+                "name": name,
+                "media_id": media_id,
+                "cover_url": cover_url,
+                "source_url": source_url,
+            }
+        )
+        return _render_synced_video_card(name=name, cover_url=cover_url)
+
+    html = image_pattern.sub(replace_image, html)
+    html = video_pattern.sub(replace_video, html)
+    return html, video_materials
+
+
+def _safe_local_filename(name: str) -> str:
+    sanitized = re.sub(r'[^0-9A-Za-z._-]+', '-', name).strip('-')
+    return sanitized or 'lark-media.bin'
+
+
+def _ensure_wechat_supported_image(path: Path) -> Path:
+    """Convert formats unsupported by WeChat image upload, especially Lark-downloaded WebP."""
+    try:
+        from PIL import Image
+    except Exception:
+        return path
+
+    try:
+        image = Image.open(path)
+        fmt = (image.format or "").upper()
+    except Exception:
+        return path
+
+    if fmt in {"JPEG", "JPG", "PNG", "GIF", "BMP"}:
+        return path
+
+    converted = path.with_suffix(".wechat.jpg")
+    if image.mode in {"RGBA", "LA"}:
+        bg = Image.new("RGB", image.size, (255, 255, 255))
+        bg.paste(image, mask=image.getchannel("A"))
+        image = bg
+    else:
+        image = image.convert("RGB")
+    converted.parent.mkdir(parents=True, exist_ok=True)
+    image.save(converted, "JPEG", quality=92)
+    return converted
+
+
+def _render_synced_video_card(*, name: str, cover_url: str) -> str:
+    safe_name = html_lib.escape(name)
+    return (
+        '<figure class="md-video-card md-video-card-synced" '
+        'style="margin: 1.5em 8px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(15,23,42,.08); background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.06);">'
+        f'<img class="md-img" style="display: block; width: 100%; max-width: 100%; border-radius: 0; box-shadow: none;" src="{cover_url}" alt="{safe_name}" />'
+        '<figcaption class="md-video-card-caption" style="padding: 12px 14px; color: #24292f; font-size: .95em; line-height: 1.7; text-align: left;">'
+        f'<strong style="display:block; color:#24292f;">视频：{safe_name}</strong>'
+        '<span style="color:#6b7280;">已同步到公众号视频素材库；公众号正文暂不支持内嵌播放。</span>'
+        '</figcaption>'
+        '</figure>'
+    )
+
+
+def _render_failed_video_card(name: str) -> str:
+    safe_name = html_lib.escape(name)
+    return (
+        '<figure class="md-video-card md-video-card-fallback" '
+        'style="margin: 1.5em 8px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(15,23,42,.08); background: #fff7ed;">'
+        '<section class="md-video-card-poster" style="display:flex; align-items:center; justify-content:center; min-height: 120px; background: linear-gradient(135deg, rgba(250,81,81,.92), rgba(15,76,129,.92)); color:#fff; font-size:40px;">▶</section>'
+        '<figcaption class="md-video-card-caption" style="padding: 12px 14px; color: #24292f; font-size: .95em; line-height: 1.7; text-align: left;">'
+        f'<strong style="display:block; color:#24292f;">视频：{safe_name}</strong>'
+        '<span style="color:#9a3412;">视频素材同步失败，正文暂以占位卡片保留。</span>'
+        '</figcaption>'
+        '</figure>'
+    )
 
 
 def _prepare_file_tuple(path: str) -> tuple[str, bytes, str]:

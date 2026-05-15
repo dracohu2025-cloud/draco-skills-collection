@@ -20,6 +20,9 @@ _WS_RE = re.compile(r"\s+")
 _CALLOUT_BLOCK_RE = re.compile(r"(?m)^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO)\]\n((?:>.*\n?)*)")
 _LINK_RE = re.compile(r'<a class="md-link"[^>]* href="([^"]+)"[^>]*>(.*?)</a>')
 _IMAGE_WITH_TITLE_RE = re.compile(r'!\[(?P<alt>[^\]]*)\]\((?P<src>[^)\s]+)(?:\s+"(?P<title>[^"]*)")?\)')
+_WECHAT_VIDEO_TAG_RE = re.compile(
+    r'<wechat-video\b(?=[^>]*token="(?P<token>[^"]+)")(?=[^>]*name="(?P<name>[^"]+)")[^>]*\s*(?:/?>)(?:</wechat-video>)?'
+)
 
 
 _MAC_CODE_SVG = (
@@ -73,12 +76,18 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
     font_size = vars_map["--md-font-size"]
     line_height = vars_map["--md-line-height"]
 
-    p_extra = []
+    p_extra = ["text-align: left"]
     if options.justify:
-        p_extra.append("text-align: justify")
+        p_extra = ["text-align: justify"]
     if options.indent_first_line:
         p_extra.append("text-indent: 2em")
     p_extra_style = "; ".join(p_extra)
+
+    html = re.sub(
+        r'<ol start="(?P<start>\d+)">',
+        lambda match: _ol_open(options, text, start=int(match.group('start'))),
+        html,
+    )
 
     replacements = [
         (r"<h1>", _h1_open(options, primary, text)),
@@ -114,10 +123,11 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
     ]
     for pattern, replacement in replacements:
         html = re.sub(pattern, replacement, html)
-    html = re.sub(r'<figure class="md-figure"([^>]*)>', f'<figure class="md-figure"\\1 style="margin: 1.5em 8px; color: {text};">', html)
+    html = re.sub(r'<figure class="md-figure"([^>]*)>', f'<figure class="md-figure"\\1 style="margin: 1.5em 8px; color: {text}; text-align: left;">', html)
     html = _compact_nested_paragraphs(html, options)
     html = _enhance_code_blocks(html, options)
     html = _apply_caption_mode(html, options)
+    html = _rewrite_embedded_videos(html, options)
     html = _rewrite_external_links(html, options)
     return html
 
@@ -154,11 +164,22 @@ def _compact_nested_paragraphs(html: str, options: RenderOptions) -> str:
 
 
 def _rewrite_unordered_lists(html: str, options: RenderOptions) -> str:
+    xml_safe_html = _make_xml_safe_fragment(html)
     try:
-        root = ET.fromstring(f'<root>{html}</root>')
+        root = ET.fromstring(f'<root>{xml_safe_html}</root>')
     except ET.ParseError:
         return html
     return _serialize_children_with_unordered_lists(root, options)
+
+
+def _make_xml_safe_fragment(html: str) -> str:
+    """Normalize HTML void tags so ElementTree can parse the fragment.
+
+    The unordered-list rewriter parses the whole rendered article as XML. A plain
+    HTML <hr> is legal in HTML, but illegal in XML and causes the entire rewrite
+    pass to be skipped — which drops custom bullet dots everywhere in the article.
+    """
+    return re.sub(r'<(hr|br)(?![^>]*?/)([^>]*)>', r'<\1\2 />', html)
 
 
 def _serialize_children_with_unordered_lists(node: ET.Element, options: RenderOptions) -> str:
@@ -189,15 +210,15 @@ def _serialize_node_with_unordered_lists(node: ET.Element, options: RenderOption
 def _render_unordered_list_node(node: ET.Element, options: RenderOptions) -> str:
     margin = '0' if options.theme == 'default' else '.8em 0'
     item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
-    parts = [f'<section class="md-list md-list-unordered" style="margin: {margin};">']
+    parts = [f'<section class="md-list md-list-unordered" style="margin: {margin}; text-align: left;">']
     for child in node:
         if child.tag != 'li':
             continue
         body = _serialize_children_with_unordered_lists(child, options)
         parts.append(
-            f'<section class="md-bullet-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start;">'
+            f'<section class="md-bullet-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start; text-align: left;">'
             '<span class="md-bullet-dot" style="display: inline-block; width: 1.1em; font-weight: 700; flex: 0 0 auto;">•</span>'
-            f'<section class="md-bullet-text" style="flex: 1 1 auto; min-width: 0;">{body}</section>'
+            f'<section class="md-bullet-text" style="flex: 1 1 auto; min-width: 0; text-align: left;">{body}</section>'
             '</section>'
         )
     parts.append('</section>')
@@ -205,29 +226,67 @@ def _render_unordered_list_node(node: ET.Element, options: RenderOptions) -> str
 
 
 def _rewrite_ordered_lists(html: str, options: RenderOptions) -> str:
-    list_pattern = re.compile(r'<ol class="md-ol"[^>]*>(.*?)</ol>', re.S)
-    item_pattern = re.compile(r'<li class="md-li"[^>]*>(.*?)</li>', re.S)
+    xml_safe_html = _make_xml_safe_fragment(html)
+    try:
+        root = ET.fromstring(f'<root>{xml_safe_html}</root>')
+    except ET.ParseError:
+        return html
+    return _serialize_children_with_ordered_lists(root, options)
 
-    def repl(match: re.Match[str]) -> str:
-        body = match.group(1)
-        items = item_pattern.findall(body)
-        if not items:
-            return match.group(0)
-        margin = '0' if options.theme == 'default' else '.8em 0'
-        item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
-        parts = [f'<section class="md-list md-list-ordered" style="margin: {margin};">']
-        for index, item in enumerate(items, start=1):
-            item = item.strip()
-            parts.append(
-                f'<section class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start;">'
-                f'<span class="md-ordered-index" style="display: inline-block; min-width: 2.2em; font-weight: 700; flex: 0 0 auto;">{index}.</span>'
-                f'<section class="md-ordered-text" style="flex: 1 1 auto; min-width: 0;">{item}</section>'
-                '</section>'
-            )
-        parts.append('</section>')
-        return ''.join(parts)
 
-    return list_pattern.sub(repl, html)
+def _serialize_children_with_ordered_lists(node: ET.Element, options: RenderOptions) -> str:
+    parts: list[str] = []
+    if node.text:
+        parts.append(html_lib.escape(node.text))
+    for child in node:
+        parts.append(_serialize_node_with_ordered_lists(child, options))
+        if child.tail:
+            parts.append(html_lib.escape(child.tail))
+    return ''.join(parts)
+
+
+def _serialize_node_with_ordered_lists(node: ET.Element, options: RenderOptions) -> str:
+    classes = set((node.attrib.get('class') or '').split())
+    if node.tag == 'ol' and 'md-ol' in classes:
+        return _render_ordered_list_node(node, options)
+
+    attrs = ''.join(
+        f' {key}="{html_lib.escape(value, quote=True)}"'
+        for key, value in node.attrib.items()
+    )
+    if node.tag in {'hr', 'img', 'br'}:
+        return f'<{node.tag}{attrs} />'
+    inner = _serialize_children_with_ordered_lists(node, options)
+    return f'<{node.tag}{attrs}>{inner}</{node.tag}>'
+
+
+def _render_ordered_list_node(node: ET.Element, options: RenderOptions) -> str:
+    margin = '0' if options.theme == 'default' else '.8em 0'
+    item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
+    start = _safe_int(node.attrib.get('data-start') or node.attrib.get('start'), default=1)
+    parts = [f'<section class="md-list md-list-ordered" style="margin: {margin}; text-align: left;">']
+    index = start
+    for child in node:
+        if child.tag != 'li':
+            continue
+        body = _serialize_children_with_ordered_lists(child, options).strip()
+        parts.append(
+            f'<section class="md-ordered-item" style="margin: {item_margin}; color: inherit; font-size: {options.font_size}px; line-height: inherit; display: flex; align-items: flex-start; text-align: left;">'
+            f'<span class="md-ordered-index" style="display: inline-block; min-width: 2.2em; font-weight: 700; flex: 0 0 auto;">{index}.</span>'
+            f'<section class="md-ordered-text" style="flex: 1 1 auto; min-width: 0; text-align: left;">{body}</section>'
+            '</section>'
+        )
+        index += 1
+    parts.append('</section>')
+    return ''.join(parts)
+
+
+def _safe_int(value: str | None, *, default: int = 1) -> int:
+    try:
+        parsed = int(value or '')
+    except ValueError:
+        return default
+    return parsed if parsed > 0 else default
 
 
 def _replace_image_with_figure(match: re.Match[str]) -> str:
@@ -255,11 +314,35 @@ def _apply_caption_mode(html: str, options: RenderOptions) -> str:
         title = title_match.group(1) if title_match else ''
         caption = _resolve_caption_text(options.caption_mode, alt=alt, title=title)
         if not caption:
-            return f'<figure class="md-figure" style="margin: 1.5em 8px; color: inherit;">{img}</figure>'
-        caption_html = f'<figcaption class="md-figure-caption" style="text-align: center; color: #888; font-size: 0.8em;">{caption}</figcaption>'
-        return f'<figure class="md-figure" style="margin: 1.5em 8px; color: inherit;">{img}{caption_html}</figure>'
+            return f'<figure class="md-figure" style="margin: 1.5em 8px; color: inherit; text-align: left;">{img}</figure>'
+        caption_html = f'<figcaption class="md-figure-caption" style="text-align: left; color: #888; font-size: 0.8em;">{caption}</figcaption>'
+        return f'<figure class="md-figure" style="margin: 1.5em 8px; color: inherit; text-align: left;">{img}{caption_html}</figure>'
 
     return pattern.sub(repl, html)
+
+
+def _rewrite_embedded_videos(html: str, options: RenderOptions) -> str:
+    def repl(match: re.Match[str]) -> str:
+        token = html_lib.escape(match.group('token'), quote=True)
+        name = html_lib.escape(match.group('name'))
+        muted = '#6b7280'
+        poster_style = (
+            'display: flex; align-items: center; justify-content: center; min-height: 220px; '
+            'background: linear-gradient(135deg, rgba(250,81,81,.92), rgba(15,76,129,.92)); '
+            'color: #fff; font-size: 44px; font-weight: 700; letter-spacing: .04em;'
+        )
+        return (
+            f'<figure class="md-video-card" data-video-token="{token}" data-video-name="{name}" '
+            f'style="margin: 1.5em 8px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(15,23,42,.08); background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.06);">'
+            f'<section class="md-video-card-poster" style="{poster_style}">▶</section>'
+            f'<figcaption class="md-video-card-caption" style="padding: 12px 14px; color: #24292f; font-size: .95em; line-height: 1.7; text-align: left;">'
+            f'<strong style="display:block; color:#24292f;">视频：{name}</strong>'
+            f'<span style="color: {muted};">发布到公众号时将同步为视频素材；正文使用封面图占位。</span>'
+            f'</figcaption>'
+            f'</figure>'
+        )
+
+    return _WECHAT_VIDEO_TAG_RE.sub(repl, html)
 
 
 def _resolve_caption_text(mode: str, *, alt: str, title: str) -> str:
@@ -341,10 +424,10 @@ def _hex_to_rgba(color: str, alpha: float) -> str:
 
 def _blockquote_open(options: RenderOptions, primary: str, muted: str, soft: str) -> str:
     if options.theme == "grace":
-        return f'<blockquote class="wechat-blockquote md-blockquote" style="font-style: italic; margin-bottom: 1em; padding: 1em 1em 1em 2em; color: rgba(0, 0, 0, 0.6); background: {soft}; border-left: 4px solid {primary}; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">'
+        return f'<blockquote class="wechat-blockquote md-blockquote" style="font-style: italic; margin-bottom: 1em; padding: 1em 1em 1em 2em; color: rgba(0, 0, 0, 0.6); background: {soft}; border-left: 4px solid {primary}; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); text-align: left;">'
     if options.theme == "simple":
-        return '<blockquote class="wechat-blockquote md-blockquote" style="font-style: italic; margin-bottom: 1em; padding: 1em 1em 1em 2em; color: rgba(0, 0, 0, 0.6); background: transparent; border-left: 4px solid var(--md-primary-color); border-top: 0.2px solid rgba(0, 0, 0, 0.04); border-right: 0.2px solid rgba(0, 0, 0, 0.04); border-bottom: 0.2px solid rgba(0, 0, 0, 0.04); border-radius: 0;">'
-    return f'<blockquote class="wechat-blockquote md-blockquote" style="font-style: normal; margin-bottom: 1em; padding: 1em; color: {muted}; background: {soft}; border-left: 4px solid {primary}; border-radius: 6px;">'
+        return f'<blockquote class="wechat-blockquote md-blockquote" style="font-style: italic; margin-bottom: 1em; padding: 1em 1em 1em 2em; color: rgba(0, 0, 0, 0.6); background: transparent; border-left: 4px solid {primary}; border-top: 0.2px solid rgba(0, 0, 0, 0.04); border-right: 0.2px solid rgba(0, 0, 0, 0.04); border-bottom: 0.2px solid rgba(0, 0, 0, 0.04); border-radius: 0; text-align: left;">'
+    return f'<blockquote class="wechat-blockquote md-blockquote" style="font-style: normal; margin-bottom: 1em; padding: 1em; color: {muted}; background: {soft}; border-left: 4px solid {primary}; border-radius: 6px; text-align: left;">'
 
 
 def _ul_open(options: RenderOptions, text: str) -> str:
@@ -354,10 +437,11 @@ def _ul_open(options: RenderOptions, text: str) -> str:
     return f'<ul class="md-ul" style="list-style: none; padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
-def _ol_open(options: RenderOptions, text: str) -> str:
+def _ol_open(options: RenderOptions, text: str, start: int = 1) -> str:
+    data_start = f' data-start="{start}"' if start != 1 else ''
     if options.theme == "default":
-        return f'<ol class="md-ol" style="padding-left: 1em; margin-left: 0; color: {text};">'
-    return f'<ol class="md-ol" style="padding-left: 1.5em; margin-left: 0; color: {text};">'
+        return f'<ol class="md-ol"{data_start} style="padding-left: 1em; margin-left: 0; color: {text};">'
+    return f'<ol class="md-ol"{data_start} style="padding-left: 1.5em; margin-left: 0; color: {text};">'
 
 
 def _li_open(options: RenderOptions, text: str) -> str:
@@ -368,7 +452,7 @@ def _li_open(options: RenderOptions, text: str) -> str:
 def _hr_open(options: RenderOptions, border: str, primary: str) -> str:
     if options.hr_style == "star":
         return (
-            f'<section class="md-hr md-hr-star" style="margin: 2em auto; width: 100%; text-align: center; color: {primary}; '
+            f'<section class="md-hr md-hr-star" style="margin: 2em 8px; width: 100%; text-align: left; color: {primary}; '
             f'letter-spacing: .35em; font-size: .95em;">✦ ✦ ✦</section>'
         )
     if options.hr_style == "underscore":
@@ -411,9 +495,10 @@ def _image_open(options: RenderOptions) -> str:
 
 
 def _table_open(options: RenderOptions, text: str) -> str:
+    base = "width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; margin: 1em 0; box-sizing: border-box;"
     if options.theme == "grace":
-        return f'<table class="md-table" style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 1em 8px; font-size: {options.font_size}px; border-radius: 8px; color: {text}; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">'
-    return f'<table class="md-table" style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 1em 8px; font-size: {options.font_size}px;">'
+        return f'<table class="md-table" style="{base} font-size: {options.font_size}px; border-radius: 8px; color: {text}; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">'
+    return f'<table class="md-table" style="{base} font-size: {options.font_size}px;">'
 
 
 def _thead_open(options: RenderOptions) -> str:
@@ -423,17 +508,19 @@ def _thead_open(options: RenderOptions) -> str:
 
 
 def _th_open(options: RenderOptions, border: str, soft: str) -> str:
+    cell_flow = "word-break: break-word; overflow-wrap: anywhere; box-sizing: border-box; vertical-align: top;"
     if options.theme == "default":
-        return f'<th class="md-th" style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: inherit; word-break: keep-all; background: rgba(0, 0, 0, 0.05); text-align: left; font-size: {options.font_size}px;">'
-    return f'<th class="md-th" style="padding: 10px 12px; border: 1px solid {border}; background: {soft}; text-align: left; font-size: {options.font_size}px;">'
+        return f'<th class="md-th" style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: inherit; {cell_flow} background: rgba(0, 0, 0, 0.05); text-align: left; font-size: {options.font_size}px;">'
+    return f'<th class="md-th" style="padding: 10px 12px; border: 1px solid {border}; background: {soft}; text-align: left; font-size: {options.font_size}px; {cell_flow}">'
 
 
 def _td_open(options: RenderOptions, border: str) -> str:
+    cell_flow = "word-break: break-word; overflow-wrap: anywhere; box-sizing: border-box; vertical-align: top;"
     if options.theme == "grace":
-        return f'<td class="md-td" style="padding: 0.5em 1em; border: 1px solid {border}; text-align: left; font-size: {options.font_size}px;">'
+        return f'<td class="md-td" style="padding: 0.5em 1em; border: 1px solid {border}; text-align: left; font-size: {options.font_size}px; {cell_flow}">'
     if options.theme == "default":
-        return f'<td class="md-td" style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: inherit; word-break: keep-all; text-align: left; font-size: {options.font_size}px;">'
-    return f'<td class="md-td" style="padding: 10px 12px; border: 1px solid {border}; text-align: left; font-size: {options.font_size}px;">'
+        return f'<td class="md-td" style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: inherit; text-align: left; font-size: {options.font_size}px; {cell_flow}">'
+    return f'<td class="md-td" style="padding: 10px 12px; border: 1px solid {border}; text-align: left; font-size: {options.font_size}px; {cell_flow}">'
 
 
 def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
@@ -455,16 +542,20 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
                 '</span>'
             )
 
+        wrap_code = False
         if code_open_match:
             code_open = code_open_match.group(1)
             content_match = re.match(r'<code[^>]*>(.*?)</code></pre>', code_block, re.S)
             if content_match:
                 encoded_content = content_match.group(1)
                 raw_code = html_lib.unescape(encoded_content)
-                rendered_content = _render_code_block_content(raw_code, language, options)
+                wrap_code = _should_wrap_code_block(raw_code, language)
+                rendered_content = _render_code_block_content(raw_code, language, options, wrap_code=wrap_code)
                 code_block = f'{code_open}{rendered_content}</code></pre>'
 
-        code_style = _code_block_style(options)
+        if wrap_code:
+            pre_open = _make_pre_wrap_container(pre_open)
+        code_style = _code_block_style(options, wrap_code=wrap_code)
         code_block = code_block.replace(
             '<code',
             f'<code style="{code_style}"',
@@ -550,13 +641,51 @@ def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_
     return ''.join(out)
 
 
-def _render_code_block_content(raw_code: str, language: str, options: RenderOptions) -> str:
+def _render_code_block_content(raw_code: str, language: str, options: RenderOptions, *, wrap_code: bool = False) -> str:
+    if wrap_code:
+        return _format_plain_code_preserve_lines(raw_code)
     if options.code_line_numbers:
         return _render_highlighted_code_lines(raw_code, language)
     highlighted = _pygments_inline_html(raw_code, language)
     return _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=True)
 
 
+def _format_plain_code_preserve_lines(raw_code: str) -> str:
+    escaped = html_lib.escape(raw_code).replace('\r\n', '\n')
+    return escaped.replace('\n', '<br/>')
+
+
+def _should_wrap_code_block(raw_code: str, language: str) -> bool:
+    """Wrap prose/prompt templates; keep real terminal/code blocks horizontally scrollable."""
+    normalized_language = (language or 'text').lower()
+    stripped = raw_code.strip()
+    if not stripped:
+        return False
+    lines = [line for line in stripped.splitlines() if line.strip()]
+    if not lines:
+        return False
+    # Typical shell/CLI snippets should keep exact no-wrap behavior.
+    shellish = sum(1 for line in lines if re.match(r'\s*(?:#\s*)?(?:sudo\s+|npm\s+|pnpm\s+|yarn\s+|npx\s+|node\s+|python\d*\s+|pip\s+|curl\s+|git\s+|openclaw\s+|export\s+|mkdir\s+|cp\s+|brew\s+|winget\s+|apt(?:-get)?\s+)', line))
+    if shellish >= max(1, len(lines) // 2):
+        return False
+    no_wrap_languages = {'bash', 'shell', 'sh', 'zsh', 'python', 'py', 'javascript', 'js', 'typescript', 'ts', 'json', 'yaml', 'yml', 'toml', 'html', 'xml', 'css', 'dockerfile'}
+    if normalized_language in no_wrap_languages:
+        return False
+    has_cjk = bool(re.search(r'[\u4e00-\u9fff]', stripped))
+    long_prose_lines = sum(1 for line in lines if len(line) > 42 and re.search(r'[，。；：]|\b(?:must|should|section|title|style|reference|character|prompt|layout|row|center|subject|image|video|generation|outfit|scene)\b', line, re.I))
+    single_long_prose = len(lines) == 1 and len(lines[0]) > 120 and len(re.findall(r'[A-Za-z]{3,}', lines[0])) >= 12
+    likely_prompt = has_cjk or long_prose_lines >= 2 or single_long_prose
+    if not likely_prompt:
+        return False
+    # If a fenced block was mislabeled as sql/markdown by Feishu but is clearly prose,
+    # wrap it. Real code in protected languages above still keeps horizontal scroll.
+    return True
+
+
+def _make_pre_wrap_container(pre_open: str) -> str:
+    pre_open = pre_open.replace('overflow-x: auto; overflow-y: hidden;', 'overflow-x: visible; overflow-y: visible;')
+    pre_open = pre_open.replace('-webkit-overflow-scrolling: touch;', '')
+    return pre_open
 def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
     raw_lines = raw_code.replace('\r\n', '\n').split('\n')
     if raw_lines and raw_lines[-1] == '':
@@ -581,10 +710,17 @@ def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
     )
 
 
-def _code_block_style(options: RenderOptions) -> str:
+def _code_block_style(options: RenderOptions, *, wrap_code: bool = False) -> str:
     top_padding = '0.5em'
     if options.mac_code_block:
         top_padding = '0.35em'
+    if wrap_code:
+        return (
+            f"display: block; padding: {top_padding} 1em 1em; text-indent: 0; "
+            "color: inherit; background: none; white-space: pre-wrap; margin: 0; min-width: 0; width: 100%; max-width: 100%; "
+            "word-break: break-word; overflow-wrap: anywhere; box-sizing: border-box; "
+            "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
+        )
     return (
         f"display: block; padding: {top_padding} 1em 1em; text-indent: 0; "
         "color: inherit; background: none; white-space: pre; margin: 0; min-width: max-content; "
@@ -615,8 +751,8 @@ def _heading_style_for(options: RenderOptions, level: str) -> str:
 def _h1_open(options: RenderOptions, primary: str, text: str) -> str:
     style_type = _heading_style_for(options, "h1")
     scale = 1.4 if options.theme in {"grace", "simple"} else 1.2
-    # When justify is False, use left alignment for headings too
-    align = "left" if not options.justify else "center"
+    # Keep headings left-aligned. Paragraph justification should not center titles.
+    align = "left"
     if style_type == "color-only":
         return f'<h1 class="md-h1 md-h1-color-only" style="display: block; margin: 2em 8px 1em; color: {primary}; font-size: {_font_px(options, scale)}; font-weight: 700; text-align: {align}; background: transparent;">'
     if style_type == "border-bottom":
@@ -629,13 +765,13 @@ def _h1_open(options: RenderOptions, primary: str, text: str) -> str:
     elif options.theme == "simple":
         extra = ' text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);'
     padding = '.5em 1em' if options.theme in {"grace", "simple"} else '0 1em'
-    return f'<h1 class="md-h1" style="display: table; padding: {padding}; border-bottom: 2px solid {primary}; margin: 2em auto 1em; color: {text}; font-size: {_font_px(options, scale)}; font-weight: 700; text-align: {align};{extra}">'
+    return f'<h1 class="md-h1" style="display: inline-block; padding: {padding}; border-bottom: 2px solid {primary}; margin: 2em 8px 1em; color: {text}; font-size: {_font_px(options, scale)}; font-weight: 700; text-align: {align};{extra}">'
 
 
 def _h2_open(options: RenderOptions, heading_bg: str, primary: str, text: str) -> str:
     style_type = _heading_style_for(options, "h2")
-    # When justify is False, use left alignment for headings too
-    align = "left" if not options.justify else "center"
+    # Keep headings left-aligned. Paragraph justification should not center titles.
+    align = "left"
     if style_type in {"left-bar", "border-left"}:
         return f'<h2 class="md-h2 md-h2-left-bar md-h2-border-left" style="display: block; margin: 2em 8px 0.75em 0; padding-left: 10px; background: transparent; color: {primary}; font-size: {_font_px(options, 1.2)}; font-weight: 700; text-align: {align}; border-left: 4px solid {primary};">'
     if style_type in {"underline", "border-bottom"}:
@@ -650,7 +786,7 @@ def _h2_open(options: RenderOptions, heading_bg: str, primary: str, text: str) -
         padding = "0.3em 1.2em"
         border_radius = "8px 24px 8px 24px"
         box_shadow = "0 2px 6px rgba(0, 0, 0, 0.06)"
-    return f'<h2 class="md-h2 md-h2-solid" style="display: table; padding: {padding}; margin: 4em auto 2em; border-radius: {border_radius}; font-size: {_font_px(options, scale)}; line-height: 1.5; color: #fff; background: {heading_bg}; box-shadow: {box_shadow}; text-align: {align}; font-weight: 700;">'
+    return f'<h2 class="md-h2 md-h2-solid" style="display: inline-block; padding: {padding}; margin: 4em 8px 2em; border-radius: {border_radius}; font-size: {_font_px(options, scale)}; line-height: 1.5; color: #fff; background: {heading_bg}; box-shadow: {box_shadow}; text-align: {align}; font-weight: 700;">'
 
 
 def _h3_open(options: RenderOptions, primary: str, text: str) -> str:

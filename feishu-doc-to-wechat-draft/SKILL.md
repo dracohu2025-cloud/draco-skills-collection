@@ -105,6 +105,28 @@ python3 scripts/run.py publish-feishu-doc-default \
 - **dry-run 用假的 `thumb_media_id` 占位即可**
 - 但参数本身不能省
 
+### 新增排障经验：公众号正文默认全左对齐
+
+用户明确要求公众号草稿内容默认全左对齐。当前 doocs/grace 发布链路应满足：
+- `justify=false`
+- 正文不出现 `text-align: justify`
+- 正文不出现 `text-align: center`
+- 段落、标题、图注、分割线都显式或继承左对齐
+
+注意：此前当前文档并不是两端对齐；`doocs` 默认 `justify=false`。真正容易造成“看起来没左齐”的残留是标题默认样式里的 `display: table; margin: ... auto` 和图注/星号分割线的居中样式。
+
+### 新增排障经验：飞书有序列表常导出成全 `1.`
+
+飞书/Lark 文档导出的 Markdown 可能把每个有序列表项都写成 `1.`；如果列表项中间夹了截图、引用块，Markdown 渲染会把它们拆成多个单项列表，推到微信公众号后台后序号看起来全是 `1.`。
+
+当前链路已做两层修复：
+- `normalize_lark_markdown()` 会把跨图片/引用块的连续步骤重编号，例如 `1,2,3...15`。
+- renderer 会保留 Markdown `<ol start="N">` 的起始序号，并把它转成微信更稳的显式 `<span class="md-ordered-index">N.</span>`，避免依赖微信后台的 `<ol>` 默认样式。
+
+验收时固定检查：
+- 正文 HTML 中 `md-ordered-index` 不应全是 `1.`。
+- `lark-image://` 残留应为 0。
+
 ## 真实发布
 
 ### 重要排障经验：公众号 access_token 缓存必须按 AppID 隔离

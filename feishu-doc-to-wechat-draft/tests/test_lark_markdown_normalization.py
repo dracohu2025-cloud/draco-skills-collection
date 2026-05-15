@@ -65,3 +65,21 @@ print('hi')
     assert "**方法一：微信公众平台后台（最简单）**\n\n1. 登录微信公众平台" in normalized
     assert "**方法二：微信在线调试工具**\n\n1. 访问微信公众平台接口调试工具（mp.weixin.qq.com/debug）" in normalized
     assert "**方法三：使用代码上传**\n\n如果你熟悉 Python，可以直接调用微信 API 上传：\n```python" in normalized
+
+
+def test_lark_table_cells_can_contain_angle_bracket_placeholders() -> None:
+    source = """<lark-table rows=\"2\" cols=\"2\" column-widths=\"200,200\">
+  <lark-tr>
+    <lark-td>选项</lark-td>
+    <lark-td>描述</lark-td>
+  </lark-tr>
+  <lark-tr>
+    <lark-td>`-m`, `--model <model>`</lark-td>
+    <lark-td>覆盖本次运行的模型。</lark-td>
+  </lark-tr>
+</lark-table>
+"""
+    normalized = normalize_lark_markdown(source)
+
+    assert "| 选项 | 描述 |" in normalized
+    assert r"| `-m`, `--model <model>` | 覆盖本次运行的模型。 |" in normalized

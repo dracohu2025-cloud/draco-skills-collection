@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 from .draft import build_draft_payload
 from .lark_docs import load_lark_doc_article
 from .loader import load_article
 from .renderer import render_markdown
 from .validation import validate_publish_inputs
-from .wechat_api import rewrite_html_images
+from .wechat_api import _download_lark_image, rewrite_html_assets
+
+_MARKDOWN_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 
 
 def build_draft_from_markdown_file(
@@ -81,6 +86,41 @@ def _render_article(article, *, profile=None, theme=None, primary_color=None, fo
     )
 
 
+def _first_markdown_image_src(markdown: str) -> str | None:
+    match = _MARKDOWN_IMAGE_RE.search(markdown or "")
+    if not match:
+        return None
+    return match.group(1).strip().strip("<>").strip('"\'')
+
+
+def _download_remote_cover_image(src: str, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    parsed = urlparse(src)
+    suffix = Path(parsed.path).suffix.lower()
+    if suffix not in {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}:
+        suffix = ".jpg"
+    output_path = output_dir / f"wechat_default_cover{suffix}"
+    request = Request(src, headers={"User-Agent": "Mozilla/5.0"})
+    with urlopen(request, timeout=30) as response:
+        output_path.write_bytes(response.read())
+    return output_path
+
+
+def _resolve_cover_image_path(article, article_dir: Path) -> Path:
+    if article.cover_image:
+        return (article_dir / article.cover_image).resolve()
+
+    src = _first_markdown_image_src(article.content_markdown)
+    if not src:
+        raise ValueError("cover_image, thumb_media_id, or first article image is required for publish")
+
+    if src.startswith("lark-image://"):
+        return _download_lark_image(src.replace("lark-image://", "", 1), article_dir)
+    if src.startswith("http://") or src.startswith("https://"):
+        return _download_remote_cover_image(src, article_dir)
+    return (article_dir / src).resolve()
+
+
 def _finalize_publish(article, rendered, *, article_dir: Path, client, dry_run: bool, thumb_media_id: str | None) -> dict:
     if dry_run:
         if not thumb_media_id:
@@ -91,15 +131,17 @@ def _finalize_publish(article, rendered, *, article_dir: Path, client, dry_run: 
             "rendered": rendered,
             "payload": payload,
             "draft_media_id": None,
+            "video_materials": [],
         }
 
     validate_publish_inputs(article=article, article_dir=article_dir, thumb_media_id=thumb_media_id)
     access_token = client.get_access_token()
-    rendered_html = rewrite_html_images(
+    rendered_html, video_materials = rewrite_html_assets(
         html=rendered.html,
         article_dir=article_dir,
         client=client,
         access_token=access_token,
+        source_url=article.source_url,
     )
     rendered = type(rendered)(
         html=rendered_html,
@@ -109,10 +151,8 @@ def _finalize_publish(article, rendered, *, article_dir: Path, client, dry_run: 
 
     resolved_thumb_media_id = thumb_media_id
     if not resolved_thumb_media_id:
-        if not article.cover_image:
-            raise ValueError("cover_image or thumb_media_id is required for publish")
-        cover_path = str((article_dir / article.cover_image).resolve())
-        resolved_thumb_media_id = client.upload_cover_image(cover_path, access_token)
+        cover_path = _resolve_cover_image_path(article, article_dir)
+        resolved_thumb_media_id = client.upload_cover_image(str(cover_path), access_token)
 
     payload = build_draft_payload(article=article, rendered=rendered, thumb_media_id=resolved_thumb_media_id)
     draft_media_id = client.add_draft(payload, access_token)
@@ -121,6 +161,7 @@ def _finalize_publish(article, rendered, *, article_dir: Path, client, dry_run: 
         "rendered": rendered,
         "payload": payload,
         "draft_media_id": draft_media_id,
+        "video_materials": video_materials,
     }
 
 

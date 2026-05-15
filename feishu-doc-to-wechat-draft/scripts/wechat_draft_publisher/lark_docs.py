@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+import html as html_lib
 import re
 import subprocess
-import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
 
 from .models import ArticleInput
@@ -11,14 +11,24 @@ from .models import ArticleInput
 _DOC_TOKEN_RE = re.compile(r"/(?:docx|wiki)/([a-zA-Z0-9]+)")
 _TEXT_TAG_RE = re.compile(r"<text\b[^>]*>(.*?)</text>", re.S)
 _LARK_TABLE_RE = re.compile(r"<lark-table\b.*?</lark-table>", re.S)
+_LARK_TR_RE = re.compile(r"<lark-tr\b[^>]*>(.*?)</lark-tr>", re.S)
+_LARK_TD_RE = re.compile(r"<lark-td\b[^>]*>(.*?)</lark-td>", re.S)
 _IMAGE_RE = re.compile(r'<image\b[^>]*token="([^"]+)"[^>]*>')
 _QUOTE_RE = re.compile(r'<quote-container>(.*?)</quote-container>', re.S)
+_VIDEO_VIEW_RE = re.compile(
+    r'<view\b[^>]*type="2"[^>]*>\s*'
+    r'<file\b(?=[^>]*token="(?P<token>[^"]+)")(?=[^>]*name="(?P<name>[^"]+)")[^>]*'
+    r'(?:/>|>\s*</file>)\s*'
+    r'</view>',
+    re.S,
+)
 _WS_RE = re.compile(r"\s+")
 # Match horizontal rules that could be mistaken for setext h2 underlines
 # Matches: standalone --- on its own line, or --- preceded by text (to prevent setext h2)
 _HR_RE = re.compile(r'(^|\n)(-{3,}|\*{3,}|_{3,})(\s*\n|$)', re.M)
 _STRONG_NUMBERED_LINE_RE = re.compile(r'^\*\*(\d+)\.\s+(.+?)\*\*$')
 _STANDALONE_STRONG_RE = re.compile(r'^\*\*[^\n]+\*\*$')
+_ORDERED_LINE_RE = re.compile(r'^(?P<indent>\s*)(?P<num>\d+)\.\s+(?P<body>.+)$')
 
 
 def extract_lark_doc_token(doc: str) -> str:
@@ -88,17 +98,31 @@ def _convert_quote_containers(markdown: str) -> str:
     return _QUOTE_RE.sub(replace_quote, markdown)
 
 
-def _convert_lark_table(table_markup: str) -> str:
-    root = ET.fromstring(f"<root>{table_markup}</root>")
-    table = root.find("lark-table")
-    if table is None:
-        return table_markup
+def _convert_embedded_videos(markdown: str) -> str:
+    """Convert Feishu video/file embeds into explicit placeholder tags."""
 
+    def replace_video(match: re.Match[str]) -> str:
+        token = match.group("token").strip()
+        name = match.group("name").strip()
+        if not name.lower().endswith(".mp4"):
+            return match.group(0)
+        return (
+            f'<wechat-video token="{html_lib.escape(token, quote=True)}" '
+            f'name="{html_lib.escape(name, quote=True)}" />'
+        )
+
+    return _VIDEO_VIEW_RE.sub(replace_video, markdown)
+
+
+def _convert_lark_table(table_markup: str) -> str:
     rows: list[list[str]] = []
-    for tr in table.findall("lark-tr"):
+    for tr_match in _LARK_TR_RE.finditer(table_markup):
         cells = []
-        for td in tr.findall("lark-td"):
-            cells.append(_collapse_ws("".join(td.itertext())))
+        for td_match in _LARK_TD_RE.finditer(tr_match.group(1)):
+            cell_markup = td_match.group(1)
+            # Do not parse the cell as XML: command docs often contain literal
+            # placeholders like `<model>` / `<name>` inside code spans.
+            cells.append(_collapse_ws(cell_markup))
         if cells:
             rows.append(cells)
 
@@ -192,6 +216,77 @@ def _convert_strong_numbered_blocks(markdown: str) -> str:
     return "\n".join(out)
 
 
+def _renumber_lark_lazy_ordered_lists(markdown: str) -> str:
+    """Turn Feishu/Lark's repeated `1.` ordered-list export into real numbers.
+
+    Lark often serializes every ordered item as `1.`. Markdown treats separated
+    items (screenshots, quotes) as new lists, so WeChat preview becomes all `1.`.
+    Keep counters alive across media/quote/blank/prose helper blocks; reset only
+    on hard section boundaries such as headings, horizontal rules, or standalone
+    strong section titles.
+    """
+    lines = markdown.replace("\r\n", "\n").split("\n")
+    counters: dict[int, int] = {}
+    out: list[str] = []
+    in_fence = False
+
+    def reset_from(indent: int) -> None:
+        for level in list(counters):
+            if level >= indent:
+                counters.pop(level, None)
+
+    def reset_all() -> None:
+        counters.clear()
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+
+        match = _ORDERED_LINE_RE.match(line)
+        if match:
+            indent_text = match.group("indent")
+            indent = len(indent_text.replace("\t", "    "))
+            current = int(match.group("num"))
+            for level in list(counters):
+                if level > indent:
+                    counters.pop(level, None)
+            if current != 1 or indent not in counters:
+                counters[indent] = current
+            else:
+                counters[indent] += 1
+            output_indent = indent_text if indent == 0 else " " * max(indent, 4)
+            out.append(f'{output_indent}{counters[indent]}. {match.group("body")}')
+            continue
+
+        if not stripped:
+            out.append(line)
+            continue
+        if stripped.startswith(("#", "<hr")):
+            reset_all()
+            out.append(line)
+            continue
+        if stripped and _STANDALONE_STRONG_RE.match(stripped):
+            reset_all()
+            out.append(line)
+            continue
+        if stripped.startswith(("![", "<figure", "<img", ">", "<blockquote", "<wechat-video", "- ", "* ")):
+            out.append(line)
+            continue
+
+        # Feishu often exports a visual ordered list as loose blocks:
+        # `1. item` + quote/image/prose + `1. next item`.  Do not reset the
+        # counter on ordinary prose; only hard section boundaries reset it.
+        out.append(line)
+
+    return "\n".join(out)
+
+
 def _normalize_block_boundaries(markdown: str) -> str:
     """Insert missing blank lines around standalone strong titles and list boundaries."""
     lines = markdown.replace("\r\n", "\n").split("\n")
@@ -230,9 +325,11 @@ def normalize_lark_markdown(markdown: str) -> str:
     normalized = _convert_text_tags(markdown)
     normalized = _convert_quote_containers(normalized)
     normalized = _convert_image_tags(normalized)
+    normalized = _convert_embedded_videos(normalized)
     normalized = _LARK_TABLE_RE.sub(lambda m: _convert_lark_table(m.group(0)), normalized)
     normalized = _convert_horizontal_rules(normalized)
     normalized = _convert_strong_numbered_blocks(normalized)
+    normalized = _renumber_lark_lazy_ordered_lists(normalized)
     normalized = _normalize_block_boundaries(normalized)
     normalized = normalized.replace("\r\n", "\n")
     normalized = re.sub(r"\n{3,}", "\n\n", normalized)

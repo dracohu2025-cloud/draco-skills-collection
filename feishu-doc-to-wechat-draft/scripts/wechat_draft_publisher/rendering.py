@@ -461,7 +461,7 @@ class RenderOptions:
 
 PROFILE_DEFAULTS = {
     "default": {"primary_color": "#2f81f7", "font_size": 16, "line_height": 1.8, "justify": False, "indent_first_line": False},
-    "doocs": {"primary_color": "#0F4C81", "font_size": 16, "line_height": 1.75, "justify": False, "indent_first_line": False},
+    "doocs": {"primary_color": "#FA5151", "font_size": 15, "line_height": 1.75, "justify": False, "indent_first_line": False},
     "classic": {"primary_color": "#3f51b5", "font_size": 16, "line_height": 1.78, "justify": True, "indent_first_line": False},
     "minimal": {"primary_color": "#2563eb", "font_size": 16, "line_height": 1.75, "justify": False, "indent_first_line": False},
 }

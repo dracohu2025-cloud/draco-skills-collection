@@ -25,6 +25,53 @@ DEFAULT_REFERER = 'https://hermes.aigc.green'
 DEFAULT_TITLE = 'Hermes Article To WeChat Cover'
 DEFAULT_PROVIDER_ORDER = ['Vertex AI']
 DEFAULT_ASPECT_RATIO = '2.35:1'
+DEFAULT_COVER_BROTH = (
+    '先理解推荐对象为什么值得被看见，再把复杂信息收束为一个清晰、有力、耐看的封面理由；'
+    '手机端 3 秒可读，信息少而准，主视觉来自对象本身的气质，保持高级、可信、克制。'
+)
+
+COVER_SEASONING_RECIPES: dict[str, dict[str, str]] = {
+    'architectural-blueprint': {
+        'name': '建筑图纸美学',
+        'seasoning': '空间秩序、中轴网格、细密注释、冷静极简、工程感字体、结构化插画、石墨灰强调色',
+    },
+    'tech-morandi': {
+        'name': '科技莫兰迪',
+        'seasoning': '科技美学、居中排版、小字点缀、极简黑体、柔和渐变、莫兰迪配色、韩系几何背景',
+    },
+    'power-editorial': {
+        'name': '力量编辑感',
+        'seasoning': '力量美学、强情绪、居中标题、多层小字、暗色渐变、艺术化字体、象征插画',
+    },
+    'oriental-literati': {
+        'name': '东方文人',
+        'seasoning': '留白意境、居中章法、印章式点缀、书卷感、水墨抽象、朱砂红强调、题跋式克制',
+    },
+    'cinematic-title': {
+        'name': '电影片头',
+        'seasoning': '电影片头美学、叙事情绪、宽银幕、若隐若现的小字线索、克制神秘、暗金强调色',
+    },
+    'garden-journal': {
+        'name': '园艺手账',
+        'seasoning': '松弛生活感、中心标题、日期天气标注、手写感、温柔极简、鼠尾草绿、安静日记感',
+    },
+    'healing-line-art': {
+        'name': '治愈线条',
+        'seasoning': '线条艺术、圆体、治愈系配色、柔和渐变、干净留白、轻盈插画',
+    },
+    'product-manual': {
+        'name': '产品手册',
+        'seasoning': '产品手册美学、清晰结构、中心排版、多层注释、蓝色强调、理性插画、可解释感',
+    },
+    'art-exhibition': {
+        'name': '艺术展览',
+        'seasoning': '诗性留白、展墙说明、碎片化小字、克制高级、抽象插画、慢镜头氛围、雾紫强调色',
+    },
+    'variety-trailer': {
+        'name': '综艺预告',
+        'seasoning': '轻松好笑、爆梗排版、贴纸小字、明亮极简、圆润字体、夸张表情、柠檬黄强调色',
+    },
+}
 
 FRONTMATTER_DELIMITER = '---'
 DOC_TOKEN_RE = re.compile(r'/docx?/([A-Za-z0-9]+)')
@@ -229,6 +276,45 @@ def split_csv(value: str | None) -> list[str]:
     return [item.strip() for item in value.split(',') if item.strip()]
 
 
+def seasoning_library_for_prompt() -> list[dict[str, str]]:
+    return [
+        {'id': recipe_id, 'name': recipe['name'], 'seasoning': recipe['seasoning']}
+        for recipe_id, recipe in COVER_SEASONING_RECIPES.items()
+    ]
+
+
+def resolve_seasoning_recipe(brief: dict[str, Any]) -> tuple[str, dict[str, str]]:
+    raw = str(brief.get('selected_recipe_id') or brief.get('selected_seasoning_id') or brief.get('selected_recipe') or '').strip()
+    normalized = raw.lower().replace('_', '-').replace(' ', '-')
+    if normalized in COVER_SEASONING_RECIPES:
+        return normalized, COVER_SEASONING_RECIPES[normalized]
+
+    for recipe_id, recipe in COVER_SEASONING_RECIPES.items():
+        if raw and raw in {recipe['name'], recipe_id}:
+            return recipe_id, recipe
+
+    haystack = ' '.join(
+        str(brief.get(key, ''))
+        for key in ('tone', 'visual_direction', 'subject', 'scene', 'composition', 'palette')
+    )
+    keyword_map = [
+        ('product-manual', ('产品', '手册', '说明', '工具', '方法', '蓝色')),
+        ('architectural-blueprint', ('建筑', '图纸', '工程', '网格', '空间秩序')),
+        ('oriental-literati', ('东方', '文人', '水墨', '书卷', '留白', '古籍')),
+        ('cinematic-title', ('电影', '片头', '叙事', '宽银幕', '暗金')),
+        ('garden-journal', ('手账', '日记', '温柔', '生活', '松弛', '绿色')),
+        ('variety-trailer', ('综艺', '搞笑', '爆梗', '轻松', '明亮')),
+        ('art-exhibition', ('展览', '艺术', '诗性', '展墙', '抽象')),
+        ('power-editorial', ('力量', '强情绪', '暗色', '冲击')),
+        ('healing-line-art', ('治愈', '线条', '柔和', '圆体')),
+        ('tech-morandi', ('科技', 'AI', 'Agent', '极简', '莫兰迪', '渐变')),
+    ]
+    for recipe_id, keywords in keyword_map:
+        if any(keyword in haystack for keyword in keywords):
+            return recipe_id, COVER_SEASONING_RECIPES[recipe_id]
+    return 'tech-morandi', COVER_SEASONING_RECIPES['tech-morandi']
+
+
 def call_openrouter(*, api_key: str, payload: dict[str, Any], referer: str, title: str) -> dict[str, Any]:
     req = request.Request(
         OPENROUTER_URL,
@@ -271,12 +357,16 @@ def analyze_article_theme(
         'output_language': 'zh-CN',
         'rules': {
             'cover_aspect_ratio': DEFAULT_ASPECT_RATIO,
+            'method': '固定汤底 + 风格佐料 + 针对标题更改一两个关键元素',
             'cover_should_reflect_article_core_theme': True,
             'cover_style_should_be_inferred_from_article_content_and_tone': True,
             'default_no_text_overlay': not allow_text_overlay,
             'avoid_literal_ui_screenshots': True,
             'avoid_generic_stock_image_feel': True,
+            'choose_exactly_one_seasoning_recipe': True,
         },
+        'cover_broth': DEFAULT_COVER_BROTH,
+        'seasoning_library': seasoning_library_for_prompt(),
         'user_overrides': {
             'visual_style_hint': visual_style_hint or '',
             'must_include': must_include,
@@ -294,6 +384,10 @@ def analyze_article_theme(
             'core_theme': '文章核心主题',
             'reader_takeaway': '读者最强获得感',
             'tone': '如冷静、犀利、未来感、温暖、理性、硬核',
+            'selected_recipe_id': '从 seasoning_library 中选择一个 id',
+            'selected_recipe_reason': '为什么这个佐料适合本文',
+            'recipe_adaptations': ['只写1到3个基于文章标题/主题的小改动，不要重写整套风格'],
+            'cover_message': '封面3秒内要传达的一句话推荐理由',
             'visual_direction': '一句话视觉方向',
             'subject': '主视觉主体',
             'scene': '具体场景描述',
@@ -362,20 +456,70 @@ def build_image_spec(
         must_avoid,
     )
     include = merge_unique(brief.get('must_include') or [], must_include)
+    recipe_id, recipe = resolve_seasoning_recipe(brief)
+    raw_adaptations = brief.get('recipe_adaptations') or []
+    if isinstance(raw_adaptations, str):
+        adaptations = [raw_adaptations.strip()] if raw_adaptations.strip() else []
+    else:
+        adaptations = [str(item).strip() for item in raw_adaptations if str(item).strip()]
+    adaptations = adaptations[:3]
+
     text_overlay = ''
     if allow_text_overlay:
         text_overlay = (brief.get('text_overlay') or '').strip()
-    return {
-        'task': 'generate_image',
-        'model_intent': 'WeChat official account cover generated from article theme using Nano Banana structured prompt',
-        'template': 'wechat-cover',
-        'prompt_design_rules': {
-            'describe_scene_not_keywords': True,
-            'be_explicit_about_subject_style_composition_lighting': True,
-            'prefer_semantic_negative_constraints': True,
-            'preserve_visual_coherence': True,
-            'single_final_image_only': True,
+    style_keywords = ', '.join(brief.get('style_keywords') or [])
+    style = '; '.join(
+        item for item in [
+            f"{recipe['name']}：{recipe['seasoning']}",
+            style_keywords,
+            '文章专属巧思：' + '；'.join(adaptations) if adaptations else '',
+        ] if item
+    )
+    cover_message = (brief.get('cover_message') or brief.get('reader_takeaway') or brief.get('core_theme') or '').strip()
+
+    execution_spec = {
+        'source_prompt': f'为微信公众号文章《{article.title}》生成封面图，主题为：{brief.get("core_theme", "")}',
+        'broth': DEFAULT_COVER_BROTH,
+        'selected_seasoning': {
+            'id': recipe_id,
+            'name': recipe['name'],
+            'seasoning': recipe['seasoning'],
         },
+        'article_adaptations': adaptations,
+        'cover_message': cover_message,
+        'subject': brief.get('subject', '') or article.title,
+        'scene': brief.get('scene', '') or brief.get('visual_direction', ''),
+        'style': style,
+        'composition': brief.get('composition', '') or 'strong panoramic editorial composition with clear focal point and safe negative space',
+        'lighting': brief.get('lighting', '') or 'clean cinematic lighting',
+        'camera_language': 'wide panoramic banner framing suitable for WeChat article cover',
+        'color_palette': brief.get('palette', ''),
+        'text_rendering': text_overlay,
+        'aspect_ratio': DEFAULT_ASPECT_RATIO,
+        'quality_target': 'high',
+        'must_include': include,
+        'must_avoid': negative,
+    }
+    review_spec = {
+        'title': article.title,
+        'core_theme': brief.get('core_theme', ''),
+        'tone': brief.get('tone', ''),
+        'broth': DEFAULT_COVER_BROTH,
+        'selected_seasoning': execution_spec['selected_seasoning'],
+        'selected_recipe_reason': brief.get('selected_recipe_reason', ''),
+        'article_adaptations': adaptations,
+        'cover_message': cover_message,
+        'subject': execution_spec['subject'],
+        'scene': execution_spec['scene'],
+        'composition': execution_spec['composition'],
+        'lighting': execution_spec['lighting'],
+        'color_palette': execution_spec['color_palette'],
+        'aspect_ratio': DEFAULT_ASPECT_RATIO,
+        'must_include': include,
+        'must_avoid': negative,
+    }
+    return {
+        'template': 'wechat-cover-broth-seasoning',
         'article_context': {
             'title': article.title,
             'source_type': article.source_type,
@@ -384,32 +528,20 @@ def build_image_spec(
             'tone': brief.get('tone', ''),
             'reader_takeaway': brief.get('reader_takeaway', ''),
         },
-        'image_request': {
-            'source_prompt': f'为微信公众号文章《{article.title}》生成封面图，主题为：{brief.get("core_theme", "")}',
-            'subject': brief.get('subject', '') or article.title,
-            'scene': brief.get('scene', '') or brief.get('visual_direction', ''),
-            'style': ', '.join(brief.get('style_keywords') or []),
-            'composition': brief.get('composition', '') or 'strong panoramic editorial composition with clear focal point and safe negative space',
-            'lighting': brief.get('lighting', '') or 'clean cinematic lighting',
-            'camera_language': 'wide panoramic banner framing suitable for WeChat article cover',
-            'color_palette': brief.get('palette', ''),
-            'text_rendering': text_overlay,
-            'aspect_ratio': DEFAULT_ASPECT_RATIO,
-            'quality_target': 'high',
-            'negative_constraints': negative,
-            'must_include': include,
-            'must_avoid': negative,
-            'reference_notes': (
-                'The image must instantly communicate the article\'s core theme. '
-                'It should look like a premium editorial WeChat cover, not a PowerPoint screenshot or generic stock banner. '
-                'Leave tasteful breathing room for the WeChat cover layout.'
-            ),
+        'cover_recipe': {
+            'broth': DEFAULT_COVER_BROTH,
+            'selected_recipe_id': recipe_id,
+            'selected_recipe': recipe,
+            'article_adaptations': adaptations,
         },
+        'review_spec': review_spec,
+        'execution_spec': execution_spec,
+        'image_request': execution_spec,
         'output_contract': {
             'return': 'one finished image',
             'no_watermark': True,
             'no_unrequested_borders': True,
-            'no_unrequested_extra_text': True,
+            'no_unrequested_extra_text': not allow_text_overlay,
         },
     }
 
@@ -467,11 +599,13 @@ def resolve_output_path(output: str | None, mime_type: str) -> Path:
 
 
 def build_final_image_prompt(image_spec: dict[str, Any]) -> str:
+    execution_spec = image_spec.get('execution_spec') or image_spec.get('image_request') or image_spec
     return (
-        'Interpret the following JSON as the authoritative image specification. '
-        'Generate exactly one image that follows it faithfully. '
+        'Use the following JSON as the authoritative image specification for execution. '
+        'Generate exactly one premium editorial WeChat cover image that follows it faithfully. '
+        'Keep the broth + seasoning recipe coherent; only vary the article_adaptations. '
         'If any field is empty, infer it conservatively from source_prompt.\n\n'
-        + json.dumps(image_spec, ensure_ascii=False, indent=2)
+        + json.dumps(execution_spec, ensure_ascii=False, indent=2)
     )
 
 

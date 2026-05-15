@@ -11,7 +11,7 @@ style:
     h4: 默认
     h5: 默认
     h6: 默认
-  font_size: 更小
+  font_size: 稍小
   code_theme: github
   caption_mode: 不显示
   mac_code_block: 开启
