@@ -9,18 +9,19 @@
 | 通用版本 Skill | Ark Plan 处理方式 | 原因 |
 |---|---|---|
 | `video-framework-selector` | ❌ 已移除 | Agent 自带推理能力，不需要独立 skill |
-| `article-to-wechat-cover` | ❌ 已移除 | 使用原生 Seedream 生图能力完全替代 |
+| `article-to-wechat-cover` | ✅ 已重构 | 保留流程封装，生图引擎替换为原生 Seedream |
 | `nano-banana-image` | ❌ 已移除 | 使用原生 Seedream 生图能力完全替代 |
 | `jimeng-image` | ❌ 已排除 | 和 Seedream 功能重复 |
 | 钉钉专用版本 | ❌ 已排除 | 不需要支持钉钉 |
 
-## 已保留的 Skills（16 个）
+## 已保留的 Skills（17 个）
 
-### 📘 飞书生态工作流（6 个）
+### 📘 飞书生态工作流（7 个）
 
 | Skill | 用途 |
 |---|---|
 | `ai-news-bitable-archive` | 飞书日报归档到多维表 |
+| `article-to-wechat-cover` | 飞书文档 → 公众号封面图（Ark Plan 专用版，基于 Seedream） |
 | `daily-ai-agent-aigc-top-news` | 每日 AI 早报 → 飞书文档 + 多维表归档 |
 | `feishu-doc-to-wechat-draft` | 飞书文档 → 微信公众号草稿 |
 | `feishu-lark-workflows` | 飞书文档/云盘/多维表通用操作封装 |
@@ -53,9 +54,11 @@
 
 | 原 Skill 功能 | Ark Plan 原生替代 |
 |---|---|
-| 公众号封面图生成 | `byted-seedream-image-generate` |
+| 公众号封面图生成（引擎部分） | `byted-seedream-image-generate` |
 | 通用图片生成（单图/批量） | `byted-seedance-video-generate` + `byted-seedream-image-generate` |
 | 视频框架选型决策 | Agent 内置推理能力 |
+
+> **注意**：`article-to-wechat-cover` 保留了流程封装（文档读取、主题提取、尺寸规范、自动插入），只替换了生图引擎。
 
 ### ⚠️ Skill 独有价值（不可替代）
 
@@ -96,6 +99,12 @@ Ark Agent Plan Version/
 ```
 
 ## 更新日志
+
+### v1.1.0 (2026-05-15)
+- 新增 `article-to-wechat-cover` Ark Plan 专用版
+- 保留流程封装（文档读取、主题提取、尺寸规范、自动插入）
+- 生图引擎替换为原生 Seedream
+- 总 skills 数量：17 个
 
 ### v1.0.0 (2026-05-15)
 - 初始版本，基于通用版本 2026-05-15 同步
