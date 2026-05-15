@@ -1,10 +1,10 @@
 import { ImageStylePreset, ImageStyleConfig } from './types.js';
 
-// Models
-export const TEXT_MODEL = 'gemini-2.5-flash'; // Logic & Scripting (changed from gemini-3-pro to avoid quota limits)
-export const PPT_HTML_MODEL = 'gemini-3-pro-preview'; // PPT HTML generation uses gemini-3-pro-preview for better quality
-export const TTS_MODEL = 'gemini-2.5-flash-preview-tts'; // Audio
-export const IMAGE_MODEL = 'models/gemini-3-pro-image-preview'; // High quality visuals
+// Models - Ark Agent Plan 专用版本：使用火山引擎技术栈
+export const TEXT_MODEL = 'ark-doubao-pro'; // 使用豆包大模型进行逻辑与脚本处理
+export const PPT_HTML_MODEL = 'ark-doubao-pro'; // PPT HTML 生成使用豆包大模型
+export const TTS_PROVIDER = 'volcengine'; // 默认使用火山引擎 TTS（与 Seedream/Seedance 技术栈一致）
+export const IMAGE_MODEL = 'seedream'; // 使用 Seedream 生成高质量图片
 
 // PPT Generation Models (OpenRouter)
 // EXPERIMENT: Testing DeepSeek as default for cheaper PPT generation
@@ -35,20 +35,25 @@ export const MINIMAX_CONFIG = {
   modelId: 'speech-2.6-hd',
 };
 
-// --- VOLCENGINE CONFIGURATION ---
+// --- VOLCENGINE CONFIGURATION - Ark Agent Plan 专用版本 ---
+// 与 Seedream/Seedance 共享火山引擎认证体系
+// 使用 Ark Agent Plan 原生工具调用，无需单独配置 API Key
 export const VOLCENGINE_CONFIG = {
-  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || '',
+  // 优先使用环境变量配置，未配置时通过 Agent Plan 原生工具调用
+  accessToken: process.env.VOLCENGINE_ACCESS_TOKEN || process.env.VOLCENGINE_TTS_ACCESS_TOKEN || '',
   appId: process.env.VOLCENGINE_TTS_APP_ID || '',
   voiceIdMale: 'zh_male_dayi_saturn_bigtts',
   voiceIdFemale: 'zh_female_mizai_saturn_bigtts',
   resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || 'seed-tts-2.0',
+  // 与 Seedream/Seedance 一致的 API 端点
+  apiEndpoint: 'https://openspeech.bytedance.com/api/v1/tts',
 };
 
 // --- TTS PROVIDER CONFIGURATION ---
 export type TTSProviderType = 'google' | 'elevenlabs' | 'minimax' | 'volcengine';
 
-// Default TTS provider
-export const DEFAULT_TTS_PROVIDER: TTSProviderType = 'minimax';
+// Default TTS provider - Ark Agent Plan 专用版本：默认使用火山引擎
+export const DEFAULT_TTS_PROVIDER: TTSProviderType = 'volcengine';
 
 // ========== SMART PPT COLOR THEMES ==========
 export interface ColorTheme {

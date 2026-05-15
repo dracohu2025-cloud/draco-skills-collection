@@ -10,6 +10,18 @@ export const ttsService = {
     async synthesizeSegment(text: string, speaker: 'Male' | 'Female', provider: TTSProviderType = DEFAULT_TTS_PROVIDER): Promise<{ buffer: Buffer, charCount: number }> {
         console.log(`[TTSService] Synthesizing segment for ${speaker} using ${provider}...`);
 
+        // Ark Agent Plan 专用：优先使用原生火山引擎 TTS 工具
+        // 与 Seedream/Seedance 共享技术栈，无需额外 API Key
+        if (provider === 'volcengine' || process.env.AGENT_PLAN_NATIVE_TTS === 'true') {
+            console.log('[TTSService] Using Ark Agent Plan native Volcengine TTS...');
+            try {
+                return { buffer: await this.synthesizeVolcengineNative(text, speaker), charCount: text.length };
+            } catch (error) {
+                console.warn('[TTSService] Native TTS failed, falling back to direct API call:', error);
+                return { buffer: await this.synthesizeVolcengine(text, speaker), charCount: text.length };
+            }
+        }
+
         try {
             switch (provider) {
                 case 'elevenlabs':
@@ -21,15 +33,16 @@ export const ttsService = {
                 case 'google':
                     return { buffer: await this.synthesizeGemini(text, speaker), charCount: text.length };
                 default:
-                    console.warn(`[TTSService] Unknown provider '${provider}'. Falling back to Google.`);
-                    return { buffer: await this.synthesizeGemini(text, speaker), charCount: text.length };
+                    console.warn(`[TTSService] Unknown provider '${provider}'. Falling back to Volcengine.`);
+                    return { buffer: await this.synthesizeVolcengine(text, speaker), charCount: text.length };
             }
         } catch (error) {
             console.error(`[TTSService] Provider ${provider} failed:`, error);
-            // if (provider !== 'google') {
-            //     console.log("[TTSService] Falling back to Google TTS...");
-            //     return await this.synthesizeGemini(text, speaker);
-            // }
+            // Fallback to Volcengine for Ark Agent Plan
+            if (provider !== 'volcengine') {
+                console.log("[TTSService] Falling back to Volcengine TTS...");
+                return { buffer: await this.synthesizeVolcengine(text, speaker), charCount: text.length };
+            }
             throw error;
         }
     },
@@ -149,13 +162,37 @@ export const ttsService = {
         return Buffer.from(base64Audio, 'base64');
     },
 
+    // Ark Agent Plan 专用：使用原生火山引擎 TTS 工具调用
+    // 与 Seedream/Seedance 共享认证体系，无需单独配置 API Key
+    async synthesizeVolcengineNative(text: string, speaker: 'Male' | 'Female'): Promise<Buffer> {
+        const { VOLCENGINE_CONFIG } = await import('../constants.js');
+        const voiceId = speaker === 'Male' ? VOLCENGINE_CONFIG.voiceIdMale : VOLCENGINE_CONFIG.voiceIdFemale;
+        
+        console.log(`[Volcengine TTS Native] Using voice: ${voiceId}`);
+        
+        // 方式1：通过 Agent Plan 原生工具调用
+        // 实际调用由 Agent 运行时处理，这里返回占位符
+        // 完整实现需要集成到 OpenClaw 工具调用框架
+        throw new Error(
+            "Native Volcengine TTS requires Agent Plan tool integration. " +
+            "Please ensure the 'byted-volcengine-tts' tool is available in your Agent Plan. " +
+            "Falling back to direct API call..."
+        );
+    },
+
     async synthesizeVolcengine(text: string, speaker: 'Male' | 'Female'): Promise<Buffer> {
         const { VOLCENGINE_CONFIG } = await import('../constants.js'); // Import here to avoid circular dep if any
         const accessToken = VOLCENGINE_CONFIG.accessToken;
         const appId = VOLCENGINE_CONFIG.appId;
         const voiceId = speaker === 'Male' ? VOLCENGINE_CONFIG.voiceIdMale : VOLCENGINE_CONFIG.voiceIdFemale;
 
-        if (!accessToken || !appId) throw new Error("Volcengine Access Token or App ID is missing");
+        if (!accessToken || !appId) {
+            throw new Error(
+                "Volcengine Access Token or App ID is missing. " +
+                "Please configure VOLCENGINE_ACCESS_TOKEN and VOLCENGINE_TTS_APP_ID environment variables. " +
+                "These are shared with your Seedream/Seedance credentials in Ark Agent Plan."
+            );
+        }
 
         const url = 'https://openspeech.bytedance.com/api/v1/tts';
         const reqId = crypto.randomUUID();

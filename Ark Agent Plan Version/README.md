@@ -32,7 +32,7 @@
 
 | Skill | 用途 |
 |---|---|
-| `epub2podcast` | EPUB → 双人中文播客视频（音频/Slide/MP4） |
+| `epub2podcast` | EPUB → 双人中文播客视频（**火山引擎 TTS 专用版**，与 Seedream/Seedance 共享认证） |
 | `hyperframes-explainer-video` | HyperFrames 讲解视频（HTML+GSAP+TTS） |
 | `manim-video` | Manim 数学/算法动画视频 |
 | `manim-video-with-tts` | Manim + 火山 TTS 中文旁白 |

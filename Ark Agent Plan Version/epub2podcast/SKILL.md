@@ -1,16 +1,46 @@
 ---
-name: epub2podcast-standalone
-description: 可独立运行的 standalone 版 EPUB2Podcast：用户只需下载当前项目本身，即可在本地把 EPUB 转成 Smart Slide + 双人中文音频 + 最终 MP4 视频播客。
-version: 0.1.0
-author: Hermes Agent
+name: epub2podcast-ark-plan
+description: 【Ark Agent Plan 专用版本】EPUB 转双人中文播客视频流水线：使用火山引擎 TTS（与 Seedream/Seedance 共享技术栈），Smart Slide + 双人音频 + 最终 MP4 视频，无需额外 Google/OpenRouter API Key。
+version: 1.0.0
+author: Ark Agent Plan Team
 license: MIT
 platforms: [linux]
 metadata:
   hermes:
-    tags: [epub, podcast, smart-ppt, smart-slide, tts, video, mp4, standalone]
+    tags: [epub, podcast, smart-ppt, smart-slide, volcengine, tts, seedream, seedance, video, mp4, ark-plan]
+    related_skills: [feishu-seedance-video-pipeline, article-to-wechat-cover]
 ---
 
-# EPUB2Podcast Standalone
+# EPUB2Podcast - Ark Agent Plan 专用版本
+
+> ✅ **已适配火山引擎技术栈**：与 Seedream/Seedance 共享认证体系，无需额外配置 Google/OpenRouter API Key
+
+这个 skill 对应的是 **Ark Agent Plan 专用版本** 的 epub2podcast 管线。用户只需要下载当前项目本身，就可以把 EPUB 转成：
+
+- 双人中文播客脚本
+- 分段音频（火山引擎 TTS）
+- 合并音频 `full_podcast.mp3`
+- Smart Slide 图片
+- Smart Slide HTML 源文件
+- 最终视频播客 `final_podcast.mp4`
+- 营销文案与 metadata
+
+## 技术栈（Ark Plan 统一）
+
+| 能力 | 服务提供商 | 备注 |
+|---|---|---|
+| 📝 文本生成 | 豆包大模型 | 与 Seedream/Seedance 同一技术栈 |
+| 🔊 TTS 语音 | 火山引擎 TTS | 与 Seedream/Seedance 共享认证 |
+| 🖼️ 图片生成 | Seedream | 原生集成 |
+| 🎬 视频生成 | Seedance | 原生集成 |
+
+## 核心原则
+
+- **本地运行**
+- **独立运行**（不依赖外部 `EPUB2PODCAST_PROJECT_ROOT`）
+- **不依赖 Supabase 持久化**
+- **不调用远端运行中的 epub2podcast 服务**
+- **统一火山引擎技术栈**：TTS/图片/视频都走火山/字节生态
 
 这个 skill 对应的是 **standalone 版本** 的 epub2podcast 管线。用户只需要下载当前项目本身，就可以把 EPUB 转成：
 

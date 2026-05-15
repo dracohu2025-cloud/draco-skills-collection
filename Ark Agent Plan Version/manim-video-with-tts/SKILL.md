@@ -1,7 +1,11 @@
 ---
-name: manim-video-with-tts
-description: "End-to-end production pipeline for Manim mathematical explainer videos with Volcengine TTS narration. Plan → TTS → Code → Render → Stitch → Deliver. Use when users want: Manim animation + Chinese voiceover, math concept video with synchronized narration, 3Blue1Brown-style explainer with TTS, or any programmatic animation requiring precise audio-visual sync."
+name: manim-video-with-tts-ark-plan
+description: "【Ark Agent Plan 专用版本】Manim 数学/算法讲解视频完整流水线，使用火山引擎 TTS 中文旁白（与 Seedream/Seedance 共享认证）。Plan → TTS → Code → Render → Stitch → Deliver. 适用于：Manim 动画 + 中文配音、音画同步讲解视频、3Blue1Brown 风格教学视频。"
 version: 1.0.0
+metadata:
+  hermes:
+    tags: [manim, animation, video, volcengine, tts, seedream, seedance, math, ark-plan]
+    related_skills: [epub2podcast, feishu-seedance-video-pipeline, vocabulary-video-pipeline]
 ---
 
 # Manim + Volcengine TTS Showcase Pipeline
@@ -36,7 +40,7 @@ PLAN → TTS → CODE → DRAFT → PRODUCTION → STITCH → MUX → DELIVER
 
 - Python 3.10+, Manim Community v0.20+
 - ffmpeg
-- Volcengine TTS credentials (`VOLCENGINE_TTS_ACCESS_TOKEN`, `VOLCENGINE_TTS_APP_ID`, `VOLCENGINE_TTS_VOICE_TYPE_*`)
+- ✅ **Ark Agent Plan 统一认证**：火山引擎 TTS 凭证（与 Seedream/Seedance 共享 `VOLCENGINE_ACCESS_TOKEN`，无需额外配置）
 - lark-cli for Feishu upload
 - Web server directory `/var/www/hermes.aigc.green/media/`
 

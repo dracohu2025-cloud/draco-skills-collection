@@ -1,12 +1,13 @@
 ---
-name: vocabulary-video-pipeline
-description: 基于 Remotion 的词汇视频自动化生成 skill。输入一个英文单词，自动跑完诊断、TTS 音频、节奏分割、视频渲染、飞书上传和成本汇报。
+name: vocabulary-video-pipeline-ark-plan
+description: 【Ark Agent Plan 专用版本】基于 Remotion 的英文词汇视频自动化生成流水线。输入一个英文单词，自动完成：诊断、火山引擎 TTS 音频（与 Seedream/Seedance 共享认证）、节奏分割、视频渲染、飞书上传和成本汇报。
 version: 1.0.0
-author: Hermes Agent
+author: Ark Agent Plan Team
 license: MIT
 metadata:
   hermes:
-    tags: [video, remotion, vocabulary, tts, education, feishu]
+    tags: [video, remotion, vocabulary, volcengine, tts, seedream, seedance, education, feishu, ark-plan]
+    related_skills: [epub2podcast, feishu-seedance-video-pipeline, manim-video-with-tts]
 ---
 
 # vocabulary-video-pipeline
@@ -41,7 +42,7 @@ Feishu upload + 成本报告
 
 1. 已克隆 [vocabulary-video-pipeline](https://github.com/dracohu2025-cloud/vocabulary-video-pipeline) 项目到本地
 2. 已安装 Node.js、npm、Python 3
-3. 已配置 `.env` 中的火山引擎 TTS 参数
+3. ✅ **Ark Agent Plan 统一认证**：已配置 `.env` 中的火山引擎 TTS 参数（与 Seedream/Seedance 共享 `VOLCENGINE_ACCESS_TOKEN`）
 4. 已安装 `lark-cli` 并登录（用于飞书上传）
 5. 已安装 Python 依赖：`pip install pydub`
 
