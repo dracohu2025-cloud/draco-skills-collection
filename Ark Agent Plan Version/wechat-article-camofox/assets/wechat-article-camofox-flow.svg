@@ -1,0 +1,48 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="520" rx="28" fill="#FFF8F2"/>
+  <rect x="40" y="40" width="1120" height="440" rx="24" fill="#FFFFFF" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="72" y="98" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#C15B12">wechat-article-camofox 工作流</text>
+  <text x="72" y="136" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#6C5A4B">从公众号链接到 Markdown / 飞书文档：自动安装 CamouFox、结构化抓取、正文清洗、图文重组</text>
+
+  <rect x="72" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="96" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">1. 输入链接</text>
+  <text x="96" y="274" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="96" dy="0">公众号文章 URL</tspan>
+    <tspan x="96" dy="30">支持直接抓取</tspan>
+    <tspan x="96" dy="30">或统一入口 run.py</tspan>
+  </text>
+
+  <rect x="346" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="370" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">2. 自动准备</text>
+  <text x="368" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="368" dy="0">检查 camofox-browser</tspan>
+    <tspan x="368" dy="28">服务健康状态</tspan>
+    <tspan x="368" dy="28">缺失时自动安装</tspan>
+    <tspan x="368" dy="28">并输出阶段性进度</tspan>
+  </text>
+
+  <rect x="620" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="644" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">3. 结构化抓取</text>
+  <text x="644" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="644" dy="0">读取 accessibility</tspan>
+    <tspan x="644" dy="28">snapshot</tspan>
+    <tspan x="644" dy="28">提取图片元数据</tspan>
+    <tspan x="644" dy="28">保留图文块顺序</tspan>
+  </text>
+
+  <rect x="894" y="190" width="220" height="180" rx="18" fill="#FFF1E4" stroke="#F2C6A2" stroke-width="2"/>
+  <text x="918" y="236" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#A94C0E">4. 输出结果</text>
+  <text x="912" y="272" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5D4D40">
+    <tspan x="912" dy="0">过滤留言区与页面噪音</tspan>
+    <tspan x="912" dy="28">修复列表、引用、折行</tspan>
+    <tspan x="912" dy="28">导出 Markdown/JSON</tspan>
+    <tspan x="912" dy="28">或飞书原生文档</tspan>
+  </text>
+
+  <path d="M292 280H346" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M558 280H620" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M840 280H894" stroke="#C15B12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M332 280L316 268V292L332 280Z" fill="#C15B12"/>
+  <path d="M606 280L590 268V292L606 280Z" fill="#C15B12"/>
+  <path d="M880 280L864 268V292L880 280Z" fill="#C15B12"/>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111827"/><stop offset="1" stop-color="#020617"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f2937"/><stop offset="1" stop-color="#0f172a"/></linearGradient>
+    <style>
+      text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','Microsoft YaHei',sans-serif;fill:#e5e7eb}
+      .title{font-size:40px;font-weight:800}.sub{font-size:20px;fill:#94a3b8}.box-title{font-size:22px;font-weight:700}.box-text{font-size:16px;fill:#cbd5e1}.small{font-size:14px;fill:#93c5fd}.arrow{stroke:#38bdf8;stroke-width:4;fill:none;marker-end:url(#arrow)}.box{fill:url(#card);stroke:#334155;stroke-width:2;rx:18}.gate{fill:#172554;stroke:#60a5fa;stroke-width:3;rx:18}.warn{fill:#3b1d1d;stroke:#f97316;stroke-width:2;rx:18}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/></marker>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <text x="64" y="70" class="title">Feishu + Seedance 视频产线</text>
+  <text x="64" y="105" class="sub">Director 决策 · Reviewer 门禁 · 资产台账 · 多幕拼接 · QA/成本回填</text>
+
+  <rect x="64" y="155" width="190" height="120" class="box"/>
+  <text x="86" y="190" class="box-title">1. 飞书 Base 行</text>
+  <text x="86" y="222" class="box-text">脚本 / 角色 / 场景</text>
+  <text x="86" y="250" class="box-text">目标行是唯一账本</text>
+
+  <path d="M254 215 H320" class="arrow"/>
+  <rect x="320" y="155" width="210" height="120" class="box"/>
+  <text x="342" y="190" class="box-title">2. Director Module</text>
+  <text x="342" y="222" class="box-text">角色、场景、服装</text>
+  <text x="342" y="250" class="box-text">逐秒导演稿</text>
+
+  <path d="M530 215 H596" class="arrow"/>
+  <rect x="596" y="155" width="230" height="120" class="box"/>
+  <text x="618" y="190" class="box-title">3. 参考资产</text>
+  <text x="618" y="222" class="box-text">Character Reference Sheet</text>
+  <text x="618" y="250" class="box-text">Scene + Wardrobe</text>
+
+  <path d="M826 215 H892" class="arrow"/>
+  <rect x="892" y="155" width="250" height="120" class="gate"/>
+  <text x="914" y="190" class="box-title">4. Reviewer Gate</text>
+  <text x="914" y="222" class="box-text">PASS_TO_SUBMIT / BLOCKED</text>
+  <text x="914" y="250" class="small">烧钱前硬门禁</text>
+
+  <path d="M1017 275 V350" class="arrow"/>
+  <rect x="892" y="350" width="250" height="120" class="box"/>
+  <text x="914" y="385" class="box-title">5. Seedance 执行</text>
+  <text x="914" y="417" class="box-text">标准版 / 480p / 音频</text>
+  <text x="914" y="445" class="box-text">每幕独立 Task ID</text>
+
+  <path d="M892 410 H826" class="arrow"/>
+  <rect x="596" y="350" width="230" height="120" class="box"/>
+  <text x="618" y="385" class="box-title">6. 轮询与下载</text>
+  <text x="618" y="417" class="box-text">保存结果 / 视频 URL</text>
+  <text x="618" y="445" class="box-text">避免重复 POST</text>
+
+  <path d="M596 410 H530" class="arrow"/>
+  <rect x="320" y="350" width="210" height="120" class="box"/>
+  <text x="342" y="385" class="box-title">7. QA / 拼接</text>
+  <text x="342" y="417" class="box-text">ffprobe / 抽帧</text>
+  <text x="342" y="445" class="box-text">多幕 ffmpeg concat</text>
+
+  <path d="M320 410 H254" class="arrow"/>
+  <rect x="64" y="350" width="190" height="120" class="box"/>
+  <text x="86" y="385" class="box-title">8. 回填验收</text>
+  <text x="86" y="417" class="box-text">成片 / QA / tokens</text>
+  <text x="86" y="445" class="box-text">成本 / Prompt Map</text>
+
+  <rect x="64" y="535" width="1078" height="92" class="warn"/>
+  <text x="92" y="572" class="box-title">关键原则</text>
+  <text x="92" y="604" class="box-text">新视频先补齐当前行物料台账；官方人像必须加入 Wardrobe Reference image；Reviewer 未 PASS 禁止提交。</text>
+</svg>
