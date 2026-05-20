@@ -174,6 +174,16 @@ python3 scripts/publish_podcast_site.py \
 
 默认视频合成为 **4:3 的 1440x1080**（保持当前 slide 比例不变，不拉伸到 16:9）。
 
+## YouTube Description 规则
+
+- 优先使用原管线生成的 `metadata/marketing.json.description`。
+- 若必须 fallback，description 写内容价值、关键看点和时间轴，不要写“这期用双人播客的方式……”这类制作说明。
+- 时间戳是内容段落划分，格式类似 `[MM:SS] Topic` / `MM:SS 主题`；不要把对应台词直接贴上去。
+- 主题优先从 `visualPrompt` 的标题、字幕、关键句或结构化 `【标题】...` 中提取，缺失时再生成中性的章节标签。
+- 发布前核验：至少 5 条有意义章节时间戳；无完整台词摘录；thumbnail prompt 与 description 生成逻辑保持分离。
+
+细节见：`references/youtube-marketing-description.md`。
+
 ## 实战经验补充
 
 ### 持久输出目录优先
