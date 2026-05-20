@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ENTRY_SRC="$PROJECT_ROOT/src/regenerateLocalSlide.ts"
+ENTRY_DIST="$PROJECT_ROOT/dist/regenerateLocalSlide.js"
 
 cd "$PROJECT_ROOT"
 
-if [[ ! -d node_modules ]]; then
-  echo "Dependencies not installed. Running npm install..."
-  npm install
+if [[ ! -f "$ENTRY_DIST" || "$ENTRY_SRC" -nt "$ENTRY_DIST" ]]; then
+  npm run build >/dev/null
 fi
 
-npm run build >/dev/null
-exec node dist/cli/regenerate-slide.js "$@"
+exec node "$ENTRY_DIST" "$@"

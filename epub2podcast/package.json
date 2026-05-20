@@ -1,9 +1,9 @@
 {
   "name": "epub2podcast",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Standalone local-first EPUB to Chinese podcast pipeline with Smart Slides and MP4 output.",
+  "description": "Standalone local-first EPUB to Chinese podcast video pipeline with GPT-Image visual slides, Smart Slides, TTS and MP4 output.",
   "license": "MIT",
   "keywords": [
     "epub",
@@ -13,12 +13,16 @@
     "smart-slide",
     "video",
     "mp4",
-    "hermes-skill"
+    "hermes-skill",
+    "gpt-image",
+    "youtube",
+    "audiobook"
   ],
   "bin": {
     "epub2podcast-run": "dist/cli/run.js",
     "epub2podcast-regenerate-slide": "dist/cli/regenerate-slide.js",
-    "epub2podcast-compress-video": "dist/cli/compress-video.js"
+    "epub2podcast-compress-video": "dist/cli/compress-video.js",
+    "epub2podcast-generate-gpt-images": "dist/cli/generate-gpt-images.js"
   },
   "scripts": {
     "build": "tsc",
@@ -26,7 +30,9 @@
     "regenerate-slide": "node dist/cli/regenerate-slide.js",
     "compress-video": "node dist/cli/compress-video.js",
     "help": "node dist/cli/run.js --help",
-    "smoke-test": "bash scripts/smoke-test.sh"
+    "smoke-test": "bash scripts/smoke-test.sh",
+    "generate-gpt-images": "node dist/cli/generate-gpt-images.js",
+    "test": "node dist/__tests__/scriptServiceResponseNormalization.test.js && node dist/__tests__/imageDesigner.test.js && node dist/__tests__/gptImageSlideService.test.js"
   },
   "dependencies": {
     "@google/genai": "^1.30.0",

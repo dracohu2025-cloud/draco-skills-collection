@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import { ScriptSegment, ImageStyleConfig, ImagePromptJSON, ApiProvider, ScriptGenerationContext, SourceChapter } from '../types.js';
 import { TEXT_MODEL, getImageStyleDefinition, getDefaultImageStyle, ImageStyleDefinition } from '../constants.js';
 import { openrouterService } from './openrouterService.js';
+// P0+P1 Refactoring: New abstraction layers (available for future use)
+import { getTextProvider, TextProviderType } from '../providers/index.js';
+import { getSlideGenerationPrompt, Language } from '../prompts/index.js';
 import { extractHookFromScript, generateThumbnailPrompt, HookData } from './thumbnailHooks.js';
 import { sanitizeBookTitleForPrompt } from '../utils/titleSanitizer.js';
 
@@ -209,7 +212,7 @@ const buildVisualStyleInstruction = (imageStyle: ImageStyleConfig, language: str
         return `
 **VISUAL INSTRUCTIONS (CRITICAL - 中文结构化描述格式):**
 - **FREQUENCY:** Change the "visualPrompt" every **45-60 seconds** of dialogue (one segment = one unique visualPrompt).
-- **VARIETY (CRITICAL):** You MUST generate **exactly 18-22 unique segments** for the entire episode.
+- **VARIETY (CRITICAL):** You MUST generate **exactly 18 unique segments** for the entire episode.
 - **STYLE (USER SELECTED: ${styleName}):**
   ${stylePrompt}
 
@@ -296,7 +299,7 @@ ${language === 'Chinese' ? '- **CRITICAL:** ABSOLUTELY NO ENGLISH TEXT IN FINAL 
         return `
 **视觉指令 (即梦4格漫画专用格式 - 中文优化):**
 - **频率:** 每45-60秒对话对应一个新的"visualPrompt" (每段落一个唯一的visualPrompt)。
-- **数量:** 你必须生成 **18-22个唯一段落**。
+- **数量:** 你必须生成 **18个唯一段落**。
 - **风格 (用户选择: ${styleName}):**
   ${stylePrompt}
 
@@ -395,7 +398,7 @@ ${language === 'Chinese' ? '- **CRITICAL:** ABSOLUTELY NO ENGLISH TEXT IN FINAL 
         return `
 **VISUAL INSTRUCTIONS (CRITICAL - 4格漫画专用格式):**
 - **FREQUENCY:** Change the "visualPrompt" every **45-60 seconds** of dialogue (one segment = one unique visualPrompt).
-- **VARIETY (CRITICAL):** You MUST generate **exactly 18-22 unique segments** for the entire episode.
+- **VARIETY (CRITICAL):** You MUST generate **exactly 18 unique segments** for the entire episode.
 - **STYLE (USER SELECTED: ${styleName}):**
   ${stylePrompt}
 
@@ -543,7 +546,7 @@ ${language === 'Chinese' ? '- **CRITICAL:** ABSOLUTELY NO ENGLISH TEXT IN DISPLA
     return `
 **VISUAL INSTRUCTIONS (CRITICAL - STRUCTURED JSON FORMAT):**
 - **FREQUENCY:** Change the "visualPrompt" every **45-60 seconds** of dialogue (one segment = one unique visualPrompt).
-- **VARIETY (CRITICAL):** You MUST generate **exactly 18-22 unique segments** for the entire episode.
+- **VARIETY (CRITICAL):** You MUST generate **exactly 18 unique segments** for the entire episode.
 - **STYLE (USER SELECTED: ${styleName}):**
   Every visualPrompt MUST follow this style:
   ${stylePrompt}
@@ -748,12 +751,12 @@ function buildBookContentForPrompt(text: string, context: ScriptGenerationContex
     return promptPayload.slice(0, 220000);
 }
 
-function validateGeneratedScript(script: ScriptSegment[], language: string, imageStyle: ImageStyleConfig): { ok: boolean; reasons: string[]; metrics: Record<string, number> } {
+export function validateGeneratedScript(script: ScriptSegment[], language: string, imageStyle: ImageStyleConfig): { ok: boolean; reasons: string[]; metrics: Record<string, number> } {
     const strictMode = isStrictPodcastMode(imageStyle);
     const totalChars = script.reduce((sum, seg) => sum + (seg.text || '').replace(/\s+/g, '').length, 0);
     const estimatedDurationSeconds = script.reduce((sum, seg) => sum + estimateSegmentDurationSeconds(seg.text || '', language), 0);
     const minSegments = strictMode ? 18 : 16;
-    const maxSegments = 22;
+    const maxSegments = strictMode ? 18 : 22;
     const minChars = strictMode ? 3200 : 2600;
     const minDuration = strictMode ? 600 : 480;
     const reasons: string[] = [];
@@ -765,7 +768,8 @@ function validateGeneratedScript(script: ScriptSegment[], language: string, imag
     if (estimatedDurationSeconds < minDuration) reasons.push(`estimated duration ${estimatedDurationSeconds.toFixed(1)}s < required minimum ${minDuration}s`);
     if (strictMode) {
         const veryShortSegments = script.filter(seg => (seg.text || '').replace(/\s+/g, '').length < 80).length;
-        if (veryShortSegments > 1) reasons.push(`too many short segments: ${veryShortSegments}`);
+        const tooFragmented = veryShortSegments > Math.floor(script.length / 2);
+        if (tooFragmented) reasons.push(`too many short segments: ${veryShortSegments}`);
     }
 
     return {
@@ -849,7 +853,7 @@ The "visualPrompt" and "speaker" fields MUST remain in English.
 **DURATION & STRUCTURE (CRITICAL):**
 - **Target Length:** ${isStrictPodcastMode(imageStyle) ? 'Approximately **12-18 minutes** (hard minimum 10 minutes).' : 'Approximately **15 minutes**.'}
 - **Dialogue Density:** ${language === 'Chinese' ? 'The script MUST contain at least **3200 Chinese characters** of spoken dialogue, and preferably 3800+ for stronger pacing.' : 'The script MUST contain **at least 4500 words** of dialogue.'}
-- **Segment Count (CRITICAL):** You MUST output **exactly 18-22 segments** total. Each segment should contain **multiple dialogue exchanges** (3-5 back-and-forth turns between hosts) covering approximately **45-60 seconds** of spoken content.
+- **Segment Count (CRITICAL):** You MUST output **exactly 18 segments** total. Each segment should contain **multiple dialogue exchanges** (3-5 back-and-forth turns between hosts) covering approximately **45-60 seconds** of spoken content.
 - **Coverage Rule (CRITICAL):** Do NOT focus only on the opening chapter. You must cover the beginning, middle, and end of the book, and include multiple distinct chapters/themes/objects from across the source outline.
 - **Structure:**
   1. **Introduction (2-3 segments):** IMMEDIATELY GRAB ATTENTION in the first 10 seconds! Start with a shocking fact, a provocative question, or a high-stakes scenario. Do NOT start with "Welcome to the show" until AFTER the hook. Hook the listener, then introduce the book's premise.
@@ -926,7 +930,7 @@ Research and specify accurate historical elements for that culture in similar de
 - Include moments of surprise, laughter (written as text like "Haha, that is true"), and serious reflection.
 
 **OUTPUT FORMAT (CRITICAL):**
-The output must be a JSON array of **exactly 18-22 segments**.
+The output must be a JSON array of **exactly 18 segments**.
 
 Each segment represents a **scene** or **topic block** of approximately **45-60 seconds** of audio.
 
@@ -960,10 +964,28 @@ ${imageStyle.preset === 'smart_ppt' || imageStyle.preset === 'antv_infographic' 
 
 **SEGMENT COUNT CONSTRAINT (STRICT):**
 - Minimum: 18 segments
-- Maximum: 22 segments
-- If you output fewer than 18 or more than 22 segments, your output is INVALID.
+- Maximum: 18 segments
+- If you output anything other than exactly 18 segments, your output is INVALID.
 `;
 };
+
+export function normalizeOpenRouterScriptResponse(parsed: unknown): ScriptSegment[] {
+    if (Array.isArray(parsed)) {
+        return parsed as ScriptSegment[];
+    }
+
+    if (parsed && typeof parsed === 'object') {
+        const candidateKeys = ['script', 'segments', 'podcastScript', 'podcast_script'];
+        for (const key of candidateKeys) {
+            const candidate = (parsed as Record<string, unknown>)[key];
+            if (Array.isArray(candidate)) {
+                return candidate as ScriptSegment[];
+            }
+        }
+    }
+
+    throw new Error(`Invalid script: expected array or object wrapper with script array, got ${Array.isArray(parsed) ? 'array' : typeof parsed}`);
+}
 
 export const scriptService = {
     async generateScript(
@@ -1008,7 +1030,7 @@ export const scriptService = {
 
                     generatePromise = ai.models.generateContent({
                         model: TEXT_MODEL,
-                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18-22 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
+                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
                         config: {
                             systemInstruction: SCRIPT_SYSTEM_PROMPT(language, bookTitle, imageStyle),
                             responseMimeType: "application/json",
@@ -1039,7 +1061,7 @@ export const scriptService = {
 
                     generatePromise = ai.models.generateContent({
                         model: TEXT_MODEL,
-                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18-22 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
+                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
                         config: {
                             systemInstruction: SCRIPT_SYSTEM_PROMPT(language, bookTitle, imageStyle),
                             responseMimeType: "application/json",
@@ -1107,7 +1129,7 @@ export const scriptService = {
 
                     generatePromise = ai.models.generateContent({
                         model: TEXT_MODEL,
-                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18-22 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
+                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
                         config: {
                             systemInstruction: SCRIPT_SYSTEM_PROMPT(language, bookTitle, imageStyle),
                             responseMimeType: "application/json",
@@ -1131,7 +1153,7 @@ export const scriptService = {
                     // ============================================================
                     generatePromise = ai.models.generateContent({
                         model: TEXT_MODEL,
-                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18-22 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
+                        contents: `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.\n\nBOOK CONTENT:\n${bookContentForPrompt}`,
                         config: {
                             systemInstruction: SCRIPT_SYSTEM_PROMPT(language, bookTitle, imageStyle),
                             responseMimeType: "application/json",
@@ -2746,7 +2768,7 @@ CRITICAL: Only display the Chinese characters listed above. Do NOT add any other
         const bookContentForPrompt = buildBookContentForPrompt(text, generationContext);
 
         // Build user prompt
-        const userPrompt = `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18-22 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.
+        const userPrompt = `Here is the text of a book. Create a 15-minute podcast script (at least 4500 words) with exactly 18 segments that deeply analyzes the content. Each segment should be a long paragraph (200-300 words). Follow the structure and requirements in the system instruction carefully.
 
 IMPORTANT: Your response MUST be a valid JSON array. Do NOT include any markdown formatting or code blocks. Return ONLY the raw JSON array.
 
@@ -2777,15 +2799,15 @@ ${bookContentForPrompt}`;
                         cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
                     }
 
-                    script = JSON.parse(cleanedText);
+                    script = normalizeOpenRouterScriptResponse(JSON.parse(cleanedText));
                 } catch (parseError) {
                     console.error(`[ScriptService/OpenRouter] Failed to parse JSON response:`, responseText.substring(0, 500));
                     throw new Error(`Invalid JSON response from OpenRouter: ${parseError}`);
                 }
 
                 // Validate script structure
-                if (!Array.isArray(script) || script.length < 10) {
-                    throw new Error(`Invalid script: expected array with 10+ segments, got ${Array.isArray(script) ? script.length : typeof script}`);
+                if (script.length < 10) {
+                    throw new Error(`Invalid script: expected array with 10+ segments, got ${script.length}`);
                 }
 
                 console.log(`[ScriptService/OpenRouter] Script generated successfully with ${script.length} segments. Cost: $${cost?.totalUSD?.toFixed(6) || 'unknown'}`);

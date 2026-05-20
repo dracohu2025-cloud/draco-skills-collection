@@ -740,9 +740,9 @@ Remember:
     htmlContent = this.extractPureHtml(htmlContent);
 
     // Use passed-in model parameter (user's selection) for consistency
-    // OpenRouter API may return simplified model names (e.g., "gemini-3-pro-preview" instead of "google/gemini-3-flash-preview")
+    // OpenRouter API may return simplified model names; keep the caller's explicit model ID for accounting.
     const usageMetadata = {
-      model: model || result.model,  // Prioritize user's selection (full OpenRouter ID like "google/gemini-3-flash-preview")
+      model: model || result.model,  // Prioritize user's selection (full OpenRouter ID like "deepseek/deepseek-v4-flash")
       provider: 'Google Gemini (HTML) + Puppeteer',  // Updated to reflect actual provider
       promptTokenCount: result.usage?.inputTokens || 0,
       candidatesTokenCount: result.usage?.outputTokens || 0,

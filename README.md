@@ -21,7 +21,7 @@
 | [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
-| [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / Slide / MP4 |
+| [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
 | [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
 | [`manim-video/`](./manim-video/) | 做数学、公式、对象变换和算法过程解释视频 | 分镜 / `script.py` / MP4 |
 | [`manim-video-with-tts/`](./manim-video-with-tts/) | **Manim + 火山 TTS**：制作带中文旁白的数学解释视频 | 分镜 / TTS / `script.py` / MP4 |
@@ -72,9 +72,9 @@
   <tr>
     <td width="50%" valign="top">
       <a href="./epub2podcast/README.md">
-        <img src="./epub2podcast/assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
+        <img src="./epub2podcast/assets/example-youtube-thumbnail.png" alt="epub2podcast YouTube 缩略图示例" />
       </a>
-      <p><strong>epub2podcast</strong><br/>把电子书转成双人中文播客脚本、音频、Slides 和最终视频。</p>
+      <p><strong>epub2podcast</strong><br/>把电子书转成双人中文播客脚本、音频、GPT-Image 视觉页、最终视频和 YouTube 发布素材。</p>
     </td>
     <td width="50%" valign="top">
       <a href="./vocabulary-video-pipeline/README.md">

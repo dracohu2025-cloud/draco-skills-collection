@@ -10,12 +10,12 @@ export const IMAGE_MODEL = 'models/gemini-3-pro-image-preview'; // High quality 
 // EXPERIMENT: Testing DeepSeek as default for cheaper PPT generation
 export const PPT_MODELS = [
   { id: 'deepseek/deepseek-v3.2-speciale', name: 'DeepSeek V3.2 Speciale', provider: 'DeepSeek' },
-  { id: 'google/gemini-3-flash-preview', name: 'Gemini 3.0 Flash', provider: 'Google' },
+  { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', provider: 'DeepSeek' },
   { id: 'google/gemini-3-pro-preview', name: 'Gemini 3.0 Pro', provider: 'Google' },
 ];
 
 // Default PPT Model (EXPERIMENT: Using DeepSeek for cheaper generation)
-export const DEFAULT_PPT_MODEL = 'deepseek/deepseek-v3.2-speciale';
+export const DEFAULT_PPT_MODEL = 'deepseek/deepseek-v4-flash';
 
 // Configuration
 export const SAMPLE_RATE = 44100;
@@ -37,11 +37,11 @@ export const MINIMAX_CONFIG = {
 
 // --- VOLCENGINE CONFIGURATION ---
 export const VOLCENGINE_CONFIG = {
-  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || '',
-  appId: process.env.VOLCENGINE_TTS_APP_ID || '',
-  voiceIdMale: 'zh_male_dayi_saturn_bigtts',
-  voiceIdFemale: 'zh_female_mizai_saturn_bigtts',
-  resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || 'seed-tts-2.0',
+  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || process.env.VOLCENGINE_ACCESS_TOKEN || '',
+  appId: process.env.VOLCENGINE_TTS_APP_ID || process.env.VOLCENGINE_APP_ID || '',
+  voiceIdMale: process.env.VOLCENGINE_VOICE_ID_MALE || 'zh_male_dayi_saturn_bigtts',
+  voiceIdFemale: process.env.VOLCENGINE_VOICE_ID_FEMALE || 'zh_female_mizai_saturn_bigtts',
+  resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || process.env.VOLCENGINE_RESOURCE_ID || 'seed-tts-2.0',
 };
 
 // --- TTS PROVIDER CONFIGURATION ---
