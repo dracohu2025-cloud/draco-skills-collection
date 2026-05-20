@@ -59,25 +59,6 @@ function countWords(text: string): number {
     return chineseChars + englishWords;
 }
 
-function getLocalName(node: any): string {
-    const tag = String(node?.tagName || node?.nodeName || '');
-    return tag.includes(':') ? tag.split(':').pop() || tag : tag;
-}
-
-function getElementsByLocalName(root: any, localName: string): any[] {
-    const results: any[] = [];
-    const all = root?.getElementsByTagName?.('*') || [];
-    for (let i = 0; i < all.length; i++) {
-        const node = all[i];
-        if (getLocalName(node) === localName) results.push(node);
-    }
-    return results;
-}
-
-function getFirstByLocalName(root: any, localName: string): any | undefined {
-    return getElementsByLocalName(root, localName)[0];
-}
-
 // ============================================================
 // EPUB Service
 // ============================================================
@@ -119,14 +100,15 @@ export const epubService = {
         const opfDoc = parser.parseFromString(opfContent, "application/xml");
         const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
-        // 3. Extract Metadata (namespace-safe)
-        const metadata = getFirstByLocalName(opfDoc, "metadata");
+        // 3. Extract Metadata
+        const metadata = opfDoc.getElementsByTagName("metadata")[0];
         let title = "Unknown Book";
         let author: string | undefined;
         let language: string | undefined;
 
         if (metadata) {
-            const titleElem = metadata.getElementsByTagName("dc:title")[0] || getFirstByLocalName(metadata, "title");
+            // Title
+            const titleElem = metadata.getElementsByTagName("dc:title")[0];
             if (titleElem?.textContent) {
                 title = titleElem.textContent
                     .replace(/\.(epub|mobi|pdf|txt)$/i, '')
@@ -136,21 +118,22 @@ export const epubService = {
                     .trim();
             }
 
-            const authorElem = metadata.getElementsByTagName("dc:creator")[0] || getFirstByLocalName(metadata, "creator");
+            // Author
+            const authorElem = metadata.getElementsByTagName("dc:creator")[0];
             if (authorElem?.textContent) {
                 author = authorElem.textContent.trim();
             }
 
-            const langElem = metadata.getElementsByTagName("dc:language")[0] || getFirstByLocalName(metadata, "language");
+            // Language
+            const langElem = metadata.getElementsByTagName("dc:language")[0];
             if (langElem?.textContent) {
                 language = langElem.textContent.trim();
             }
         }
 
-        // 4. Build manifest map + detect cover image (namespace-safe)
-        const manifestItems = getElementsByLocalName(opfDoc, "item");
+        // 4. Build manifest map + detect cover image
+        const manifestItems = Array.from(opfDoc.getElementsByTagName("item"));
         const manifest: Record<string, { href: string; mediaType: string; properties?: string }> = {};
-
         let tocNcxId: string | null = null;
         let navHref: string | null = null;
         let coverImageId: string | null = null;
@@ -260,7 +243,7 @@ export const epubService = {
 
         // 6. Extract chapters based on TOC or spine
         const chapters: EpubChapter[] = [];
-        const spineItems = getElementsByLocalName(opfDoc, "itemref");
+        const spineItems = Array.from(opfDoc.getElementsByTagName("itemref"));
 
         if (tocEntries.length > 0) {
             // Use TOC to create chapters

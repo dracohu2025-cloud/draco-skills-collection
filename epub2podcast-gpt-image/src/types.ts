@@ -68,7 +68,7 @@ export type Language = 'English' | 'Chinese';
 export type ApiProvider = 'openrouter';
 
 // Text generation model selection
-export type TextModel = 'gemini-3-flash' | 'gemini-3-pro';
+export type TextModel = 'deepseek-v4-flash' | 'gemini-3-pro';
 
 // Image style presets for podcast visuals
 export type ImageStylePreset =

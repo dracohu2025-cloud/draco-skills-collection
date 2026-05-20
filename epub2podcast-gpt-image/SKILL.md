@@ -1,26 +1,26 @@
 ---
-name: epub2podcast-standalone
-description: 可独立运行的 standalone 版 EPUB2Podcast：用户只需下载当前项目本身，即可在本地把 EPUB 转成 Smart Slide + 双人中文音频 + 最终 MP4 视频播客。
-version: 0.1.0
+name: epub2podcast-gpt-image
+description: 可独立运行的 GPT-Image 增强版 EPUB2Podcast：在本地把 EPUB 转成双人中文音频、GPT-Image/Smart Slide 视觉页、最终 MP4，并生成 YouTube 发布素材。
+version: 0.2.0
 author: Hermes Agent
 license: MIT
 platforms: [linux]
 metadata:
   hermes:
-    tags: [epub, podcast, smart-ppt, smart-slide, tts, video, mp4, standalone]
+    tags: [epub, podcast, smart-ppt, smart-slide, gpt-image, youtube, tts, video, mp4, standalone]
 ---
 
-# EPUB2Podcast Standalone
+# EPUB2Podcast GPT-Image Standalone
 
-这个 skill 对应的是 **standalone 版本** 的 epub2podcast 管线。用户只需要下载当前项目本身，就可以把 EPUB 转成：
+这个 skill 对应的是 **GPT-Image 增强 standalone 版本** 的 epub2podcast 管线。旧的 Smart Slide 基础公开版保留在 `epub2podcast/`。用户只需要下载当前项目本身，就可以把 EPUB 转成：
 
 - 双人中文播客脚本
 - 分段音频
 - 合并音频 `full_podcast.mp3`
-- Smart Slide 图片
-- Smart Slide HTML 源文件
+- Smart Slide 图片 / HTML 源文件
+- GPT-Image-2 视觉页（可选）
 - 最终视频播客 `final_podcast.mp4`
-- 营销文案与 metadata
+- YouTube 标题、description、缩略图 prompt 与发布交接页
 
 ## 核心原则
 
@@ -36,9 +36,9 @@ metadata:
 - `language=Chinese`
 - `imageStyle.preset=smart_ppt`
 - `imageStyle.colorTheme=gq_fashion`
-- `imageStyle.pptModel=google/gemini-3-flash-preview`
+- `imageStyle.pptModel=deepseek/deepseek-v4-flash`
 - `apiProvider=openrouter`
-- `textModel=gemini-3-flash`
+- `textModel=deepseek-v4-flash`
 - 中文 TTS 默认走 `volcengine`
 - 对 `smart_ppt` / `antv_infographic` 模式，脚本生成现在会同时启用：
   - **长书多章节采样输入**（不再只吃书前 200k 字）
@@ -52,44 +52,46 @@ metadata:
 - npm
 - ffmpeg / ffprobe
 - Chrome / Chromium（供 Puppeteer 截图 Smart Slide）
-- OpenRouter / Volcengine 等环境变量
+- OpenRouter / GPT-Image / Volcengine 等环境变量
 
 > 注意：本公开版 skill **不会包含任何真实 API key、token、secret 或私有凭证**；相关环境变量需由使用者自行提供。
 
 ## 推荐命令
 
 主命令：
-- `epub2podcast-local-run`
-- `epub2podcast-local-regenerate-slide`（只重生某一页，可选自动重合成 mp4）
-- `epub2podcast-local-compress-feishu-video`（把最终 mp4 压到更适合飞书上传的体积）
+- `node dist/cli/run.js` 或 `bash scripts/epub2podcast_local_run.sh`
+- `node dist/cli/generate-gpt-images.js`（对已有 delivery 生成 GPT-Image 视觉页，可选重合成 mp4）
+- `node dist/cli/regenerate-slide.js`（只重生某一页，可选自动重合成 mp4）
+- `node dist/cli/compress-video.js`（把最终 mp4 压到更适合上传的体积）
+- `python3 scripts/publish_podcast_site.py`（生成 YouTube 发布交接页）
 
 ### 1) 最简单
 
 ```bash
-epub2podcast-local-run --epub ./book.epub
+node dist/cli/run.js --epub ./book.epub
 ```
 
 ### 2) 指定输出目录
 
 ```bash
-epub2podcast-local-run --epub ./book.epub --output-dir ./deliveries
+node dist/cli/run.js --epub ./book.epub --output-dir ./deliveries
 ```
 
 ### 3) 覆盖主题或模型
 
 ```bash
-epub2podcast-local-run \
+node dist/cli/run.js \
   --epub ./book.epub \
   --output-dir ./deliveries \
   --color-theme gq_fashion \
-  --ppt-model google/gemini-3-flash-preview \
-  --text-model gemini-3-flash
+  --ppt-model deepseek/deepseek-v4-flash \
+  --text-model deepseek-v4-flash
 ```
 
 ### 4) 只重生某一页，并可选重合成视频
 
 ```bash
-epub2podcast-local-regenerate-slide \
+node dist/cli/regenerate-slide.js \
   --delivery-dir /path/to/delivery \
   --slide-index 0 \
   --recompose \
@@ -106,9 +108,39 @@ epub2podcast-local-regenerate-slide \
 ### 5) 为飞书上传压缩 mp4
 
 ```bash
-epub2podcast-local-compress-feishu-video \
+node dist/cli/compress-video.js \
   --input /path/to/final_podcast.mp4 \
   --output /path/to/final_podcast_feishu.mp4
+```
+
+
+### 6) 使用 GPT-Image-2 视觉页
+
+```bash
+node dist/cli/run.js \
+  --epub ./book.epub \
+  --output-dir ./deliveries \
+  --visual-mode gpt-image-slide \
+  --image-density segment \
+  --resolution 1440x1080
+```
+
+如果已有 delivery，只想补生或重生 GPT-Image 视觉页：
+
+```bash
+node dist/cli/generate-gpt-images.js \
+  --delivery-dir /path/to/delivery \
+  --recompose
+```
+
+### 7) 生成 YouTube 发布交接页
+
+`metadata/marketing.json` 会包含 `title`、`description`、`thumbnailPrompt`。如果 delivery 目录里已有 `youtube_thumbnail.png/.jpg`，发布脚本会优先原样使用该封面，不裁切、不补边。
+
+```bash
+python3 scripts/publish_podcast_site.py \
+  --delivery-dir /path/to/delivery \
+  --output-root ./published-podcasts
 ```
 
 默认压缩策略：
@@ -131,14 +163,26 @@ epub2podcast-local-compress-feishu-video \
 - `audio_segments/`
 - `smart_slides/`
 - `smart_slides_html/`
+- `gpt_image_slides/`（使用 GPT-Image 模式时）
+- `gpt_image_raw/`（使用 GPT-Image 模式时）
 - `metadata/book.json`
 - `metadata/script.json`
-- `metadata/marketing.json`
+- `metadata/marketing.json`（YouTube 标题、description、缩略图 prompt）
 - `full_podcast.mp3`
 - `final_podcast.mp4`
 - `manifest.json`
 
 默认视频合成为 **4:3 的 1440x1080**（保持当前 slide 比例不变，不拉伸到 16:9）。
+
+## YouTube Description 规则
+
+- 优先使用原管线生成的 `metadata/marketing.json.description`。
+- 若必须 fallback，description 写内容价值、关键看点和时间轴，不要写“这期用双人播客的方式……”这类制作说明。
+- 时间戳是内容段落划分，格式类似 `[MM:SS] Topic` / `MM:SS 主题`；不要把对应台词直接贴上去。
+- 主题优先从 `visualPrompt` 的标题、字幕、关键句或结构化 `【标题】...` 中提取，缺失时再生成中性的章节标签。
+- 发布前核验：至少 5 条有意义章节时间戳；无完整台词摘录；thumbnail prompt 与 description 生成逻辑保持分离。
+
+细节见：`references/youtube-marketing-description.md`。
 
 ## 实战经验补充
 

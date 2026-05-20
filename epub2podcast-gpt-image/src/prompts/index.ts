@@ -1,6 +1,6 @@
 /**
  * Prompts Module
- * 
+ *
  * Centralized prompt management with XML-structured templates.
  * All AI prompts are organized here by category.
  */

@@ -35,7 +35,7 @@ export interface ImageUsageMetadata {
 export interface ImageProvider {
     /**
      * Generate image from prompt
-     * 
+     *
      * @param prompt - The image generation prompt
      * @param options - Optional generation options
      * @returns Generated image buffer with usage metadata

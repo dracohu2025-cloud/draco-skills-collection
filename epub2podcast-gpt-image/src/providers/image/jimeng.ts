@@ -1,7 +1,7 @@
 /**
  * Jimeng (即梦/SeeDream) Image Provider Implementation
  * Uses Volcengine API for image generation
- * 
+ *
  * Extracted from jimengService.ts for clean separation
  */
 

@@ -10,19 +10,19 @@ export const IMAGE_MODEL = 'models/gemini-3-pro-image-preview'; // High quality 
 // EXPERIMENT: Testing DeepSeek as default for cheaper PPT generation
 export const PPT_MODELS = [
   { id: 'deepseek/deepseek-v3.2-speciale', name: 'DeepSeek V3.2 Speciale', provider: 'DeepSeek' },
-  { id: 'google/gemini-3-flash-preview', name: 'Gemini 3.0 Flash', provider: 'Google' },
+  { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', provider: 'DeepSeek' },
   { id: 'google/gemini-3-pro-preview', name: 'Gemini 3.0 Pro', provider: 'Google' },
 ];
 
 // Default PPT Model (EXPERIMENT: Using DeepSeek for cheaper generation)
-export const DEFAULT_PPT_MODEL = 'deepseek/deepseek-v3.2-speciale';
+export const DEFAULT_PPT_MODEL = 'deepseek/deepseek-v4-flash';
 
 // Configuration
 export const SAMPLE_RATE = 44100;
 
 // --- ELEVENLABS CONFIGURATION ---
 export const ELEVENLABS_CONFIG = {
-  apiKey: process.env['11LABS_API_KEY'] || '',
+  credential: process.env['11LABS_API_KEY'],
   voiceIdFemale: process.env['11LABS_FEMALE_VOICE_ID'] || '',
   voiceIdMale: process.env['11LABS_MALE_VOICE_ID'] || ''
 };
@@ -37,11 +37,11 @@ export const MINIMAX_CONFIG = {
 
 // --- VOLCENGINE CONFIGURATION ---
 export const VOLCENGINE_CONFIG = {
-  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || '',
-  appId: process.env.VOLCENGINE_TTS_APP_ID || '',
-  voiceIdMale: 'zh_male_dayi_saturn_bigtts',
-  voiceIdFemale: 'zh_female_mizai_saturn_bigtts',
-  resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || 'seed-tts-2.0',
+  accessToken: process.env.VOLCENGINE_TTS_ACCESS_TOKEN || process.env.VOLCENGINE_ACCESS_TOKEN || '',
+  appId: process.env.VOLCENGINE_TTS_APP_ID || process.env.VOLCENGINE_APP_ID || '',
+  voiceIdMale: process.env.VOLCENGINE_VOICE_ID_MALE || 'zh_male_dayi_saturn_bigtts',
+  voiceIdFemale: process.env.VOLCENGINE_VOICE_ID_FEMALE || 'zh_female_mizai_saturn_bigtts',
+  resourceId: process.env.VOLCENGINE_TTS_2_RESOURCE_ID || process.env.VOLCENGINE_RESOURCE_ID || 'seed-tts-2.0',
 };
 
 // --- TTS PROVIDER CONFIGURATION ---
@@ -108,35 +108,35 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
     nameZh: '水墨画',
     description: 'Traditional Chinese ink wash painting style with precise composition control',
     promptTemplate: `Chinese Ink Wash Painting (水墨画) style infographic with STRICT COMPOSITION RULES.
-      
+
       **CANVAS & LAYOUT:**
       - Format: 4:3 infographic composition
       - Background: Rice paper texture with subtle, uneven fiber patterns
       - Negative space: Minimum 30% of canvas must be white/blank space
-      
+
       **INK APPLICATION HIERARCHY (from foreground to background):**
       1. FOREGROUND (darkest ink, 80-100% opacity): Primary subject, boldest elements
       2. MID-GROUND (medium ink, 50-70% opacity): Supporting elements, transitional forms
       3. BACKGROUND (lightest ink, 20-40% opacity): Atmospheric effects, distant silhouettes
-      
+
       **COLOR PALETTE (strictly limited):**
       - Primary: Black ink gradients (from pitch black to light grey)
       - Accent 1: Vermillion red (朱红) - use sparingly, max 5% of total area
       - Accent 2: Muted earth tones (umber, ochre) - max 10% of total area
       - Background: White/off-white rice paper
-      
+
       **BRUSHWORK TECHNIQUES:**
       - Use cunfa (皴法) texture strokes for mountains/rocks
       - Use sumi-e (墨絵) wet-on-wet techniques for clouds/mist
       - Use feibai (飞白) dry-brush techniques for aged wood/metal
       - All strokes must show clear brush direction and pressure variation
-      
+
       **HUMAN FIGURES (when required):**
       - Style: STRICTLY silhouette or back-view only
       - Size: Max 15% of canvas height for foreground figures
       - Detailing: NO facial features, NO fingers, NO realistic anatomy
       - Representation: Use simple geometric forms combined with flowing lines
-      
+
       **TEXT INTEGRATION (CRITICAL):**
       - Font style: Modern Kaishu (楷书) - clean, legible, NOT traditional calligraphy
       - Stroke weight: Bold, uniform thickness (3-5px stroke width)
@@ -144,28 +144,28 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Size: Book titles 8-12% of canvas height; smaller text 4-6% of canvas height
       - Ink density: 100% black, NO feathering or artistic variation
       - Alignment: Horizontal left-to-right (modern Chinese), NOT vertical traditional
-      
+
       **COMMON ELEMENTS & THEIR SPECIFIC RENDERING:**
       - Mountains: Layered peaks with clear foreground/midground/background distinction
       - Water: Flowing lines with varying thickness, NO solid fills
       - Trees: Pine trees with needle clusters in feibai technique, willows with curved hanging branches
       - Architecture: Simplified rooflines and wall silhouettes, NOT detailed structures
       - Weapons: Abstract silhouette forms, NO realistic detailing
-      
+
       **LIGHTING & ATMOSPHERE:**
       - Light source: Always implied top-left or top-center
       - Shadows: Created by darker ink washes, NOT solid black
       - Mist: Soft grey gradients between elements, minimum 15% opacity
       - Texture: Visible but subtle rice paper grain throughout`,
     constraints: `CRITICAL CONSTRAINTS for Ink Wash style (MUST FOLLOW):
-      
+
       **ELEMENT CONTROL:**
       - Maximum 3-5 distinct elements per composition to avoid clutter
       - Each element must occupy clearly defined space (NO overlapping chaos)
       - Foreground elements: 40-50% of canvas area
-      - Mid-ground elements: 25-35% of canvas area  
+      - Mid-ground elements: 25-35% of canvas area
       - Background elements: 15-25% of canvas area
-      
+
       **TEXT SPECIFICATIONS:**
       - LANGUAGE: Simplified Chinese characters ONLY (简体中文)
       - FONT: Modern, bold Kaishu (楷书) - legible, NOT artistic caoshu (草书) or traditional seal script
@@ -173,12 +173,12 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - PLACEMENT: Top-third or center of composition, NEVER bottom edge
       - INK: Pure black (100% opacity), uniform thickness, NO artistic variation
       - FORBIDDEN: Traditional Chinese characters (繁体字), English letters, vertical text layout
-      
+
       **FIGURE REPRESENTATION:**
       - HUMANS: Silhouette or back-view ONLY, max 15% canvas height, NO faces/no hands/no realistic anatomy
       - ANIMALS: Simplified forms, symbolic representation, NOT realistic
       - OBJECTS: Essential elements only, each with clear purpose and placement
-      
+
       **PROHIBITED ELEMENTS:**
       - NO photorealistic rendering of ANY kind
       - NO western perspective techniques (use Chinese floating perspective)
@@ -187,14 +187,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - NO maps, charts, or diagrammatic elements
       - NO modern objects (phones, guns with detailed mechanisms, vehicles with wheels)
       - NO gradients using colors other than black/grey/red (NO blue/green/yellow gradients)
-      
+
       **COMPOSITION RULES:**
       - Follow rule of thirds for major element placement
       - Leading lines: Use ink strokes to guide viewer eye to focal point
       - Balance: Asymmetric but visually balanced (NOT symmetrical)
       - Breathing space: Minimum 30% white/negative space
       - Focal point: ONE primary element, clearly dominant (50%+ visual weight)
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **ink density to show importance**: Darker ink = more important elements
       - Use **negative space (留白) to create tension**: Empty space around key elements draws attention
@@ -202,13 +202,13 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **scale contrast**: Tiny figures against vast landscapes for awe, large figures for intimacy
       - Use **flowing water/wind lines** to guide viewer's eye through information
       - Use **mountain layering (层峦叠嶂)** to show progression or hierarchy
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **silhouette groupings** with labeled connections (like shadows around a table)
       - Historical events → Use **flowing scroll timeline** with key moments as ink splashes
       - Comparing ideas → Use **yin-yang composition** (dark vs light areas for contrast)
       - Concepts → Use **central figure with radiating brush strokes** connecting to related ideas
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use conceptual representations when specific numbers are unavailable`,
@@ -246,7 +246,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - NO smooth gradients or anti-aliasing
       - Characters and objects should be simplified and iconic
       - Text MUST be in a pixel font style
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **sprite animation frames** to show progression (like a game tutorial)
       - Use **health bars/progress bars** to show quantities or progress
@@ -254,14 +254,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **game UI elements**: XP bars for growth, hearts for importance, coins for value
       - Use **platform game layouts**: characters jumping between concept "platforms"
       - Use **boss battle composition**: key challenge as big sprite, solutions as power-ups
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **character select screen** layout with stats
       - Historical events → Use **level progression map** (like Super Mario World)
       - Comparing ideas → Use **versus screen** (character A vs character B with stats)
       - Concepts → Use **skill tree layout** branching from central idea
       - Data/statistics → Use **score counter or XP bar** representations
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use game-like representations but with accurate information`,
@@ -297,7 +297,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Focus on nature: rolling hills, ancient ruins, magical forests, celestial elements
       - Soft, diffused lighting with warm golden hours or cool twilight tones
       - NO realistic humans, NO dark/horror themes, maintain family-friendly adventure tone
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **adventure map layouts**: Show concepts as destinations on a winding path
       - Use **shrine puzzle composition**: Key concept as glowing orb, related ideas as puzzle pieces
@@ -305,14 +305,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **paraglider perspective**: Bird's eye view showing relationships between areas
       - Use **cooking pot metaphor**: Combine ingredients (ideas) to create something new
       - Use **climbing progression**: Characters ascending toward goals, with stamina-like progress
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **character profiles** like Sheikah Slate entries with icons
       - Historical events → Use **memory fragments** floating in chronological order
       - Comparing ideas → Use **dual shrines** (two glowing structures representing opposites)
       - Concepts → Use **tower activation** spreading knowledge like revealing the map
       - Data/statistics → Use **heart containers or stamina wheels** as progress indicators
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use adventure metaphors but with accurate information`,
@@ -340,13 +340,13 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
     nameZh: '手绘可爱',
     description: 'Gentle and cute hand-drawn style with soft colors, rounded lines, and a girly aesthetic',
     promptTemplate: `Cute Hand-drawn illustration style infographic (Girl's hand-drawn style).
-      
+
       **LINEWORK & STROKES:**
       - Hand-drawn quality: Visible, slightly wobbly lines that show human touch
       - Line weight: Soft, rounded strokes (2-4px thickness) with gentle tapering
       - Line character: Friendly, approachable, NOT sharp or aggressive
       - Outline style: Continuous, confident lines with occasional sketchy double-lines for texture
-      
+
       **COLOR PALETTE (少女心色系):**
       - Primary colors: Soft pastels - baby pink, lavender, mint green, peach, creamy yellow
       - Secondary colors: Warm beige, soft coral, powder blue, lilac
@@ -354,26 +354,26 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Neutral: Cream white, light grey (not pure white)
       - Saturation: Low to medium (20-50%), avoiding harsh or neon colors
       - Overall vibe: Warm, gentle, soothing, creates emotional comfort
-      
+
       **SHADING & TEXTURING:**
       - Shading: Soft cell shading with smooth gradients (NOT harsh cel-shading)
       - Blending: Gentle color transitions with watercolor-like softness
       - Texture: Subtle paper texture visible throughout, occasional colored pencil strokes
       - Highlights: Small, rounded sparkle points or gentle glow effects
-      
+
       **CHARACTER & FIGURE STYLE (when included):**
       - Proportions: Chibi or slightly deformed cute style (1:2 or 1:3 head-to-body ratio)
       - Facial features: Large, sparkly eyes; small dot noses; gentle curved mouths
       - Expression: Gentle smiles, curious looks, warm emotions (NOT angry/sad)
       - Body language: Soft gestures, welcoming poses, gentle hand positions
       - Detailing: Minimal, essential details only - focus on cuteness over accuracy
-      
+
       **COMMON MOTIFS & DECORATIONS:**
       - Decorations: Small hearts, stars, flowers, bows, ribbons scattered tastefully
       - Floral elements: Simplified cherry blossoms, daisies, leaf patterns
       - Sparkle effects: Soft glowing dots around important elements
       - Borders: Rounded corner frames, dashed lines, wavy divider lines
-      
+
       **TEXT INTEGRATION:**
       - Font style: Rounded, friendly handwritten font (模拟女生手写)
       - Letterforms: Slightly irregular, organic shapes with consistent baseline
@@ -381,50 +381,50 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Decorations: Text may have subtle underline, small heart/dot accents
       - Color: Dark grey or soft black (NOT harsh pure black), occasionally matching theme colors
       - Spacing: Generous letter spacing for approachable feel
-      
+
       **COMPOSITION LAYOUT:**
       - Structure: Clear information hierarchy with gentle section divisions
       - Spacing: Ample white space, uncluttered, breathing room between elements
       - Flow: Gentle curves and rounded shapes guide the eye
       - Balance: Asymmetrical but harmonious, NOT rigid or formal
       - Sections: Clearly defined with rounded boxes, soft shadows, or decorative dividers
-      
+
       **BACKGROUND TREATMENT:**
       - Base: Solid pastel color or extremely subtle gradient (light to lighter)
       - Patterns: Optional subtle dot grid, soft geometric patterns, or gentle texture
       - Depth: Minimal, focus on flat design with slight dimensional hints
-      
+
       **MOOD & ATMOSPHERE:**
       - Emotional tone: Cheerful, warm, encouraging, supportive
       - Energy: Gentle and calm, NOT hyperactive
       - Personality: Thoughtful, caring, nurturing (女生手绘的温暖感)`,
     constraints: `CRITICAL CONSTRAINTS for Cute Hand-drawn style:
-      
+
       **LINE & STROKE RULES:**
       - All lines must be rounded, soft, and friendly (NO sharp corners or aggressive angles)
       - Stroke ends must be rounded or slightly tapered (NOT blunt or square)
       - Maximum line weight: 4px for outlines, 2px for details
       - NO messy sketch lines or chaotic cross-hatching
-      
+
       **COLOR RESTRICTIONS:**
       - Color palette: STRICTLY pastel and warm tones only
       - FORBIDDEN: Neon colors, high saturation (>60%), dark browns/greys, pure black backgrounds
       - Each element max 3 colors (base + shadow + highlight)
       - Background must be light (cream, light grey, pastel) - NO dark or black backgrounds
-      
+
       **TEXT SPECIFICATIONS:**
       - LANGUAGE: Simplified Chinese characters (简体中文) for Chinese content
       - FONT STYLE: Rounded, hand-lettered appearance with slight organic irregularity
       - LEGIBILITY: High contrast against background (no light-on-light)
       - SIZE: Title text 12-18% canvas height, body text 6-10% canvas height
       - FORBIDDEN: Traditional Chinese (繁体字), English (unless decorative), vertical layout, sharp/blocky fonts
-      
+
       **CHARACTER & FIGURE GUIDELINES:**
       - Facial expressions: ONLY positive emotions (gentle, curious, happy) - NO anger/sadness/scary faces
       - Body proportions: Cute/deformed style ONLY - NO realistic human proportions
       - Maximum figure size: 20% canvas height for foreground characters
       - NO realistic anatomy or detailed clothing textures
-      
+
       **PROHIBITED ELEMENTS:**
       - NO photorealistic rendering or 3D effects
       - NO harsh geometric shapes (sharp squares, triangles, hard edges)
@@ -433,18 +433,18 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - NO complex perspective or foreshortening
       - NO harsh drop shadows or strong contrast lighting
       - NO texture overlays that obscure the hand-drawn feel
-      
+
       **COMPOSITION LIMITS:**
       - Element density: LOW - generous spacing required
       - Max decorative elements: 5-7 small hearts/stars/sparkles per image
       - Section separation: Clear visual breaks between content areas
       - Focal point: ONE primary subject per image, clearly dominant
-      
+
       **TECHNICAL REQUIREMENTS:**
       - Resolution: High enough to show hand-drawn texture, but NOT pixel-perfect digital
       - Line quality: Slight imperfections welcome (shows human touch)
       - Color blending: Soft gradients allowed for depth, NO harsh color blocks
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **speech bubbles and thought clouds** for quotes and ideas
       - Use **bullet journals/planner layouts** to organize information
@@ -452,14 +452,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **cute character reactions** (sparkly eyes for excitement, sweat drops for stress)
       - Use **sticker-like callouts** to highlight key points
       - Use **hand-lettered headers** with decorative flourishes
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **cute character lineup** with name tags and mini descriptions
       - Historical events → Use **diary entry timeline** with dates and doodles
       - Comparing ideas → Use **this vs that** layout with cute icons
       - Concepts → Use **mind map with flowers/hearts** as connection nodes
       - Data/statistics → Use **progress bars decorated with stars** or **pie charts with cute faces**
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use cute representations but with accurate information`,
@@ -495,7 +495,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Characters should be stylized and exaggerated, NOT realistic
       - Include ornate frame borders, parchment paper textures, and magical particle effects
       - Warm, inviting atmosphere - NO dark horror or grim themes
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **card layouts** for character profiles (with mana cost, attack, health as metaphors)
       - Use **mana crystals** to represent importance levels or stages
@@ -503,14 +503,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **spell effects and magical particles** to show connections
       - Use **tavern board game layouts** for comparing options
       - Use **discover/choose mechanic** style for presenting alternatives
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **card collection gallery** with stats and abilities
       - Historical events → Use **quest chain progression** with objectives and rewards
       - Comparing ideas → Use **deck building** layout (two decks representing different approaches)
       - Concepts → Use **spell effect spreading** from central source with branches
       - Data/statistics → Use **mana curve or attack/health bars** as representations
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use card game metaphors but with accurate information`,
@@ -546,7 +546,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use dramatic lighting: shafts of sunlight, firelight, moonlight through clouds
       - Human figures should be distant silhouettes or back views, NO detailed faces
       - Maintain dark fantasy tone but AVOID gore, explicit violence, or horror imagery
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **path divergence** (crossroads) to show choices and consequences
       - Use **notice board layouts** for presenting key information points
@@ -554,14 +554,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **atmospheric depth layers** (foreground/midground/background) to show relationships
       - Use **weathered map/bestiary layouts** for organizing information
       - Use **potion/alchemy diagrams** for showing cause and effect
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **character profiles** with silhouettes and key traits
       - Historical events → Use **weathered chronicle scroll** with aged paper timeline
       - Comparing ideas → Use **moral choice layout** (left path vs right path from crossroads)
       - Concepts → Use **monster lore page** with central subject and surrounding annotations
       - Data/statistics → Use **potion brewing ingredients** as visual metaphor for components
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use dark fantasy metaphors but with accurate information`,
@@ -597,7 +597,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Characters should be simple and expressive in classic anime style
       - Include magical realism elements: floating objects, spirit creatures, fantastical machines
       - Maintain wholesome, family-friendly tone - NO violence or dark themes
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING):**
       - Use **flying sequences** (on brooms, airships, dragons) to show journeys or progress
       - Use **spirit forest layouts** with glowing creatures highlighting key points
@@ -605,14 +605,14 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use **wind and flowing elements** (hair, leaves, water) to create visual flow
       - Use **window/door framing** to present key scenes or concepts
       - Use **food preparation layouts** (like cooking in Howl's Castle) for processes
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - Many characters → Use **spirit gathering** with each spirit representing a character
       - Historical events → Use **flight path timeline** showing journey from point to point
       - Comparing ideas → Use **two windows/doors** showing contrasting worlds
       - Concepts → Use **magical transformation sequence** spreading from center
       - Data/statistics → Use **floating lanterns or fireflies** for quantities, clouds for groups
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication
       - Use whimsical metaphors but with accurate information`,
@@ -646,13 +646,13 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       **DESIGN:** Modern professional aesthetic with decorative graphics
       **LANGUAGE:** Chinese text must use Simplified Chinese (简体中文)`,
     constraints: `CRITICAL CONSTRAINTS for Slides style (Banana Slides Reference):
-      
+
       **TEXT ACCURACY (MOST IMPORTANT):**
       - Chinese text must be 100% accurate - NO pseudo-characters (伪汉字)
       - If uncertain about any character, use icons/symbols ONLY
       - Better to have NO text than WRONG text
       - Triple-check book titles and important text
-      
+
       **DESIGN GUIDELINES:**
       - 4K resolution, 16:9 aspect ratio
       - Text must be clear and sharp
@@ -660,19 +660,19 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - Use appropriately sized decorative graphics to fill empty spaces
       - Each bullet point: 15-25 characters (Chinese) or concise phrases (English)
       - NO markdown symbols (like # or *) unless absolutely necessary
-      
+
       **VISUAL HIERARCHY:**
       - Clear information hierarchy
       - Professional color palette
       - Use icons and vector graphics instead of photos
       - Clean, uncluttered layout
-      
+
       **FIRST SLIDE (YouTube Thumbnail Style):**
       - Text: MAX 6 Chinese characters or 6 English words
       - Size: MASSIVE, covering 30-50% of slide
       - Contrast: HIGH contrast for visibility
       - Style: Dramatic, attention-grabbing
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts must come from the book - NO fabrication`,
     jsonTemplate: {
@@ -709,19 +709,19 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       **IMPORTANT:** Do NOT include any technical labels, watermarks, or metadata text in the image. Focus purely on the visual content.
       **OUTPUT:** Professional slide suitable for educational content`,
     constraints: `CRITICAL CONSTRAINTS for Smart PPT:
-      
+
       **UNIFIED DESIGN SYSTEM:**
       - Primary: #1E3A5F (deep navy blue - titles)
       - Secondary: #2E5077 (medium blue - subtitles)
       - Accent: #4A90A4 (teal - icons, highlights)
       - Background: #F5F7FA (light gray-blue)
       - Text: #2C3E50 (dark gray-blue)
-      
+
       **ONE SLIDE PER SEGMENT:**
       - Each segment gets its own slide (no grouping)
       - Detailed content coverage per slide
       - Better for content-heavy books
-      
+
       **TEXT ACCURACY:**
       - Chinese must be 100% accurate
       - Use Noto Sans SC font
@@ -755,42 +755,42 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
 
       **CORE CONCEPT (CRITICAL - READ CAREFULLY):**
       ALL human figures MUST be replaced with anthropomorphic PANDAS. However, EVERYTHING ELSE must maintain historical and cultural accuracy.
-      
+
       **PANDA CHARACTER DESIGN:**
       - Body: Anthropomorphic panda with human-like posture (standing upright, gesturing, etc.)
       - Face: Cute panda face with expressive eyes, black eye patches, round ears
       - Proportions: Slightly chibi/cute style (1:3 or 1:4 head-to-body ratio)
       - Size: Main panda characters should be 15-30% of canvas height
       - Expression: Expressive and emotive, matching the dialogue mood
-      
+
       **CLOTHING & ACCESSORIES (MUST PRESERVE CULTURAL ACCURACY):**
       - For Chinese historical content: Pandas wear authentic Chinese clothing (汉服 Hanfu, 唐装 Tang robes, 明清官服 Ming/Qing official robes, 盔甲 armor for warriors)
       - For Western historical content: Pandas wear appropriate Western attire (togas, medieval armor, Victorian dress, etc.)
       - For modern content: Pandas wear contemporary clothing appropriate to the context
       - ALL clothing details, patterns, and accessories must be historically accurate to the book's setting
-      
+
       **ARCHITECTURE & ENVIRONMENT (MUST PRESERVE CULTURAL ACCURACY):**
       - For Chinese content: Traditional Chinese architecture (宫殿 palaces with curved roofs, 庙宇 temples, 四合院 courtyards, 塔 pagodas)
       - For Western content: Appropriate Western architecture (Greek columns, Gothic cathedrals, Roman forums, etc.)
       - NEVER mix architectural styles from different cultures inappropriately
-      
+
       **INFOGRAPHIC STYLE (CRITICAL):**
       - Format: 4:3 aspect ratio INFOGRAPHIC with clear information hierarchy
       - Layout: Structured sections with icons, charts, timelines, or relationship diagrams
       - NOT a freeform painting - must have infographic elements like labeled sections, data visualization, or concept maps
       - Include visual elements that convey INFORMATION, not just decoration
-      
+
       **COLOR PALETTE:**
       - Primary: Warm, vibrant colors with good contrast
       - Panda colors: Classic black and white with soft shading
       - Background: Light, clean backgrounds that don't compete with characters
       - Accents: Cultural-appropriate accent colors (red/gold for Chinese, purple/gold for royal, etc.)
-      
+
       **LINEWORK:**
       - Clean, confident ink lines with slight variation in weight
       - Smooth, professional comic illustration quality
       - NOT sketchy or rough - polished hand-drawn look
-      
+
       **TEXT INTEGRATION:**
       - Font: Clean, legible font appropriate to the cultural context
       - Placement: Integrated into the infographic layout
@@ -802,9 +802,9 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       2. Pandas retain human posture, gestures, and body language
       3. Pandas wear historically accurate clothing from the book's cultural context
       4. Pandas use historically accurate props/tools/weapons from the book's setting
-      
+
       **CULTURAL ACCURACY (EXTREMELY IMPORTANT):**
-      - For Chinese historical books: 
+      - For Chinese historical books:
         * Buildings MUST be Chinese architecture (飞檐翘角, 红墙金瓦)
         * Clothing MUST be Chinese historical attire (NOT Western suits)
         * Objects MUST be Chinese artifacts (毛笔, 卷轴, 青铜器)
@@ -812,26 +812,26 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
         * Buildings MUST be Western architecture appropriate to the era
         * Clothing and objects MUST match the Western historical period
       - NEVER mix elements from different cultures
-      
+
       **INFOGRAPHIC REQUIREMENTS:**
       - MUST include structured information elements (NOT pure illustration)
       - Include at least ONE of: timeline, chart, diagram, labeled sections, concept map, or data visualization
       - Clear visual hierarchy with sections and organization
       - Educational and informative, not just decorative
-      
+
       **TEXT SPECIFICATIONS:**
       - LANGUAGE: If Chinese content, use ONLY Simplified Chinese (简体中文)
       - ACCURACY: All text must be 100% accurate - NO pseudo-characters
       - FIRST IMAGE: MAX 6 Chinese characters or 6 English words, MASSIVE and eye-catching
       - When in doubt about text accuracy, use icons/symbols instead
-      
+
       **FIRST IMAGE (YouTube Thumbnail Style):**
       - Text: BRIEF, impactful (MAX 6 characters/words)
       - Size: Text covers 30-50% of image
       - Contrast: HIGH contrast (bright on dark or vice versa)
       - Impact: Visually striking, vibrant colors, dramatic composition
       - Style: Similar to successful YouTube thumbnails - attention-grabbing
-      
+
       **VISUAL STORYTELLING (Make it INTERESTING - CRITICAL):**
       - Use **visual metaphors** that match the content:
         * Power struggle → Pandas in tug-of-war or chess game
@@ -851,7 +851,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
         * Arrows showing cause and effect
         * Paths showing journey/progress
         * Numbered steps for sequences
-      
+
       **INFOGRAPHIC TYPE GUIDANCE:**
       - For books with many characters: Use RELATIONSHIP MAP with labeled connections
       - For historical narratives: Use TIMELINE with key events marked
@@ -869,12 +869,12 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       - For hierarchical progression: Use PYRAMID showing levels from base to top
       - For conversion/filtering processes: Use FUNNEL showing narrowing stages
       - For complex interconnected relationships: Use NETWORK GRAPH with nodes and edges
-      
+
       **INFORMATION ACCURACY:**
       - ALL facts in the infographic MUST come from the book
       - DO NOT fabricate statistics or dates
       - Use conceptual descriptions if specific numbers are not in the book
-      
+
       **PROHIBITED ELEMENTS:**
       - NO realistic human faces (only panda faces)
       - NO maps or geographical charts
@@ -932,28 +932,28 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
 
       **CORE CONCEPT (CRITICAL - READ CAREFULLY):**
       ALL human figures MUST be replaced with anthropomorphic PANDAS. However, EVERYTHING ELSE must maintain historical and cultural accuracy.
-      
+
       **OUTPUT FORMAT (CRITICAL - NATURAL LANGUAGE, NOT JSON):**
       This style uses structured natural language descriptions INSTEAD of JSON format.
       The visualPrompt should be a flowing narrative description, NOT a JSON object.
-      
+
       **PANDA CHARACTER DESIGN:**
       - Body: Anthropomorphic panda with human-like posture (standing upright, gesturing, etc.)
       - Face: Cute panda face with expressive eyes, black eye patches, round ears
       - Proportions: Slightly chibi/cute style (1:3 or 1:4 head-to-body ratio)
       - Size: Main panda characters should be 15-30% of canvas height
       - Expression: Expressive and emotive, matching the scene mood
-      
+
       **CLOTHING & ACCESSORIES (MUST PRESERVE CULTURAL ACCURACY):**
       - For Chinese historical content: Pandas wear authentic Chinese clothing (汉服 Hanfu, 唐装 Tang robes, 明清官服 Ming/Qing official robes)
       - For Western historical content: Pandas wear appropriate Western attire
       - ALL clothing details, patterns, and accessories must be historically accurate to the book's setting
-      
+
       **ARCHITECTURE & ENVIRONMENT (MUST PRESERVE CULTURAL ACCURACY):**
       - For Chinese content: Traditional Chinese architecture (宫殿 palaces with curved roofs, 庙宇 temples, 四合院 courtyards)
       - For Western content: Appropriate Western architecture
       - NEVER mix architectural styles from different cultures inappropriately
-      
+
       **INFOGRAPHIC STYLE (CRITICAL):**
       - Format: 4:3 aspect ratio INFOGRAPHIC with clear information hierarchy
       - Layout: Structured sections with icons, charts, timelines, or relationship diagrams
@@ -961,47 +961,47 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
     constraints: `CRITICAL CONSTRAINTS for Panda Infographic V2 style (MUST FOLLOW):
 
       **中文结构化描述格式 (CRITICAL - V2 uses Chinese format):**
-      
+
       Use this format for your visualPrompt output:
-      
+
       ===【信息图描述】===
-      
+
       【类型】[选择: 关系图/时间轴/对比图/流程图/概念图/层级图/数据可视化]
       【标题】简短中文标题 (最多6个汉字)
       【副标题】中文副标题 (可选)
-      
+
       【时代背景】[如: 清朝 1900年]
       【文化背景】[选择: 中国/西方/日本/罗马/希腊/埃及/其他]
-      
+
       【布局】
       - 方向: [从左到右/从上到下/从右到左/环形]
       - 元素数量: [数字]
       - 背景场景: [场景描述，禁止地图]
-      
+
       【核心元素】
       1. [元素标签] (尺寸：大/中/小, 情绪：中性/正面/负面/混乱/恐慌) - 视觉描述
       2. [第二个元素标签] (尺寸，情绪) - 描述
       3. [继续列出所有元素...]
-      
+
       【元素关系 - Mermaid Edge List】
       \`\`\`mermaid
       元素A -->|关系| 元素B
       元素B -->|关系| 元素C
       \`\`\`
-      
+
       【色彩方案】[色彩描述]
       【语言要求】所有文字必须使用简体中文
-      
+
       ===【描述结束】===
-      
+
       **PANDA TRANSFORMATION RULES:**
       1. ALL humans become PANDAS - no exceptions
       2. Pandas retain human posture, gestures, and body language
       3. Pandas wear historically accurate clothing from the book's cultural context
       4. Pandas use historically accurate props/tools/weapons from the book's setting
-      
+
       **CULTURAL ACCURACY (EXTREMELY IMPORTANT):**
-      - For Chinese historical books: 
+      - For Chinese historical books:
         * Buildings MUST be Chinese architecture
         * Clothing MUST be Chinese historical attire (NOT Western suits)
         * Objects MUST be Chinese artifacts
@@ -1009,20 +1009,20 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
         * Buildings MUST be Western architecture appropriate to the era
         * Clothing and objects MUST match the Western historical period
       - NEVER mix elements from different cultures
-      
+
       **MERMAID EDGE LIST FOR RELATIONSHIPS (CRITICAL):**
       - Format: 元素A -->|关系| 元素B
       - Arrow direction: FROM actor TO target
       - Keep edge labels SHORT (max 4 characters)
-      
+
       **NODE CONSISTENCY RULE (CRITICAL):**
       - Node names in Mermaid MUST match Core Elements labels EXACTLY
-      
+
       **NO AUTO-GENERATED TEXT (CRITICAL):**
       - ONLY render text from 【标题】, 【副标题】, and 【核心元素】标签
       - DO NOT add random decorative text
       - PREVENT HALLUCINATIONS: No pseudo-characters allowed
-      
+
       **PROHIBITED ELEMENTS:**
       - NO realistic human faces (only panda faces)
       - NO maps or geographical charts
@@ -1081,10 +1081,10 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
   This is a TRADITIONAL 4 - PANEL COMIC(四格漫画 / Yonkoma), NOT an infographic!
       ALL human figures MUST be replaced with anthropomorphic PANDAS.
       EVERYTHING ELSE must maintain historical and cultural accuracy.
-      
+
       ** LAYOUT FORMAT(CRITICAL - 2x2 GRID):**
    - Canvas: 4: 3 aspect ratio divided into 2x2 GRID(4 equal panels)
-     - Panel arrangement: 
+     - Panel arrangement:
          * Top - left: Panel ① (Setup / Introduction)
    * Top - right: Panel ② (Development)
      * Bottom - left: Panel ③ (Twist / Climax)
@@ -1137,7 +1137,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
                                                               - NO pseudo - characters or gibberish - ALL text must be accurate
                                                                 - Thought bubbles: Cloud - shaped for internal thoughts
                                                                   - Sound effects: Stylized onomatopoeia in Chinese(if needed)
-      
+
       ** ART STYLE (ZOOTOPIA/疑狂动物城 AESTHETIC):**
   - STYLE: Disney Zootopia 3D animation look - polished, professional, cinematic
     - RENDERING: Soft 3D CGI rendering with ambient occlusion and subtle shadows
@@ -1188,7 +1188,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
       ** TEXT SPECIFICATIONS(CRITICAL - NO ERRORS ALLOWED):**
         - LANGUAGE: ONLY Simplified Chinese(简体中文) for Chinese content
           - ACCURACY: Every character must be 100 % correct - NO pseudo - characters(伪汉字)
-            - FORBIDDEN: 
+            - FORBIDDEN:
         * NO gibberish or made - up characters
   * NO Traditional Chinese(繁体字) mixed in
         * NO English text(unless book is in English)
@@ -1201,7 +1201,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
             - Motion lines for action scenes
               - Emphasis effects(bold lines, zoom effects) for dramatic moments
                 - Background patterns for mood(flower petals for romance, dark lines for tension)
-      
+
       ** FIRST IMAGE(Cover / Thumbnail Style):**
   - Can be a compelling single panel OR the full 4 - panel layout
     - Must grab attention with vibrant colors and clear subject
@@ -1225,7 +1225,7 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
         - Pandas should have BROWN or BLACK eyes, NOT green eyes like Po
         - Pandas should have SLIM or NORMAL build, NOT chubby like Po
         - If the image contains ANY recognizable copyrighted character, it will be REJECTED
-      
+
       ** PANEL NUMBERING (CRITICAL - NO EXTRA TEXT):**
         - Panel labels MUST be ONLY the circled number: ①, ②, ③, ④
           - ABSOLUTELY FORBIDDEN to add ANY text next to panel numbers:
@@ -1402,53 +1402,53 @@ export const IMAGE_STYLE_DEFINITIONS: ImageStyleDefinition[] = [
     nameZh: '信息图概览 (单页)',
     description: 'A single comprehensive infographic that summarizes the entire podcast content with key takeaways, themes, and visual representations.',
     promptTemplate: `Single-Page Infographic Overview Style.
-      
+
       **CORE CONCEPT:**
       Create ONE comprehensive, visually stunning infographic that captures the ENTIRE book/podcast content.
       This is NOT a scene-by-scene illustration - it's a summary poster that covers all key points.
-      
+
       **LAYOUT PRINCIPLES:**
       - Central theme/title prominently displayed
       - Key concepts organized in logical sections
       - Visual hierarchy guiding the viewer's eye
       - Icons and symbols representing main ideas
       - Data visualization where appropriate
-      
+
       **VISUAL REQUIREMENTS:**
       - High-quality, polished design
       - Clear typography with excellent readability
       - Harmonious color palette
       - Professional infographic aesthetic
       - 4:3 aspect ratio
-      
+
       **CONTENT REQUIREMENTS:**
       - Book/Podcast title as main heading
       - 4-6 key takeaways or themes
       - Visual representations of core concepts
       - Logical flow and information hierarchy`,
     constraints: `CRITICAL CONSTRAINTS for Infographic 1-Pager style:
-      
+
       **SINGLE IMAGE RULE:**
       - ONLY ONE image will be generated for the ENTIRE podcast
       - This image must comprehensively represent all key content
-      
+
       **CONTENT EXTRACTION:**
       - Extract 4-6 most important themes/takeaways
       - Represent relationships between concepts
       - Include the book title prominently
-      
+
       **TEXT SPECIFICATIONS:**
       - LANGUAGE: Match the book language (Chinese or English)
       - Title: Large, bold, 15-20% of canvas height
       - Key points: Clear, readable, 6-10% of canvas height
       - NO pseudo-characters or gibberish text
-      
+
       **DESIGN QUALITY:**
       - Professional, polished appearance
       - Consistent visual style throughout
       - Clear visual hierarchy
       - Balanced composition
-      
+
       **PROHIBITED ELEMENTS:**
       - NO scene illustrations
       - NO character narratives

@@ -3,12 +3,12 @@
 const args = process.argv.slice(2);
 
 if (args.includes('--help') || args.includes('-h')) {
-  console.log(`epub2podcast-generate-gpt-images
+  console.log(`epub2podcast-gpt-generate-images
 
 对已有 delivery 生成 / 重生 GPT-Image-2 视觉页，可选重新合成 MP4。
 
 用法:
-  epub2podcast-generate-gpt-images --delivery-dir ./deliveries/book-xxx [--recompose]
+  epub2podcast-gpt-generate-images --delivery-dir ./deliveries/book-xxx [--recompose]
   node dist/cli/generate-gpt-images.js --delivery-dir ./deliveries/book-xxx [--recompose]
 
 常用参数:

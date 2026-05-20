@@ -12,6 +12,9 @@ import { audioService } from './services/audioService.js';
 import { htmlImageService } from './services/htmlImageService.js';
 import { ImageStyleConfig, ScriptSegment } from './types.js';
 import { DEFAULT_PPT_MODEL, TTSProviderType } from './constants.js';
+import { GptImageProvider } from './providers/image/gptImage.js';
+import { generateGptImageSlides } from './services/gptImageSlideService.js';
+import { renderVideoFromImages } from './services/localVideoRenderService.js';
 
 const execFileAsync = promisify(execFile);
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -50,6 +53,13 @@ function normalizeSpeaker(raw: string): 'Male' | 'Female' {
   const s = String(raw || '').trim();
   if (s === 'Male' || s.includes('Male') || s === '阿哲' || s === 'Alex' || s.includes('哲')) return 'Male';
   return 'Female';
+}
+
+function resolveOpenRouterTextModel(textModel: string): string {
+  if (textModel === 'gemini-3-flash') return 'deepseek/deepseek-v4-flash'; // legacy alias
+  if (textModel === 'deepseek-v4-flash') return 'deepseek/deepseek-v4-flash';
+  if (textModel.startsWith('gemini-')) return 'deepseek/deepseek-v4-flash';
+  return textModel.includes('/') ? textModel : 'deepseek/deepseek-v4-flash';
 }
 
 function getFfmpegPath(): string {
@@ -199,12 +209,17 @@ async function main() {
   const imageStyle: ImageStyleConfig = {
     preset: 'smart_ppt',
     colorTheme: String(args['color-theme'] || 'gq_fashion'),
-    pptModel: String(args['ppt-model'] || 'google/gemini-3-flash-preview'),
+    pptModel: String(args['ppt-model'] || DEFAULT_PPT_MODEL),
   };
   const apiProvider = 'openrouter' as const;
   const ttsProvider = chooseTtsProvider(language, args['tts-provider'] as string | undefined);
-  const textModel = String(args['text-model'] || 'gemini-3-flash');
-  process.env.OPENROUTER_TEXT = textModel === 'gemini-3-pro' ? 'google/gemini-3-pro-preview' : 'google/gemini-3-flash-preview';
+  const textModel = String(args['text-model'] || 'deepseek-v4-flash');
+  const visualMode = String(args['visual-mode'] || 'html-slide');
+  const imageDensity = String(args['image-density'] || 'segment') as 'segment' | 'chapter';
+  const aspectRatio = String(args['aspect-ratio'] || '4:3');
+  const resolution = String(args['resolution'] || '1440x1080');
+  const allowHtmlFallback = args['no-html-fallback'] !== true;
+  process.env.OPENROUTER_TEXT = resolveOpenRouterTextModel(textModel);
 
   const localCover = await materializeLocalCover(parsed.coverImageBase64, outDir);
   const assetServer = await startLocalAssetServer(outDir);
@@ -244,35 +259,70 @@ async function main() {
 
     const imageFiles: string[] = [];
     const durations: number[] = [];
-    for (let i = 0; i < script.length; i++) {
-      const seg = script[i];
-      const prompt = htmlImageService.generateSmartPptPrompt(
-        seg.text || '',
-        bookTitle,
-        i,
-        script.length,
-        i === 0,
-        language,
-        i === 0 ? coverImageUrl : undefined,
-      );
-      const result = await htmlImageService.generateHtmlImage(
-        prompt,
-        imageStyle.pptModel || DEFAULT_PPT_MODEL,
-        language,
-        imageStyle.colorTheme || 'gq_fashion',
-      );
-      const imgPath = path.join(slidesDir, `${String(i).padStart(3, '0')}.png`);
-      const htmlPath = path.join(htmlDir, `${String(i).padStart(3, '0')}.html`);
-      fs.writeFileSync(imgPath, result.buffer);
-      fs.writeFileSync(htmlPath, result.htmlContent, 'utf-8');
-      seg.generatedImageUrl = imgPath;
-      (seg as any).htmlUrl = htmlPath;
-      imageFiles.push(imgPath);
-      durations.push(seg.estimatedDuration || 3);
+    let visualOutputManifest: object | undefined;
+    let effectiveVisualMode = visualMode;
+
+    const renderHtmlSlides = async () => {
+      effectiveVisualMode = 'html-slide';
+      for (let i = 0; i < script.length; i++) {
+        const seg = script[i];
+        const prompt = htmlImageService.generateSmartPptPrompt(
+          seg.text || '',
+          bookTitle,
+          i,
+          script.length,
+          i === 0,
+          language,
+          i === 0 ? coverImageUrl : undefined,
+        );
+        const result = await htmlImageService.generateHtmlImage(
+          prompt,
+          imageStyle.pptModel || DEFAULT_PPT_MODEL,
+          language,
+          imageStyle.colorTheme || 'gq_fashion',
+        );
+        const imgPath = path.join(slidesDir, `${String(i).padStart(3, '0')}.png`);
+        const htmlPath = path.join(htmlDir, `${String(i).padStart(3, '0')}.html`);
+        fs.writeFileSync(imgPath, result.buffer);
+        fs.writeFileSync(htmlPath, result.htmlContent, 'utf-8');
+        seg.generatedImageUrl = imgPath;
+        (seg as any).htmlUrl = htmlPath;
+        imageFiles.push(imgPath);
+        durations.push(seg.estimatedDuration || 3);
+      }
+      visualOutputManifest = { visualMode: 'html-slide', slidesDir: 'smart_slides', htmlDir: 'smart_slides_html' };
+    };
+
+    if (visualMode === 'gpt-image-slide') {
+      try {
+        const gptResult = await generateGptImageSlides({
+          bookTitle,
+          language,
+          script,
+          chapters: parsed.chapters,
+          outDir,
+          imageProvider: new GptImageProvider(),
+          imageDensity,
+          aspectRatio,
+          targetResolution: resolution,
+        });
+        for (const frame of gptResult.frames) {
+          imageFiles.push(frame.imagePath);
+          durations.push(frame.segmentIndexes.reduce((sum, idx) => sum + (script[idx].estimatedDuration || 3), 0));
+        }
+        visualOutputManifest = gptResult.manifest;
+        effectiveVisualMode = 'gpt-image-slide';
+      } catch (err) {
+        if (!allowHtmlFallback) throw err;
+        console.warn('[LocalPipeline] GPT image slide mode failed; falling back to html-slide:', err);
+        await renderHtmlSlides();
+      }
+    } else {
+      await renderHtmlSlides();
     }
 
     const finalVideoPath = path.join(outDir, 'final_podcast.mp4');
-    await renderVideo(imageFiles, durations, finalAudioPath, finalVideoPath);
+    await renderVideoFromImages({ imageFiles, durations, audioFile: finalAudioPath, outputFile: finalVideoPath, targetResolution: resolution });
 
     const marketing = await scriptService.generateMarketingContent(bookTitle, script, language, imageStyle, apiProvider);
 
@@ -285,11 +335,17 @@ async function main() {
       ttsProvider,
       totalDuration,
       scriptSegments: script.length,
+      visualMode: effectiveVisualMode,
+      imageDensity,
+      aspectRatio,
+      resolution,
+      visualOutput: visualOutputManifest,
       output: {
         source: path.relative(outDir, path.join(sourceDir, path.basename(inputPath))),
         audio: 'full_podcast.mp3',
         video: 'final_podcast.mp4',
-        slidesDir: 'smart_slides',
+        slidesDir: effectiveVisualMode === 'gpt-image-slide' && (visualOutputManifest as any)?.slidesDir === 'gpt_image_slides' ? 'gpt_image_slides' : 'smart_slides',
+        rawSlidesDir: (visualOutputManifest as any)?.rawDir,
         htmlDir: 'smart_slides_html',
         metadataDir: 'metadata',
         cover: localCover.coverFilePath ? path.relative(outDir, localCover.coverFilePath) : undefined,

@@ -1,6 +1,6 @@
 /**
  * Smart PPT Image Service
- * 
+ *
  * Uses Gemini 3.0 Pro to generate HTML + Puppeteer to screenshot
  * With unified Design System for consistent visual style
  */
@@ -185,41 +185,41 @@ Text on Dark: ${colors.textOnDark} (深色背景上的文字)
 \`\`\`html
 <div class="slide" style="width:1024px;height:768px;position:relative;background:${colors.background};overflow:hidden;font-family:'Inter','Noto Sans SC',sans-serif;">
   <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${colors.primary};"></div>
-  
+
   <!-- DECORATIVE CIRCLE (background, centered) -->
   <div style="position:absolute;top:384px;left:512px;width:260px;height:260px;border:1px solid rgba(0,0,0,0.08);border-radius:50%;transform:translate(-50%,-50%);"></div>
-  
+
   <!-- CENTER BOX - SMALL SIZE (200x160px, perfectly centered) -->
   <div style="position:absolute;top:384px;left:512px;transform:translate(-50%,-50%);width:200px;height:160px;background:${colors.primary};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:10;padding:16px;box-sizing:border-box;">
     <div style="font-family:'Playfair Display','Noto Serif SC',Georgia,serif;font-size:28px;font-weight:700;color:${colors.textOnDark};line-height:1.2;margin-bottom:8px;">[核心概念]</div>
     <div style="font-size:12px;color:${colors.accent};letter-spacing:0.1em;text-transform:uppercase;">[英文副标题]</div>
   </div>
-  
+
   <!-- 4 SATELLITE CARDS - symmetric with safe margins (48px from edges) -->
   <!-- Top Left -->
   <div style="position:absolute;top:120px;left:48px;width:260px;overflow:hidden;">
     <div style="font-family:'Playfair Display','Noto Serif SC',Georgia,serif;font-size:18px;font-weight:700;color:${colors.primary};margin-bottom:6px;word-break:break-word;">[要点1标题]</div>
     <div style="font-size:13px;color:${colors.text};line-height:1.5;word-break:break-word;">[描述-简短]</div>
   </div>
-  
+
   <!-- Top Right (use 'right' to anchor from right edge) -->
   <div style="position:absolute;top:120px;right:48px;width:260px;text-align:right;overflow:hidden;">
     <div style="font-family:'Playfair Display','Noto Serif SC',Georgia,serif;font-size:18px;font-weight:700;color:${colors.primary};margin-bottom:6px;word-break:break-word;">[要点2标题]</div>
     <div style="font-size:13px;color:${colors.text};line-height:1.5;word-break:break-word;">[描述-简短]</div>
   </div>
-  
+
   <!-- Bottom Left -->
   <div style="position:absolute;top:560px;left:48px;width:260px;overflow:hidden;">
     <div style="font-family:'Playfair Display','Noto Serif SC',Georgia,serif;font-size:18px;font-weight:700;color:${colors.primary};margin-bottom:6px;word-break:break-word;">[要点3标题]</div>
     <div style="font-size:13px;color:${colors.text};line-height:1.5;word-break:break-word;">[描述-简短]</div>
   </div>
-  
+
   <!-- Bottom Right (use 'right' to anchor from right edge) -->
   <div style="position:absolute;top:560px;right:48px;width:260px;text-align:right;overflow:hidden;">
     <div style="font-family:'Playfair Display','Noto Serif SC',Georgia,serif;font-size:18px;font-weight:700;color:${colors.primary};margin-bottom:6px;word-break:break-word;">[要点4标题]</div>
     <div style="font-size:13px;color:${colors.text};line-height:1.5;word-break:break-word;">[描述-简短]</div>
   </div>
-  
+
   <!-- BOTTOM TAGLINE -->
   <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:11px;color:${colors.accent};letter-spacing:0.3em;text-transform:uppercase;">[CONTEXTUAL TAGLINE]</div>
 </div>
@@ -645,7 +645,7 @@ ${language === 'Chinese' ? `
 - NEVER use dark text on dark background
 
 **PROHIBITED ELEMENTS (CRITICAL):**
-- DO NOT include speaker names (主讲人, 阿哲, 小雅, etc.) 
+- DO NOT include speaker names (主讲人, 阿哲, 小雅, etc.)
 - DO NOT include podcast host information
 - DO NOT include any introductory text before the HTML code
 - DO NOT include any explanatory text - ONLY output the HTML code itself
@@ -740,9 +740,9 @@ Remember:
     htmlContent = this.extractPureHtml(htmlContent);
 
     // Use passed-in model parameter (user's selection) for consistency
-    // OpenRouter API may return simplified model names (e.g., "gemini-3-pro-preview" instead of "google/gemini-3-flash-preview")
+    // OpenRouter API may return simplified model names; keep the caller's explicit model ID for accounting.
     const usageMetadata = {
-      model: model || result.model,  // Prioritize user's selection (full OpenRouter ID like "google/gemini-3-flash-preview")
+      model: model || result.model,  // Prioritize user's selection (full OpenRouter ID like "deepseek/deepseek-v4-flash")
       provider: 'Google Gemini (HTML) + Puppeteer',  // Updated to reflect actual provider
       promptTokenCount: result.usage?.inputTokens || 0,
       candidatesTokenCount: result.usage?.outputTokens || 0,
@@ -910,13 +910,13 @@ Remember:
 <div class="slide" style="width:1024px;height:768px;position:relative;background:#FBF5F3;overflow:hidden;">
   <!-- FULL-WIDTH HEADER BAR -->
   <div style="position:absolute;top:0;left:0;right:0;width:100%;height:120px;background:[PRIMARY_COLOR];"></div>
-  
+
   <!-- LEFT SIDE: TITLE (55%) -->
   <div style="position:absolute;left:48px;top:444px;transform:translateY(-50%);width:50%;">
     <h1 style="font-size:56px;font-weight:900;color:[PRIMARY_COLOR];line-height:1.2;margin:0;">${shortTitle}</h1>
     <p style="font-size:24px;color:[SECONDARY_COLOR];margin-top:20px;font-weight:500;">[副标题-最多一行]</p>
   </div>
-  
+
   <!-- RIGHT SIDE: BOOK COVER (45%) -->
   <div style="position:absolute;right:48px;top:444px;transform:translateY(-50%);width:35%;display:flex;justify-content:center;align-items:center;">
     <img src="${coverImageUrl}" style="max-width:100%;max-height:480px;box-shadow:0 8px 32px rgba(0,0,0,0.25);object-fit:contain;" />
@@ -1044,4 +1044,3 @@ ${keyContent}
 - **⚠️ 禁止在幻灯片底部或左下角添加书名水印（如《说中国》xxx）！**`;
   }
 };
-

@@ -1,9 +1,9 @@
 /**
  * AI Provider Factory Module
- * 
+ *
  * Provides factory functions to get the appropriate text/image generation providers
  * based on configuration. Inspired by Banana Slides' clean provider abstraction.
- * 
+ *
  * Usage:
  *   const textProvider = getTextProvider({ provider: 'gemini', model: 'gemini-2.5-flash' });
  *   const result = await textProvider.generateText('Hello, world!');
@@ -17,7 +17,7 @@ export { TextProvider, TextGenerationOptions, TextGenerationResult, JSONGenerati
 export { GeminiTextProvider } from './text/gemini.js';
 export { OpenRouterTextProvider } from './text/openrouter.js';
 
-// Image Provider exports  
+// Image Provider exports
 export { ImageProvider, ImageGenerationOptions, ImageGenerationResult, ImageUsageMetadata, AspectRatio, Resolution } from './image/index.js';
 export { GeminiImageProvider } from './image/gemini.js';
 export { JimengImageProvider } from './image/jimeng.js';
@@ -48,7 +48,7 @@ export interface ImageProviderConfig {
 
 /**
  * Factory function to get text generation provider based on configuration
- * 
+ *
  * @param config - Provider configuration
  * @returns TextProvider instance
  */
@@ -75,7 +75,7 @@ export function getTextProvider(config: TextProviderConfig): TextProvider {
 
 /**
  * Factory function to get image generation provider based on configuration
- * 
+ *
  * @param config - Provider configuration
  * @returns ImageProvider instance
  */

@@ -1,7 +1,7 @@
 /**
  * Gemini Text Provider Implementation
  * Uses Google GenAI SDK for text generation
- * 
+ *
  * Extracted from scriptService.ts for clean separation
  */
 

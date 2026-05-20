@@ -1,9 +1,9 @@
 /**
  * OpenRouter API Service
- * 
+ *
  * Wraps OpenRouter API calls to provide similar interface as Google GenAI
  * for text generation and image generation.
- * 
+ *
  * Supports cost tracking from OpenRouter usage response.
  */
 
@@ -416,8 +416,8 @@ Use these colors for the visual design. DO NOT display color names or hex codes 
         mimeType: string = 'image/jpeg'
     ): Promise<{ text: string; cost?: { totalUSD: number } }> {
         const apiKey = getApiKey();
-        // Use Gemini 3.0 Flash for fast, cost-effective analysis
-        const model = 'google/gemini-3-flash-preview';
+        // Keep image analysis on a multimodal model; DeepSeek V4 Flash is used for text/script/PPT generation.
+        const model = process.env.OPENROUTER_VISION || 'google/gemini-3-pro-preview';
 
         if (!apiKey) {
             throw new Error('OPENROUTER_API_KEY is not configured');

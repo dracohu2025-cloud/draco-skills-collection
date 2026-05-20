@@ -1,24 +1,25 @@
-# epub2podcast
+# epub2podcast-gpt-image
 
-一个**可独立运行**的本地项目：把 EPUB 内容转换成双人中文播客脚本、音频、Smart Slide，以及最终 MP4 视频。
+一个**可独立运行**的 GPT-Image 增强版项目：把 EPUB 内容转换成双人中文播客脚本、音频、AI 视觉页、最终 MP4 视频，并生成 YouTube 发布素材。
 
-> 当前版本：**v0.1.0**
+> 当前版本：**v0.2.0**
 >
 > 发布定位：**可独立运行的早期 standalone 版本**
 
-下载当前目录、安装依赖、配置 `.env` 后，就可以直接运行。
+下载当前目录、安装依赖、配置 `.env` 后，就可以直接运行。旧的 Smart Slide 基础公开版保留在 [`../epub2podcast/`](../epub2podcast/)。
 
 ---
 
 ## 你能用它做什么
 
-`epub2podcast` 当前最稳的工作流是：
+`epub2podcast-gpt-image` 当前最稳的工作流是：
 
 - 读取 **EPUB** 文件
 - 生成双人中文播客脚本
 - 生成分段音频并合并为完整音频
-- 生成 Smart Slide HTML 与 PNG
+- 生成 Smart Slide HTML/PNG，或使用 GPT-Image-2 生成更强视觉页
 - 合成最终 MP4 视频
+- 生成 YouTube 标题、description、缩略图 prompt 和静态发布页
 - 按需压缩视频，便于上传或分享
 
 如果你想把一本书快速整理成“可听、可看、可传播”的内容，这就是它最适合做的事。
@@ -41,8 +42,8 @@
 <table>
   <tr>
     <td width="50%" valign="top">
-      <img src="./assets/example-slide-cover.png" alt="epub2podcast 示例封面页" />
-      <p><strong>封面页风格</strong><br/>适合做视频开场、书籍介绍或主题引入。</p>
+      <img src="./assets/example-youtube-thumbnail.png" alt="epub2podcast YouTube 缩略图示例" />
+      <p><strong>YouTube 缩略图</strong><br/>GPT-Image-2 直接生成 3:2 原图，用于视频发布封面。</p>
     </td>
     <td width="50%" valign="top">
       <img src="./assets/example-slide-infographic.png" alt="epub2podcast 示例信息页" />
@@ -81,11 +82,14 @@ flowchart LR
     B --> C[生成双人中文播客脚本]
     C --> D[生成分段音频]
     D --> E[合并完整播客音频]
-    C --> F[生成 Smart Slide HTML]
-    F --> G[渲染 Smart Slide PNG]
+    C --> F{选择视觉模式}
+    F --> G[Smart Slide HTML/PNG]
+    F --> J[GPT-Image-2 视觉页]
     E --> H[合成最终 MP4 视频]
     G --> H
+    J --> H
     H --> I[按需压缩视频]
+    H --> K[YouTube 标题/描述/缩略图/发布页]
 ```
 
 ---
@@ -107,11 +111,12 @@ flowchart LR
 你至少需要准备以下能力对应的密钥：
 
 - 文本/HTML 生成：通常使用 `OPENROUTER_API_KEY`
+- GPT-Image 视觉页/缩略图：`OPENAI_API_KEY` 或 `GPT_IMAGE_API_KEY`
 - 中文 TTS：通常使用火山引擎（Volcengine）相关变量
 
 项目里已经附带：
 
-- `.env.example`
+- `env.sample.txt`
 
 你可以复制它来开始配置。
 
@@ -122,14 +127,14 @@ flowchart LR
 ### 1. 安装依赖
 
 ```bash
-cd epub2podcast
+cd epub2podcast-gpt-image
 npm install
 ```
 
 ### 2. 配置环境变量
 
 ```bash
-cp .env.example .env
+cp env.sample.txt .env
 ```
 
 然后按你的实际账号信息填写 `.env`。
@@ -168,6 +173,33 @@ node dist/cli/run.js --help
 node dist/cli/run.js --epub ./book.epub --output-dir ./deliveries
 ```
 
+### 使用 GPT-Image-2 生成视觉页
+
+```bash
+node dist/cli/run.js \
+  --epub ./book.epub \
+  --output-dir ./deliveries \
+  --visual-mode gpt-image-slide \
+  --image-density segment \
+  --resolution 1440x1080
+```
+
+### 对已有 delivery 重生 GPT-Image 视觉页
+
+```bash
+node dist/cli/generate-gpt-images.js \
+  --delivery-dir ./deliveries/book-xxx \
+  --recompose
+```
+
+### 生成 YouTube 发布交接页
+
+```bash
+python3 scripts/publish_podcast_site.py \
+  --delivery-dir ./deliveries/book-xxx \
+  --output-root ./published-podcasts
+```
+
 ### 重生成某一页 slide
 
 ```bash
@@ -201,8 +233,10 @@ npm run smoke-test
 - `audio_segments/`：分段音频
 - `smart_slides/`：Slide PNG
 - `smart_slides_html/`：Slide HTML
+- `gpt_image_slides/`：GPT-Image 视觉页（使用该模式时）
 - `full_podcast.mp3`：完整播客音频
 - `final_podcast.mp4`：最终视频
+- `metadata/marketing.json`：YouTube 标题、description、缩略图 prompt 等发布素材
 
 ---
 
@@ -212,7 +246,9 @@ npm run smoke-test
 
 当前 standalone 版本已经完成过真实端到端验证，验证通过的链路包括：
 
-- 主流程：EPUB → 脚本 → 音频 → Slide → MP4
+- 主流程：EPUB → 脚本 → 音频 → Slide/GPT-Image 视觉页 → MP4
+- GPT-Image 视觉页生成与重新合成
+- YouTube 发布交接页生成
 - 单页重生成：`regenerate-slide`
 - 视频压缩：`compress-video`
 - namespace 前缀 OPF 结构的 EPUB 解析兼容性（已用《太平天国革命运动史》样本验证）
@@ -303,7 +339,7 @@ epub2podcast/
 ├── SKILL.md
 ├── package.json
 ├── tsconfig.json
-├── .env.example
+├── env.sample.txt
 ├── assets/
 ├── scripts/
 └── src/

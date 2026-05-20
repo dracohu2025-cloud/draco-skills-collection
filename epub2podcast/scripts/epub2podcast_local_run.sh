@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENTRY_SRC="$PROJECT_ROOT/src/localPipeline.ts"
-ENTRY_DIST="$PROJECT_ROOT/dist/localPipeline.js"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-if [[ ! -f "$ENTRY_DIST" || "$ENTRY_SRC" -nt "$ENTRY_DIST" ]]; then
-  npm run build >/dev/null
+if [[ ! -d node_modules ]]; then
+  echo "Dependencies not installed. Running npm install..."
+  npm install
 fi
 
-exec node "$ENTRY_DIST" "$@"
+npm run build >/dev/null
+exec node dist/cli/run.js "$@"

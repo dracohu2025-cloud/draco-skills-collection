@@ -1,7 +1,7 @@
 /**
  * Gemini Image Provider Implementation
  * Uses Google GenAI SDK for image generation
- * 
+ *
  * Extracted from imageService.ts for clean separation
  */
 

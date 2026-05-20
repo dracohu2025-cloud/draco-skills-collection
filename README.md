@@ -21,7 +21,8 @@
 | [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
-| [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
+| [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频基础版 | 播客脚本 / 音频 / Smart Slide / MP4 |
+| [`epub2podcast-gpt-image/`](./epub2podcast-gpt-image/) | GPT-Image 增强版 EPUB 播客视频流水线 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
 | [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
 | [`manim-video/`](./manim-video/) | 做数学、公式、对象变换和算法过程解释视频 | 分镜 / `script.py` / MP4 |
 | [`manim-video-with-tts/`](./manim-video-with-tts/) | **Manim + 火山 TTS**：制作带中文旁白的数学解释视频 | 分镜 / TTS / `script.py` / MP4 |
@@ -72,16 +73,25 @@
   <tr>
     <td width="50%" valign="top">
       <a href="./epub2podcast/README.md">
-        <img src="./epub2podcast/assets/example-youtube-thumbnail.png" alt="epub2podcast YouTube 缩略图示例" />
+        <img src="./epub2podcast/assets/example-slide-cover.png" alt="epub2podcast Smart Slide 示例封面页" />
       </a>
-      <p><strong>epub2podcast</strong><br/>把电子书转成双人中文播客脚本、音频、GPT-Image 视觉页、最终视频和 YouTube 发布素材。</p>
+      <p><strong>epub2podcast</strong><br/>旧公开基础版：把电子书转成双人中文播客脚本、音频、Smart Slide 和最终视频。</p>
     </td>
+    <td width="50%" valign="top">
+      <a href="./epub2podcast-gpt-image/README.md">
+        <img src="./epub2podcast-gpt-image/assets/example-youtube-thumbnail.png" alt="epub2podcast-gpt-image YouTube 缩略图示例" />
+      </a>
+      <p><strong>epub2podcast-gpt-image</strong><br/>新公开增强版：加入 GPT-Image 视觉页和 YouTube 发布素材。</p>
+    </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./vocabulary-video-pipeline/README.md">
         <img src="./vocabulary-video-pipeline/assets/preview-breakfast.jpg" alt="vocabulary-video-pipeline 示例帧" />
       </a>
       <p><strong>vocabulary-video-pipeline</strong><br/>一键生成面向中小学生的英文单词解释视频，含 TTS、节拍同步和自动上传。</p>
     </td>
+    <td width="50%" valign="top"></td>
   </tr>
   <tr>
     <td width="50%" valign="top">
@@ -188,9 +198,10 @@ python3 scripts/run.py publish-feishu \
 
 ### 4）你主要做长内容再加工
 优先看：
-- [`epub2podcast`](./epub2podcast/)
+- [`epub2podcast`](./epub2podcast/)：旧公开基础版，Smart Slide 路线
+- [`epub2podcast-gpt-image`](./epub2podcast-gpt-image/)：新公开增强版，GPT-Image 视觉页和 YouTube 发布素材
 
-它更适合把书、长文、系列内容变成更容易传播的播客视频。
+它们更适合把书、长文、系列内容变成更容易传播的播客视频。
 
 ### 5）你主要做视频 / 动画
 推荐这样走：
