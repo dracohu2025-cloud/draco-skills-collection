@@ -22,7 +22,7 @@
 
 ## 本次版本亮点
 
-- 独立 `package.json` / `tsconfig.json` / `.env.example`
+- 独立 `package.json` / `tsconfig.json` / `env.sample.txt`
 - 独立 `src/` 源码目录
 - 独立 CLI 入口：
   - `epub2podcast-run`

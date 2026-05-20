@@ -1,5 +1,5 @@
 import { GoogleGenAI, Modality } from '@google/genai';
-import { ELEVENLABS_CONFIG, MINIMAX_CONFIG, DEFAULT_TTS_PROVIDER, TTSProviderType, TTS_MODEL, SAMPLE_RATE } from '../constants.js';
+import { MINIMAX_CONFIG, DEFAULT_TTS_PROVIDER, TTSProviderType, TTS_MODEL, SAMPLE_RATE } from '../constants.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,8 +12,6 @@ export const ttsService = {
 
         try {
             switch (provider) {
-                case 'elevenlabs':
-                    return { buffer: await this.synthesizeElevenLabs(text, speaker), charCount: text.length };
                 case 'minimax':
                     return { buffer: await this.synthesizeMinimax(text, speaker), charCount: text.length };
                 case 'volcengine':
@@ -32,35 +30,6 @@ export const ttsService = {
             // }
             throw error;
         }
-    },
-
-    async synthesizeElevenLabs(text: string, speaker: 'Male' | 'Female'): Promise<Buffer> {
-        const voiceId = speaker === 'Female' ? ELEVENLABS_CONFIG.voiceIdFemale : ELEVENLABS_CONFIG.voiceIdMale;
-        const apiKey = ELEVENLABS_CONFIG.apiKey;
-
-        if (!apiKey || !voiceId) throw new Error("ElevenLabs API Key or Voice ID is missing");
-
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'xi-api-key': apiKey
-            },
-            body: JSON.stringify({
-                text,
-                model_id: "eleven_v3", // Use v3 as requested
-                voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-            }),
-            signal: AbortSignal.timeout(120000) // 120s timeout
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`ElevenLabs API Error: ${response.status} - ${errorText}`);
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        return Buffer.from(arrayBuffer);
     },
 
     async synthesizeMinimax(text: string, speaker: 'Male' | 'Female'): Promise<Buffer> {

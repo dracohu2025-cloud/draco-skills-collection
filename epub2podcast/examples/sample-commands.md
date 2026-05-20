@@ -7,7 +7,7 @@
 ```bash
 cd epub2podcast
 npm install
-cp .env.example .env
+cp env.sample.txt .env
 # 编辑 .env
 npm run build
 ```

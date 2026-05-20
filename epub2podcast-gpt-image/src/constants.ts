@@ -20,13 +20,6 @@ export const DEFAULT_PPT_MODEL = 'deepseek/deepseek-v4-flash';
 // Configuration
 export const SAMPLE_RATE = 44100;
 
-// --- ELEVENLABS CONFIGURATION ---
-export const ELEVENLABS_CONFIG = {
-  credential: process.env['11LABS_API_KEY'],
-  voiceIdFemale: process.env['11LABS_FEMALE_VOICE_ID'] || '',
-  voiceIdMale: process.env['11LABS_MALE_VOICE_ID'] || ''
-};
-
 // --- MINIMAX CONFIGURATION ---
 export const MINIMAX_CONFIG = {
   bearerToken: process.env['MINIMAX_BEARER_TOKEN'] || '',
@@ -45,7 +38,7 @@ export const VOLCENGINE_CONFIG = {
 };
 
 // --- TTS PROVIDER CONFIGURATION ---
-export type TTSProviderType = 'google' | 'elevenlabs' | 'minimax' | 'volcengine';
+export type TTSProviderType = 'google' | 'minimax' | 'volcengine';
 
 // Default TTS provider
 export const DEFAULT_TTS_PROVIDER: TTSProviderType = 'minimax';

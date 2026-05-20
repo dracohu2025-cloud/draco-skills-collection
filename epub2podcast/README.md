@@ -111,7 +111,7 @@ flowchart LR
 
 项目里已经附带：
 
-- `.env.example`
+- `env.sample.txt`
 
 你可以复制它来开始配置。
 
@@ -129,7 +129,7 @@ npm install
 ### 2. 配置环境变量
 
 ```bash
-cp .env.example .env
+cp env.sample.txt .env
 ```
 
 然后按你的实际账号信息填写 `.env`。
@@ -303,7 +303,7 @@ epub2podcast/
 ├── SKILL.md
 ├── package.json
 ├── tsconfig.json
-├── .env.example
+├── env.sample.txt
 ├── assets/
 ├── scripts/
 └── src/

@@ -6,7 +6,7 @@ All notable changes to `epub2podcast` will be documented in this file.
 
 ### Added
 - First standalone local package structure under `epub2podcast/`
-- Independent `package.json`, `tsconfig.json`, `.env.example`, and `src/`
+- Independent `package.json`, `tsconfig.json`, `env.sample.txt`, and `src/`
 - Standalone CLI entry points:
   - `epub2podcast-run`
   - `epub2podcast-regenerate-slide`
