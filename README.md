@@ -20,6 +20,7 @@
 | [`nano-banana-image/`](./nano-banana-image/) | 用 Nano Banana 2 / Gemini Flash Image 直接出图 | 单图 / 批量图 / workflow |
 | [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
+| [`gpt-image-2-handdrawn-diagram/`](./gpt-image-2-handdrawn-diagram/) | 用 GPT-Image-2 生成手绘知识图解和架构图 | Prompt template / 示例图 / SKILL.md |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频基础版 | 播客脚本 / 音频 / Smart Slide / MP4 |
 | [`epub2podcast-gpt-image/`](./epub2podcast-gpt-image/) | GPT-Image 增强版 EPUB 播客视频流水线 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
@@ -91,7 +92,12 @@
       </a>
       <p><strong>vocabulary-video-pipeline</strong><br/>一键生成面向中小学生的英文单词解释视频，含 TTS、节拍同步和自动上传。</p>
     </td>
-    <td width="50%" valign="top"></td>
+    <td width="50%" valign="top">
+      <a href="./gpt-image-2-handdrawn-diagram/README.md">
+        <img src="./gpt-image-2-handdrawn-diagram/assets/example-epub2podcast-local.png" alt="gpt-image-2-handdrawn-diagram 示例图" />
+      </a>
+      <p><strong>gpt-image-2-handdrawn-diagram</strong><br/>把架构说明、流程笔记或白板草图转成高可读性的手绘知识图解。</p>
+    </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
@@ -182,12 +188,13 @@ python3 scripts/run.py publish-feishu \
 
 更多详情查看 [`wechat-article-browseruse/README.md`](./wechat-article-browseruse/README.md)
 
-### 3）你主要做批量视觉实验
+### 3）你主要做批量视觉实验 / 架构图
 优先看：
 - [`nano-banana-image`](./nano-banana-image/)
 - [`jimeng-image`](./jimeng-image/)
+- [`gpt-image-2-handdrawn-diagram`](./gpt-image-2-handdrawn-diagram/)
 
-它们都支持：
+前两个更适合通用出图，支持：
 - 单张模式
 - 批量模式
 - workflow 模式
@@ -195,6 +202,7 @@ python3 scripts/run.py publish-feishu \
 区别很简单：
 - `nano-banana-image`：更适合高质量营销视觉和结构化 JSON prompt 控制
 - `jimeng-image`：更适合火山引擎路线，支持图生图、多参考图和连续组图
+- `gpt-image-2-handdrawn-diagram`：更适合把架构、流程和复杂概念画成手绘知识图解
 
 ### 4）你主要做长内容再加工
 优先看：
