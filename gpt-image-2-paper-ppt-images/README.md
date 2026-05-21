@@ -4,7 +4,7 @@
 
 它不是做可编辑 `.pptx` 的工具，而是把主题直接生成成一组可放进 PPT、文章、报告或社交平台里的高质感视觉页。
 
-![示例：8 页 PPT 风格图片](./assets/example-ppt-contact-sheet.png)
+![四套模板示例](./assets/example-templates-contact-sheet.png)
 
 ## 适合做什么
 
@@ -31,7 +31,7 @@ flowchart LR
   B --> C[规划 8-10 页结构]
   C --> D[逐页生成 Prompt]
   D --> E[image_generate / GPT-Image-2]
-  E --> F[16:9 PPT 图片]
+  E --> F[16:9 PPT / 3:4 卡片图片]
 ```
 
 ## 快速使用
@@ -51,13 +51,23 @@ flowchart LR
 
 ## 示例
 
-### 封面页
+每套模板各放一张示例图，方便一眼判断风格。
 
-![封面示例](./assets/example-page-01.png)
+### Template A — Paper Breath / Soft Nodes
 
-### 收束页
+![Template A 示例：纸面柔雾节点](./assets/example-template-a-paper-breath.png)
 
-![收束页示例](./assets/example-page-08.png)
+### Template B — Eastern Editorial / Booklet Page
+
+![Template B 示例：东方册页编辑感](./assets/example-template-b-eastern-editorial.png)
+
+### Template C — Cropped Glyph / Oriental Grid
+
+![Template C 示例：浅色裁切大字东方网格](./assets/example-template-c-cropped-glyph.png)
+
+### Template D — Dark Cropped Glyph / Serious Theme
+
+![Template D 示例：暗色裁切大字严肃主题](./assets/example-template-d-dark-cropped-glyph.png)
 
 ## 来源与署名
 
