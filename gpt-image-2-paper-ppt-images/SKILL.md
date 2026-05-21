@@ -15,6 +15,7 @@ metadata:
     source_posts:
       - https://x.com/xiaoxiaodong01/status/2056615926724976911
       - https://x.com/xiaoxiaodong01/status/2056412276593410537
+      - https://x.com/xiaoxiaodong01/status/2057338307051508107
 ---
 
 # GPT-Image-2 Paper PPT Images
@@ -23,7 +24,7 @@ metadata:
 
 This skill generates PPT-style image pages with a light, quiet, paper-breathing visual language.
 
-Use Hermes `image_generate` for rendering. Configure `image_generate` to use GPT-Image-2, then call it directly unless the user explicitly asks for another image backend.
+Use Hermes `image_generate` for rendering. In this environment, `image_generate` is backed by GPT-Image-2, so call it directly unless the user explicitly asks for another image backend.
 
 Source credit: 小小东 — https://x.com/xiaoxiaodong01
 
@@ -31,6 +32,7 @@ Source posts:
 
 - Paper-breathing PPT / soft visual nodes: https://x.com/xiaoxiaodong01/status/2056615926724976911
 - Eastern editorial PPT / booklet-page layouts: https://x.com/xiaoxiaodong01/status/2056412276593410537
+- Cropped-glyph Eastern editorial PPT / light and dark variants: https://x.com/xiaoxiaodong01/status/2057338307051508107
 
 The style is useful for:
 
@@ -63,8 +65,10 @@ This skill contains multiple GPT-Image-2 prompt templates under one shared PPT-i
 
 - **Template A — Paper Breath / Soft Nodes**: default for poetic PPT covers, quiet report pages, course pages, invitations, and social cards with floating visual nodes.
 - **Template B — Eastern Editorial / Booklet Page**: use when the user wants 东方编辑感, 米纸/淡墨/陈木, Chinese editorial layout, restrained booklet-page PPT, tea/craft/culture/architecture/product/report visuals, or a calmer premium deck.
+- **Template C — Cropped Glyph / Oriental Grid**: use for 3:4 小红书卡片、文化海报、信息图、排行榜、产品卡、人物专题、报告首页；核心是“巨大裁切汉字/数字/符号 + 极小注释 + 东方网格 + 朱印式强调色”。
+- **Template D — Dark Cropped Glyph / Serious Theme**: use when Template C needs dark background, heavier historical / political / revolutionary / serious-report mood, or the user explicitly asks for 暗色版本.
 
-If the user only says “PPT 风格图片” and gives no style, use Template A. If the topic has cultural, craft, tea, humanities, architecture, heritage, or editorial-publication flavor, prefer Template B.
+If the user only says “PPT 风格图片” and gives no style, use Template A. If the topic has cultural, craft, tea, humanities, architecture, heritage, or editorial-publication flavor, prefer Template B. If the user asks for 小红书卡片、3:4、书卷气、强文字骨架、巨大汉字裁切, prefer Template C; add Template D when the brief says 暗色背景 or serious/revolutionary palette.
 
 ## Core Visual Grammar
 
@@ -128,6 +132,61 @@ Source: 小小东 — https://x.com/xiaoxiaodong01/status/2056412276593410537
 - Use one or two soft image windows, not many cards.
 - For data pages, simplify charts into ink lines, fold marks, sparse coordinates, or object-edge metaphors.
 - Avoid fake retro, empty Zen, shiny AI texture, piled calligraphy, cheap guofeng assets, and tea-culture cosplay.
+
+
+## Template C — Cropped Glyph / Oriental Grid
+
+Use this template for a bookish, high-pressure Chinese editorial system: huge cropped characters / numbers / symbols act as the spatial skeleton, while tiny annotations create dense but breathable knowledge layers. It is especially good for 3:4 小红书卡片, PPT covers, report homepages, information graphics, rankings, product cards, and cultural / food / craft / knowledge topics.
+
+Source: 小小东 — https://x.com/xiaoxiaodong01/status/2057338307051508107
+
+```markdown
+请生成一种东方编辑美学的视觉方案：画面像铺在温润纸面上的一页克制刊物，整体安静、留白充足，却被少量高压的文字与色块牢牢钉住。不要把参考对象理解成固定题材，而要提取它的工作方式：用极大的汉字、数字或关键符号作为空间骨架，让它们可以被画面边缘裁切，只露出局部笔画、弧线、竖线和横线，像建筑结构一样支撑版面；再用极小的正文、英文注音、日期、标签、脚注或数据说明形成细密而有呼吸的阅读层级。标题不必完整陈列，可以成为画面里的形状、边界和节奏，正文则保持清瘦、疏朗、字距微开，像被认真排过的博物馆说明牌。
+
+色彩系统以大面积低饱和浅底承载空气感，可以是米白、宣纸灰、淡粉、冷白或轻暖灰，具体温度根据内容气质调整；主内容颜色保持沉稳克制，用墨灰、炭黑、深褐、深青或低明度主题色承担信息重量；强调色只占小到中等面积，继承参考图那种“朱印式”的权威感和节奏感，但不要机械固定为红色。若内容偏学术，强调色可以变得更冷、更干净，像深蓝或铁灰中的细线；若内容偏节庆、文化、食物或手作，可以更温热、更颗粒化，像朱砂、陶土、枣红或熟橘；若内容偏科技、金融或医疗，则让强调色变得锋利、低饱和、面积更小，承担定位、警示或关键数据的职责。无论颜色如何变化，都保持原图的关系：浅底是空气，深色是文字秩序，强调色是情绪转折，灰色纹理是时间感与深度。
+
+版式采用不完全对称的东方网格：边缘允许大字被切出画外，中心保留大片安静空白，信息块像漂浮的小岛，彼此之间有清楚距离。阅读动线不要直白从上到下，而是由大字残影、弧形或扇形纹样、细小说明文字、局部插图和底部色块共同引导，让视线在开阔与紧缩之间移动。可以加入纸纹、版画颗粒、淡淡的伞骨/扇骨/放射线/弧面纹理，作为低声背景；也可以把主体物、数据图形、人物轮廓、产品剪影或场景细节处理成水墨、炭笔、拓印、淡彩或低对比照片，使它们不喧宾夺主，而是像一枚安静证物。避免满版装饰、复杂渐变、过亮荧光、模板化卡片和商业海报式喊话。
+
+文字设计是画面的核心：让中文、数字、英文和注释各自拥有不同尺度与语气，最大字负责视觉重量，中等字负责章节感，小字负责知识密度，英文或拼音只作为节奏性的细标。可以使用竖排与横排混合、字距拉开、局部旋转的极小标签、灰底小章、二维码式信息块、日期或编号，但都要服务于秩序，不要堆砌。最终画面应像一张可以被反复阅读的文化海报，也能自然转化为PPT封面、报告首页、信息图、排行榜、产品卡、人物专题或数据页：内容越复杂，留白越要坚定；信息越重要，强调色越要精确；主体越具象，周围越要轻。现在把这种美学用于我的实际内容，让它适合我给出的主题、文字、数据、物件或页面用途。
+
+本次主题：{主题}
+用途：ppt / 课件，请生成不低于10张图片
+
+比例3:4
+注意不是要你一张图片集合所有图片，是逐张生成。
+```
+
+## Template D — Dark Cropped Glyph / Serious Theme
+
+Use this as the dark-background variant of Template C. It keeps the same cropped-glyph editorial skeleton, but changes the atmosphere to dark paper, low-key historical weight, deep reds / iron gray / muted gold, and serious-report tension.
+
+Source: 小小东 — https://x.com/xiaoxiaodong01/status/2057338307051508107
+
+```markdown
+请生成一种东方编辑美学的视觉方案：画面像铺在温润纸面上的一页克制刊物，整体安静、留白充足，却被少量高压的文字与色块牢牢钉住。不要把参考对象理解成固定题材，而要提取它的工作方式：用极大的汉字、数字或关键符号作为空间骨架，让它们可以被画面边缘裁切，只露出局部笔画、弧线、竖线和横线，像建筑结构一样支撑版面；再用极小的正文、英文注音、日期、标签、脚注或数据说明形成细密而有呼吸的阅读层级。标题不必完整陈列，可以成为画面里的形状、边界和节奏，正文则保持清瘦、疏朗、字距微开，像被认真排过的博物馆说明牌。
+
+色彩系统以暗色低饱和纸面承载空气感，可以是深墨黑、旧报纸黑、炭灰、深褐、铁灰或低明度主题色，具体温度根据内容气质调整；主内容颜色保持沉稳克制，用灰白、旧金、暗红、深青、陶土或低明度主题色承担信息重量；强调色只占小到中等面积，继承参考图那种“朱印式”的权威感和节奏感，但不要机械固定为红色。若内容偏历史、政治、革命、社会议题或严肃报告，强调色可以变得更厚重、更颗粒化，像暗红、朱砂、铁锈、旧金或深军绿；若内容偏科技、金融或医疗，则让强调色变得锋利、低饱和、面积更小，承担定位、警示或关键数据的职责。无论颜色如何变化，都保持关系：暗底是空气，亮色是文字秩序，强调色是情绪转折，灰色纹理是时间感与深度。
+
+版式采用不完全对称的东方网格：边缘允许大字被切出画外，中心保留大片安静空白，信息块像漂浮的小岛，彼此之间有清楚距离。阅读动线不要直白从上到下，而是由大字残影、弧形或扇形纹样、细小说明文字、局部插图和底部色块共同引导，让视线在开阔与紧缩之间移动。可以加入纸纹、版画颗粒、淡淡的伞骨/扇骨/放射线/弧面纹理，作为低声背景；也可以把主体物、数据图形、人物轮廓、产品剪影或场景细节处理成水墨、炭笔、拓印、淡彩或低对比照片，使它们不喧宾夺主，而是像一枚安静证物。避免满版装饰、复杂渐变、过亮荧光、模板化卡片和商业海报式喊话。
+
+文字设计是画面的核心：让中文、数字、英文和注释各自拥有不同尺度与语气，最大字负责视觉重量，中等字负责章节感，小字负责知识密度，英文或拼音只作为节奏性的细标。可以使用竖排与横排混合、字距拉开、局部旋转的极小标签、灰底小章、二维码式信息块、日期或编号，但都要服务于秩序，不要堆砌。最终画面应像一张可以被反复阅读的文化海报，也能自然转化为PPT封面、报告首页、信息图、排行榜、产品卡、人物专题或数据页：内容越复杂，留白越要坚定；信息越重要，强调色越要精确；主体越具象，周围越要轻。现在把这种美学用于我的实际内容，让它适合我给出的主题、文字、数据、物件或页面用途。
+
+本次主题：{主题}
+用途：ppt / 课件，请生成不低于10张图片
+
+暗色背景，配色根据主题选择：历史 / 革命 / 严肃报告可用暗红、铁灰、旧金、深军绿；技术 / 金融 / 医疗可用冷灰、深蓝、低饱和警示色。
+
+注意不是要你一张图片集合所有图片，是逐张生成。
+```
+
+## Template C/D Adaptation Rules
+
+- Default aspect for Template C/D is `portrait` / 3:4 when making social cards; use `landscape` / 16:9 only when the user explicitly wants PPT widescreen.
+- Keep visible words short: one huge cropped Chinese character / number / symbol, one medium title, a few tiny labels.
+- Do not center everything. Let the biggest glyph run out of the canvas edge.
+- Use small notes, dates, phonetic English, page numbers, footnotes, and data ticks as texture, not paragraphs.
+- Template C uses pale paper air; Template D uses dark paper air.
+- For multi-page sets, call `image_generate` once per page. Never ask GPT-Image-2 to pack 10 pages into one image.
 
 ## Practical Adaptation for Hermes `image_generate`
 
