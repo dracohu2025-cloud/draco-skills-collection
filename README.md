@@ -21,6 +21,7 @@
 | [`jimeng-image/`](./jimeng-image/) | 用即梦 / Doubao Seedream 出图 | 文生图 / 图生图 / 多参考图 |
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
 | [`gpt-image-2-handdrawn-diagram/`](./gpt-image-2-handdrawn-diagram/) | 用 GPT-Image-2 生成手绘知识图解和架构图 | Prompt template / 示例图 / SKILL.md |
+| [`gpt-image-2-paper-ppt-images/`](./gpt-image-2-paper-ppt-images/) | 用 GPT-Image-2 生成纸面质感 PPT 风格图片 | Prompt template / 示例图 / SKILL.md |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频基础版 | 播客脚本 / 音频 / Smart Slide / MP4 |
 | [`epub2podcast-gpt-image/`](./epub2podcast-gpt-image/) | GPT-Image 增强版 EPUB 播客视频流水线 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
@@ -132,7 +133,12 @@
       </a>
       <p><strong>open-design-to-open-slide</strong><br/>内置 49 套 Open Slide React 模板资产：11 套官方基线 + 38 套 Open Design 移植 suite，可一键复制到任意 Open Slide 项目。</p>
     </td>
-    <td width="50%" valign="top"></td>
+    <td width="50%" valign="top">
+      <a href="./gpt-image-2-paper-ppt-images/README.md">
+        <img src="./gpt-image-2-paper-ppt-images/assets/example-ppt-contact-sheet.png" alt="gpt-image-2-paper-ppt-images 示例图" />
+      </a>
+      <p><strong>gpt-image-2-paper-ppt-images</strong><br/>用 GPT-Image-2 生成纸面质感、东方编辑感或轻盈 PPT 风格图片，适合封面、课件、报告页和信息图。</p>
+    </td>
   </tr>
 </table>
 
@@ -193,6 +199,7 @@ python3 scripts/run.py publish-feishu \
 - [`nano-banana-image`](./nano-banana-image/)
 - [`jimeng-image`](./jimeng-image/)
 - [`gpt-image-2-handdrawn-diagram`](./gpt-image-2-handdrawn-diagram/)
+- [`gpt-image-2-paper-ppt-images`](./gpt-image-2-paper-ppt-images/)
 
 前两个更适合通用出图，支持：
 - 单张模式
@@ -203,6 +210,7 @@ python3 scripts/run.py publish-feishu \
 - `nano-banana-image`：更适合高质量营销视觉和结构化 JSON prompt 控制
 - `jimeng-image`：更适合火山引擎路线，支持图生图、多参考图和连续组图
 - `gpt-image-2-handdrawn-diagram`：更适合把架构、流程和复杂概念画成手绘知识图解
+- `gpt-image-2-paper-ppt-images`：更适合把主题生成成纸面质感 PPT 图片、报告页和东方编辑感视觉页
 
 ### 4）你主要做长内容再加工
 优先看：
@@ -279,6 +287,7 @@ python3 scripts/run.py --help
 - 想直接出图：[`nano-banana-image`](./nano-banana-image/)
 - 想试火山即梦：[`jimeng-image`](./jimeng-image/)
 - 想自动做公众号封面：[`article-to-wechat-cover`](./article-to-wechat-cover/)
+- 想生成 PPT 风格图片：[`gpt-image-2-paper-ppt-images`](./gpt-image-2-paper-ppt-images/)
 - 想发公众号草稿：[`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/)
 - 想做长内容播客视频：[`epub2podcast`](./epub2podcast/)
 - 想做英文单词解释视频：[`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
