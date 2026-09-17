@@ -23,6 +23,7 @@
 | [`gpt-image-2-handdrawn-diagram/`](./gpt-image-2-handdrawn-diagram/) | 用 GPT-Image-2 生成手绘知识图解和架构图 | Prompt template / 示例图 / SKILL.md |
 | [`gpt-image-2-paper-ppt-images/`](./gpt-image-2-paper-ppt-images/) | 用 GPT-Image-2 生成纸面质感 PPT 风格图片 | Prompt template / 示例图 / SKILL.md |
 | [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
+| [`wechat-publishing-workflow/`](./wechat-publishing-workflow/) | 飞书→公众号全流程：封面 + 卡片选风格 + 发布 + 验证修复 | 微信草稿 / 风格选择卡 / 验证报告 |
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频基础版 | 播客脚本 / 音频 / Smart Slide / MP4 |
 | [`epub2podcast-gpt-image/`](./epub2podcast-gpt-image/) | GPT-Image 增强版 EPUB 播客视频流水线 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
 | [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
