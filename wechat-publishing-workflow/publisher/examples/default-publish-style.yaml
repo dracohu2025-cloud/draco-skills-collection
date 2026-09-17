@@ -1,0 +1,21 @@
+style:
+  profile: doocs
+  theme: 优雅
+  font: 无衬线
+  theme_colors: 活力橘
+  heading_style: 默认
+  heading_styles:
+    h1: 默认
+    h2: 默认
+    h3: 默认
+    h4: 默认
+    h5: 默认
+    h6: 默认
+  font_size: 稍小
+  code_theme: github
+  caption_mode: 不显示
+  mac_code_block: 开启
+  code_line_numbers: 关闭
+  footnote_links: 关闭
+  indent_first_line: 关闭
+  justify: 关闭

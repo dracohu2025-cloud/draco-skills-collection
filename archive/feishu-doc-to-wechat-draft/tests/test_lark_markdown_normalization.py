@@ -7,7 +7,7 @@ SCRIPT_ROOT = Path(__file__).resolve().parents[1] / "scripts"
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
-from wechat_draft_publisher.lark_docs import normalize_lark_markdown
+from wechat_draft_publisher.lark_docs import _extract_image_captions, normalize_lark_markdown
 
 
 def test_strong_numbered_lines_become_ordered_list_items() -> None:
@@ -83,3 +83,56 @@ def test_lark_table_cells_can_contain_angle_bracket_placeholders() -> None:
 
     assert "| 选项 | 描述 |" in normalized
     assert r"| `-m`, `--model <model>` | 覆盖本次运行的模型。 |" in normalized
+
+
+def test_mention_doc_tags_become_visible_text() -> None:
+    source = """- HTML-Anything <mention-doc token=\"abc\" type=\"docx\">新共识：HTML给人看，Markdown给Agent看！</mention-doc>
+- Open-Slide <mention-doc token=\"def\" type=\"docx\">再见了PowerPoint！</mention-doc>
+"""
+    normalized = normalize_lark_markdown(source)
+
+    assert "mention-doc" not in normalized
+    assert "HTML-Anything 新共识：HTML给人看，Markdown给Agent看！" in normalized
+    assert "Open-Slide 再见了PowerPoint！" in normalized
+
+
+def test_native_image_caption_becomes_markdown_alt_text() -> None:
+    source = '<image token="img_123" width="1024" height="1536"/>'
+
+    normalized = normalize_lark_markdown(
+        source,
+        image_captions={"img_123": "老水手补网——GPT Image 2.5 Flare 输出"},
+    )
+
+    assert normalized == "![老水手补网——GPT Image 2.5 Flare 输出](lark-image://img_123)\n"
+
+
+def test_image_without_native_caption_keeps_generic_alt_text() -> None:
+    source = '<image token="img_456" width="1024" height="1536"/>'
+
+    normalized = normalize_lark_markdown(source, image_captions={})
+
+    assert normalized == "![image](lark-image://img_456)\n"
+
+
+def test_extract_image_captions_uses_image_token_as_key() -> None:
+    payload = {
+        "data": {
+            "items": [
+                {
+                    "block_type": 27,
+                    "image": {
+                        "token": "img_123",
+                        "caption": {"content": "准确的图片说明"},
+                    },
+                },
+                {
+                    "block_type": 27,
+                    "image": {"token": "img_456"},
+                },
+                {"block_type": 2, "text": {}},
+            ]
+        }
+    }
+
+    assert _extract_image_captions(payload) == {"img_123": "准确的图片说明"}

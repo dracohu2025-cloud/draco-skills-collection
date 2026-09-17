@@ -22,8 +22,7 @@
 | [`article-to-wechat-cover/`](./article-to-wechat-cover/) | 从文章自动生成公众号封面 | 横幅封面图 / 微信封面素材 |
 | [`gpt-image-2-handdrawn-diagram/`](./gpt-image-2-handdrawn-diagram/) | 用 GPT-Image-2 生成手绘知识图解和架构图 | Prompt template / 示例图 / SKILL.md |
 | [`gpt-image-2-paper-ppt-images/`](./gpt-image-2-paper-ppt-images/) | 用 GPT-Image-2 生成纸面质感 PPT 风格图片 | Prompt template / 示例图 / SKILL.md |
-| [`feishu-doc-to-wechat-draft/`](./feishu-doc-to-wechat-draft/) | 飞书文档转公众号草稿 | 微信草稿 / HTML 预览 |
-| [`wechat-publishing-workflow/`](./wechat-publishing-workflow/) | 飞书→公众号全流程：封面 + 卡片选风格 + 发布 + 验证修复 | 微信草稿 / 风格选择卡 / 验证报告 |
+| [`wechat-publishing-workflow/`](./wechat-publishing-workflow/) | 飞书→公众号全流程：内置渲染发布执行器 + 封面 + 卡片选风格 + 验证修复 | 微信草稿 / 风格选择卡 / 验证报告 |
 | [`epub2podcast/`](./epub2podcast/) | 把 EPUB 做成双人中文播客视频基础版 | 播客脚本 / 音频 / Smart Slide / MP4 |
 | [`epub2podcast-gpt-image/`](./epub2podcast-gpt-image/) | GPT-Image 增强版 EPUB 播客视频流水线 | 播客脚本 / 音频 / GPT-Image 视觉页 / MP4 / YouTube 素材 |
 | [`video-framework-selector/`](./video-framework-selector/) | 视频任务开工前先做框架选型 | 推荐框架 / 选择理由 / 下一步建议 |
@@ -103,8 +102,8 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><strong>feishu-doc-to-wechat-draft</strong><br/>把飞书文档转成公众号草稿，处理图片、样式和预览，适合真正临门一脚的发布环节。</p>
-      <p>详情见：<a href="./feishu-doc-to-wechat-draft/README.md">feishu-doc-to-wechat-draft/README.md</a></p>
+      <p><strong>wechat-publishing-workflow</strong><br/>把飞书文档转成公众号草稿：内置渲染发布执行器，封面生成、卡片选风格、发布后验证修复一站完成。</p>
+      <p>详情见：<a href="./wechat-publishing-workflow/README.md">wechat-publishing-workflow/README.md</a></p>
     </td>
     <td width="50%" valign="top">
       <a href="./daily-ai-agent-aigc-top-news/README.md">
@@ -170,7 +169,7 @@
    - 想直接写 prompt 出图，用 [`nano-banana-image`](./nano-banana-image/)
    - 想走更省钱路线，用 [`jimeng-image`](./jimeng-image/)
    - 想让系统先理解文章，再出封面，用 [`article-to-wechat-cover`](./article-to-wechat-cover/)
-3. 最后用 [`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/) 发到公众号草稿箱
+3. 最后用 [`wechat-publishing-workflow`](./wechat-publishing-workflow/) 发到公众号草稿箱
 
 ### BrowserUse 版抓取器预览
 
@@ -289,7 +288,7 @@ python3 scripts/run.py --help
 - 想试火山即梦：[`jimeng-image`](./jimeng-image/)
 - 想自动做公众号封面：[`article-to-wechat-cover`](./article-to-wechat-cover/)
 - 想生成 PPT 风格图片：[`gpt-image-2-paper-ppt-images`](./gpt-image-2-paper-ppt-images/)
-- 想发公众号草稿：[`feishu-doc-to-wechat-draft`](./feishu-doc-to-wechat-draft/)
+- 想发公众号草稿：[`wechat-publishing-workflow`](./wechat-publishing-workflow/)
 - 想做长内容播客视频：[`epub2podcast`](./epub2podcast/)
 - 想做英文单词解释视频：[`vocabulary-video-pipeline`](./vocabulary-video-pipeline/)
 - 想先判断视频框架：[`video-framework-selector`](./video-framework-selector/)

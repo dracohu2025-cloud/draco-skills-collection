@@ -23,7 +23,7 @@ from pathlib import Path
 DEFAULT_PUBLISHER = Path(
     os.environ.get(
         "WECHAT_DRAFT_PUBLISHER_DIR",
-        str(Path(__file__).resolve().parents[2] / "feishu-doc-to-wechat-draft"),
+        str(Path(__file__).resolve().parents[1] / "publisher"),
     )
 )
 

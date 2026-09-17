@@ -127,6 +127,14 @@ class WechatClient:
         )
         return payload["media_id"]
 
+    def get_video_material(self, media_id: str, access_token: str) -> dict:
+        return self.transport.request(
+            method="POST",
+            url="https://api.weixin.qq.com/cgi-bin/material/get_material",
+            params={"access_token": access_token},
+            data={"media_id": media_id},
+        )
+
     def add_draft(self, payload: dict, access_token: str) -> str:
         response = self.transport.request(
             method="POST",
@@ -169,6 +177,10 @@ def _download_lark_media(token: str, output_dir: Path, filename: str | None = No
     """Download media/file token from Lark docs to a local path."""
     safe_filename = _safe_local_filename(filename or f"lark_media_{token[:16]}.bin")
     output_path = output_dir / safe_filename
+    # Reuse a verified non-empty local asset. This avoids redundant Feishu downloads
+    # and allows callers to pre-compress oversized videos before WeChat upload.
+    if output_path.exists() and output_path.stat().st_size > 0:
+        return output_path
 
     original_cwd = Path.cwd()
     try:
@@ -283,15 +295,23 @@ def rewrite_html_assets(*, html: str, article_dir: Path, client, access_token: s
             print(f"Warning: Failed to sync Lark video {token}: {e}")
             return _render_failed_video_card(name)
 
+        vid = ""
+        try:
+            vid = client.get_video_material(media_id, access_token).get("vid", "")
+        except Exception as e:
+            print(f"Warning: material/get_material failed for {media_id}: {e}")
         video_materials.append(
             {
                 "token": token,
                 "name": name,
                 "media_id": media_id,
+                "vid": vid,
                 "cover_url": cover_url,
                 "source_url": source_url,
             }
         )
+        if vid:
+            return _render_video_iframe(vid=vid, cover_url=cover_url)
         return _render_synced_video_card(name=name, cover_url=cover_url)
 
     html = image_pattern.sub(replace_image, html)
@@ -305,7 +325,25 @@ def _safe_local_filename(name: str) -> str:
 
 
 def _ensure_wechat_supported_image(path: Path) -> Path:
-    """Convert formats unsupported by WeChat image upload, especially Lark-downloaded WebP."""
+    """Convert images WeChat rejects: unsupported formats and oversized Lark PNGs."""
+    png_signature = b"\x89PNG\r\n\x1a\n"
+    try:
+        if path.read_bytes()[:8] == png_signature:
+            try:
+                import png  # type: ignore
+
+                reader = png.Reader(filename=str(path))
+                width, height = reader.read()[0:2]
+                # WeChat can reject extreme screenshot dimensions even when the PNG is valid.
+                if max(width, height) > 4096 or width * height > 36_000_000:
+                    return _downscale_png_streaming_for_wechat(path, width=width, height=height)
+            except Exception:
+                # Fall back to PIL below; if PIL also cannot read it, return original and let
+                # the upload error surface with the token context.
+                pass
+    except Exception:
+        pass
+
     try:
         from PIL import Image
     except Exception:
@@ -332,6 +370,46 @@ def _ensure_wechat_supported_image(path: Path) -> Path:
     return converted
 
 
+def _downscale_png_streaming_for_wechat(path: Path, *, width: int, height: int, max_side: int = 1600) -> Path:
+    """Downsample giant PNG screenshots row-by-row without loading the full bitmap."""
+    import png  # type: ignore
+    from PIL import Image
+
+    converted = path.with_suffix(".wechat.jpg")
+    factor = max(1, (max(width, height) + max_side - 1) // max_side)
+    reader = png.Reader(filename=str(path))
+    width, _height, rows, _info = reader.asRGBA8()
+    new_width = (width + factor - 1) // factor
+    sampled_rows: list[bytes] = []
+    for y, row in enumerate(rows):
+        if y % factor:
+            continue
+        sampled = bytearray()
+        for x in range(0, width, factor):
+            i = x * 4
+            sampled.extend(row[i:i + 4])
+        sampled_rows.append(bytes(sampled))
+
+    image = Image.frombytes("RGBA", (new_width, len(sampled_rows)), b"".join(sampled_rows))
+    bg = Image.new("RGB", image.size, (255, 255, 255))
+    bg.paste(image, mask=image.getchannel("A"))
+    converted.parent.mkdir(parents=True, exist_ok=True)
+    bg.save(converted, "JPEG", quality=88, optimize=True)
+    return converted
+
+
+def _render_video_iframe(*, vid: str, cover_url: str) -> str:
+    """Playable in-article video player (WeChat rich_pages video_iframe)."""
+    player_url = (
+        "https://mp.weixin.qq.com/mp/readtemplate?t=pages/video_player_tmpl"
+        f"&action=mpvideo&auto=0&vid={vid}"
+    )
+    return (
+        f'<iframe class="rich_pages video_iframe" data-vidtype="2" data-mpvid="{vid}" '
+        f'data-cover="{cover_url}" data-src="{player_url}"></iframe>'
+    )
+
+
 def _render_synced_video_card(*, name: str, cover_url: str) -> str:
     safe_name = html_lib.escape(name)
     return (
@@ -347,6 +425,7 @@ def _render_synced_video_card(*, name: str, cover_url: str) -> str:
 
 
 def _render_failed_video_card(name: str) -> str:
+    # Neutral poster card only; never emit public-facing failure wording.
     safe_name = html_lib.escape(name)
     return (
         '<figure class="md-video-card md-video-card-fallback" '
@@ -354,7 +433,6 @@ def _render_failed_video_card(name: str) -> str:
         '<section class="md-video-card-poster" style="display:flex; align-items:center; justify-content:center; min-height: 120px; background: linear-gradient(135deg, rgba(250,81,81,.92), rgba(15,76,129,.92)); color:#fff; font-size:40px;">▶</section>'
         '<figcaption class="md-video-card-caption" style="padding: 12px 14px; color: #24292f; font-size: .95em; line-height: 1.7; text-align: left;">'
         f'<strong style="display:block; color:#24292f;">视频：{safe_name}</strong>'
-        '<span style="color:#9a3412;">视频素材同步失败，正文暂以占位卡片保留。</span>'
         '</figcaption>'
         '</figure>'
     )

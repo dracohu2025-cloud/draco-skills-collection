@@ -73,7 +73,7 @@ pip install -r requirements.txt
 ### 2. 配置环境变量
 
 ```bash
-cp .env.example .env
+cp env.sample.txt .env
 # 编辑 .env 文件，填入你的微信配置
 ```
 

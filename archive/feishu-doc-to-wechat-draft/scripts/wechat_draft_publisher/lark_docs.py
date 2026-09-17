@@ -10,6 +10,7 @@ from .models import ArticleInput
 
 _DOC_TOKEN_RE = re.compile(r"/(?:docx|wiki)/([a-zA-Z0-9]+)")
 _TEXT_TAG_RE = re.compile(r"<text\b[^>]*>(.*?)</text>", re.S)
+_MENTION_DOC_RE = re.compile(r"<mention-doc\b[^>]*>(.*?)</mention-doc>", re.S)
 _LARK_TABLE_RE = re.compile(r"<lark-table\b.*?</lark-table>", re.S)
 _LARK_TR_RE = re.compile(r"<lark-tr\b[^>]*>(.*?)</lark-tr>", re.S)
 _LARK_TD_RE = re.compile(r"<lark-td\b[^>]*>(.*?)</lark-td>", re.S)
@@ -41,6 +42,59 @@ def extract_lark_doc_token(doc: str) -> str:
     return text
 
 
+def _extract_image_captions(payload: dict) -> dict[str, str]:
+    captions: dict[str, str] = {}
+    for block in (payload.get("data") or {}).get("items") or []:
+        if block.get("block_type") != 27:
+            continue
+        image = block.get("image") or {}
+        token = (image.get("token") or "").strip()
+        content = ((image.get("caption") or {}).get("content") or "").strip()
+        if token and content:
+            captions[token] = content
+    return captions
+
+
+def fetch_lark_image_captions(doc_id: str, *, identity: str = "user") -> dict[str, str]:
+    captions: dict[str, str] = {}
+    page_token: str | None = None
+    while True:
+        params: dict[str, object] = {"document_revision_id": -1, "page_size": 500}
+        if page_token:
+            params["page_token"] = page_token
+        completed = subprocess.run(
+            [
+                "lark-cli",
+                "api",
+                "GET",
+                f"/open-apis/docx/v1/documents/{doc_id}/blocks",
+                "--as",
+                identity,
+                "--params",
+                json.dumps(params, separators=(",", ":")),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                completed.stderr.strip()
+                or completed.stdout.strip()
+                or "failed to fetch Lark image captions"
+            )
+        payload = json.loads(completed.stdout)
+        if payload.get("code") not in (None, 0):
+            raise RuntimeError(payload.get("msg") or "failed to fetch Lark image captions")
+        captions.update(_extract_image_captions(payload))
+        data = payload.get("data") or {}
+        if not data.get("has_more"):
+            break
+        page_token = data.get("page_token")
+        if not page_token:
+            raise RuntimeError("Lark block pagination indicated more data without page_token")
+    return captions
+
+
 def fetch_lark_doc(doc: str, *, identity: str = "user") -> dict:
     completed = subprocess.run(
         ["lark-cli", "docs", "+fetch", "--as", identity, "--doc", doc, "--format", "json"],
@@ -52,10 +106,12 @@ def fetch_lark_doc(doc: str, *, identity: str = "user") -> dict:
 
     payload = json.loads(completed.stdout)
     data = payload.get("data") or {}
+    doc_id = data.get("doc_id") or extract_lark_doc_token(doc)
     return {
-        "doc_id": data.get("doc_id") or extract_lark_doc_token(doc),
+        "doc_id": doc_id,
         "title": data.get("title", ""),
         "markdown": data.get("markdown", ""),
+        "image_captions": fetch_lark_image_captions(doc_id, identity=identity),
         "source_url": doc if doc.startswith(("http://", "https://")) else None,
         "raw": payload,
     }
@@ -69,12 +125,17 @@ def _convert_text_tags(markdown: str) -> str:
     return _TEXT_TAG_RE.sub(lambda m: _collapse_ws(m.group(1)), markdown)
 
 
+def _convert_mention_doc_tags(markdown: str) -> str:
+    """Convert Feishu document mentions to their visible title text."""
+    return _MENTION_DOC_RE.sub(lambda m: _collapse_ws(m.group(1)), markdown)
+
+
 def _extract_image_tokens(markdown: str) -> list[str]:
     """Extract all image tokens from markdown for later processing."""
     return _IMAGE_RE.findall(markdown)
 
 
-def _convert_image_tags(markdown: str) -> str:
+def _convert_image_tags(markdown: str, image_captions: dict[str, str] | None = None) -> str:
     """Convert <image token="..."> to placeholder markdown images.
     
     Note: These are placeholders. Actual image URLs need to be fetched via
@@ -82,8 +143,9 @@ def _convert_image_tags(markdown: str) -> str:
     """
     def replace_image(match):
         token = match.group(1)
+        alt = (image_captions or {}).get(token) or "image"
         # Return a placeholder that will be processed later
-        return f"![image](lark-image://{token})"
+        return f"![{alt}](lark-image://{token})"
     return _IMAGE_RE.sub(replace_image, markdown)
 
 
@@ -287,6 +349,73 @@ def _renumber_lark_lazy_ordered_lists(markdown: str) -> str:
     return "\n".join(out)
 
 
+def _unwrap_markdown_fences_with_inner_fences(markdown: str) -> str:
+    """Unwrap Lark-exported ```markdown blocks that contain real fences.
+
+    These blocks are usually pasted AI output. Keeping the outer markdown fence
+    makes screenshots after the block easy to escape as code when nested fences
+    are present. Unwrapping preserves the inner bash/plaintext fences.
+    """
+    lines = markdown.replace("\r\n", "\n").split("\n")
+    remove: set[int] = set()
+    i = 0
+    while i < len(lines):
+        if lines[i].strip().lower() != "```markdown":
+            i += 1
+            continue
+        candidate_close = None
+        saw_inner_fence = False
+        j = i + 1
+        while j < len(lines):
+            stripped = lines[j].strip()
+            if stripped.startswith("```"):
+                if stripped != "```":
+                    saw_inner_fence = True
+                else:
+                    next_nonempty = ""
+                    for line in lines[j + 1 :]:
+                        if line.strip():
+                            next_nonempty = line.strip()
+                            break
+                    if next_nonempty.startswith(("<hr", "---", "#", "- ", "* ", "![", "<image", "<quote-container")):
+                        candidate_close = j
+                        break
+            j += 1
+        if candidate_close is not None and saw_inner_fence:
+            remove.add(i)
+            remove.add(candidate_close)
+            i = candidate_close + 1
+        else:
+            i += 1
+    if not remove:
+        return markdown
+    return "\n".join(line for idx, line in enumerate(lines) if idx not in remove)
+
+
+def _remove_orphan_fence_before_block_boundary(markdown: str) -> str:
+    """Drop a lone ``` that would incorrectly swallow the rest of the doc.
+
+    Lark sometimes exports an extra standalone fence after prose such as an
+    official docs URL. If that fence is followed by a section boundary and has
+    no closing peer, markdown-it treats all later screenshots as code text.
+    """
+    lines = markdown.replace("\r\n", "\n").split("\n")
+    fence_indices = [i for i, line in enumerate(lines) if line.strip() == "```"]
+    if len(fence_indices) % 2 == 0:
+        return markdown
+
+    for idx in reversed(fence_indices):
+        next_nonempty = ""
+        for line in lines[idx + 1 :]:
+            if line.strip():
+                next_nonempty = line.strip()
+                break
+        if next_nonempty.startswith(("<hr", "#", "- ", "* ", "![", "<image", "<quote-container")):
+            del lines[idx]
+            return "\n".join(lines)
+    return markdown
+
+
 def _normalize_block_boundaries(markdown: str) -> str:
     """Insert missing blank lines around standalone strong titles and list boundaries."""
     lines = markdown.replace("\r\n", "\n").split("\n")
@@ -321,10 +450,12 @@ def _normalize_block_boundaries(markdown: str) -> str:
     return "\n".join(out)
 
 
-def normalize_lark_markdown(markdown: str) -> str:
-    normalized = _convert_text_tags(markdown)
+def normalize_lark_markdown(markdown: str, *, image_captions: dict[str, str] | None = None) -> str:
+    normalized = _unwrap_markdown_fences_with_inner_fences(markdown)
+    normalized = _convert_text_tags(normalized)
+    normalized = _convert_mention_doc_tags(normalized)
     normalized = _convert_quote_containers(normalized)
-    normalized = _convert_image_tags(normalized)
+    normalized = _convert_image_tags(normalized, image_captions=image_captions)
     normalized = _convert_embedded_videos(normalized)
     normalized = _LARK_TABLE_RE.sub(lambda m: _convert_lark_table(m.group(0)), normalized)
     normalized = _convert_horizontal_rules(normalized)
@@ -361,13 +492,16 @@ def load_lark_doc_article(
     identity: str = "user",
 ) -> tuple[ArticleInput, dict]:
     doc_data = fetch_lark_doc(doc, identity=identity)
-    markdown = normalize_lark_markdown(doc_data["markdown"])
+    markdown = normalize_lark_markdown(
+        doc_data["markdown"],
+        image_captions=doc_data.get("image_captions") or {},
+    )
     article = ArticleInput(
         title=doc_data["title"],
         author=author,
         digest=digest or build_digest_from_markdown(markdown),
         cover_image=cover_image,
         content_markdown=markdown,
-        source_url=source_url or doc_data.get("source_url"),
+        source_url=source_url,  # explicit only; never default to the Feishu doc URL
     )
     return article, doc_data

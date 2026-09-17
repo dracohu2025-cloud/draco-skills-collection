@@ -28,7 +28,7 @@ flowchart LR
 
 ## 前置条件
 
-- 本仓库的 [`feishu-doc-to-wechat-draft/`](../feishu-doc-to-wechat-draft/) 项目（渲染与发布执行器，本 skill 是其上层工作流）。
+- 本仓库的 内置 `publisher/` 子项目（渲染与发布执行器，已完全整合，无需外部依赖）。
 - 微信公众号的 `appid` / `appsecret`（用于草稿 API）。
 - 飞书自建应用 + [lark-cli](https://github.com/) 已登录（用于抓文档、发卡片、收卡片回调）。
 - 卡片选风格功能需要：开发者后台 → 事件与回调 → **回调配置** → 添加「卡片回传交互 card.action.trigger」→ 长连接接收。
@@ -39,7 +39,7 @@ flowchart LR
 最小推送（默认风格：活力橙 / grace / 15px）：
 
 ```bash
-python ../feishu-doc-to-wechat-draft/scripts/run.py publish-feishu-doc-default \
+python publisher/scripts/run.py publish-feishu-doc-default \
   --doc <飞书文档链接> --author <作者名> --cover-image /path/to/cover.png
 ```
 
@@ -56,7 +56,7 @@ python scripts/style_select_card.py --token T001 --title "文章标题" \
 python scripts/wait_style_choice.py --token T001 --output /tmp/style_T001.json
 
 # 4. 按所选风格发布
-python ../feishu-doc-to-wechat-draft/scripts/run.py publish-feishu-doc-default \
+python publisher/scripts/run.py publish-feishu-doc-default \
   --doc <飞书文档链接> --style-json "$(cat /tmp/style_T001.json)" ...
 
 # 5. 验证草稿
@@ -73,9 +73,8 @@ python scripts/verify_wechat_draft.py <draft_media_id>
 
 ## 与同仓库其他目录的关系
 
-本 skill 是伞形工作流，以下窄 skill 仍可单独使用：
+本 skill 已整合渲染发布执行器（`publisher/`）。以下窄 skill 仍可单独使用：
 
-- [`feishu-doc-to-wechat-draft/`](../feishu-doc-to-wechat-draft/) — 渲染 + 发布执行器（本 skill 的核心依赖）
 - [`article-to-wechat-cover/`](../article-to-wechat-cover/) — 单独的封面生成
 - [`wechat-article-camofox/`](../wechat-article-camofox/) / [`wechat-article-browseruse/`](../wechat-article-browseruse/) — 公众号文章反向抓取
 

@@ -31,7 +31,7 @@ from lark_oapi.event.callback.model.p2_card_action_trigger import (
 DEFAULT_PUBLISHER = Path(
     os.environ.get(
         "WECHAT_DRAFT_PUBLISHER_DIR",
-        str(Path(__file__).resolve().parents[2] / "feishu-doc-to-wechat-draft"),
+        str(Path(__file__).resolve().parents[1] / "publisher"),
     )
 )
 KEYCHAIN_DIR = Path.home() / ".local/share/lark-cli"

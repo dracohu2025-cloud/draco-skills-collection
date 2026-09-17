@@ -100,6 +100,7 @@ def test_rewrite_html_assets_uploads_video_material_and_replaces_card(tmp_path, 
             "token": "tok_video",
             "name": "demo-video.mp4",
             "media_id": "mock_video_media_id",
+            "vid": "",
             "cover_url": "https://mmbiz.qpic.cn/mock/video-cover.jpg",
             "source_url": "https://example.com/source-doc",
         }

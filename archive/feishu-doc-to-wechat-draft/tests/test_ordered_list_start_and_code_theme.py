@@ -168,10 +168,28 @@ def test_ordered_list_items_preserve_block_paragraphs() -> None:
    表格、引用块、代码块都能显示。
 """
     html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
-    assert '<section class="md-ordered-item"' in html
-    assert '<section class="md-ordered-text"' in html
+    assert '<p class="md-ordered-item"' in html
+    assert '<span class="md-ordered-text"' in html
     assert '<span class="md-ordered-text"><p' not in html
     assert '飞书文档里的图片会自动下载。' in html
+
+
+def test_inline_list_markers_are_safe_when_wechat_sanitizes_lists() -> None:
+    md = """<quote-container>
+
+备注：
+
+1. IP填写你服务器实例的IP；
+1. USER_NAME=ubuntu。
+</quote-container>
+
+- 访问轻量应用服务器实例列表。
+"""
+    html = render_markdown(md, profile="doocs", theme="grace", font_size=15).html
+    assert 'class="md-ordered-index"' in html
+    assert 'class="md-bullet-dot"' in html
+    assert '<ul' not in html and '<ol' not in html and '<li' not in html
+    assert 'display: flex' not in html
 
 
 def test_media_id_methods_render_as_separate_blocks() -> None:
@@ -192,9 +210,10 @@ print('hi')
 ```
 """
     html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
-    assert '封面图的 media_id</strong></p>' in html
+    assert '封面图的 media_id' in html
     assert '方法一：微信公众平台后台（最简单）' in html
-    assert '登录微信公众平台</section>' in html
+    assert '登录微信公众平台' in html
+    assert 'class="md-list md-list-ordered"' in html
     assert '方法三：使用代码上传' in html
     assert '<pre class="code-block md-pre md-pre-mac"' in html or '<pre class="code-block md-pre"' in html
 
@@ -243,7 +262,7 @@ def test_nested_unordered_lists_render_as_nested_blocks() -> None:
     assert html.count('class="md-list md-list-unordered"') >= 2
     assert '<ul class="md-ul"' not in html
     assert '<li class="md-li"' not in html
-    assert '<section class="md-bullet-text" style="flex: 1 1 auto; min-width: 0; text-align: left;">Hermes：' in html
+    assert '<span class="md-bullet-text" style="display: inline; text-align: left;">Hermes：' in html
     assert '模型：GPT-5.4 High；' in html
     assert '宿主：腾讯云轻应用服务器4核8G版本实例 - 曼谷节点；' in html
 
@@ -259,4 +278,5 @@ def test_unordered_lists_still_render_bullets_when_article_contains_hr() -> None
     html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
     assert 'class="md-bullet-dot"' in html
     assert '<ul class="md-ul"' not in html
-    assert '•</span>' in html
+    assert '&#8226;</span>' in html
+    assert '·</span>' not in html

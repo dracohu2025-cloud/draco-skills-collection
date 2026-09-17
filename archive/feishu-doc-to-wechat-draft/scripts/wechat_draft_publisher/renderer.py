@@ -19,6 +19,7 @@ _P_RE = re.compile(r"<p(?:\s+[^>]*)?>(.*?)</p>", re.S)
 _WS_RE = re.compile(r"\s+")
 _CALLOUT_BLOCK_RE = re.compile(r"(?m)^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO)\]\n((?:>.*\n?)*)")
 _LINK_RE = re.compile(r'<a class="md-link"[^>]* href="([^"]+)"[^>]*>(.*?)</a>')
+_BARE_URL_RE = re.compile(r'(?<![\("\'=])(https?://[^\s<>()]+)')
 _IMAGE_WITH_TITLE_RE = re.compile(r'!\[(?P<alt>[^\]]*)\]\((?P<src>[^)\s]+)(?:\s+"(?P<title>[^"]*)")?\)')
 _WECHAT_VIDEO_TAG_RE = re.compile(
     r'<wechat-video\b(?=[^>]*token="(?P<token>[^"]+)")(?=[^>]*name="(?P<name>[^"]+)")[^>]*\s*(?:/?>)(?:</wechat-video>)?'
@@ -83,11 +84,17 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
         p_extra.append("text-indent: 2em")
     p_extra_style = "; ".join(p_extra)
 
+    # Do not let WeChat render native <ul>/<ol>/<li>. Its editor can repeat a
+    # native marker on wrapped content, while flex replacements can split marker
+    # and text into separate rows after sanitization. Preserve list tokens, then
+    # render one inline marker + one inline text span per item below.
+    html = html.replace('<ul>', '<md-ul>').replace('</ul>', '</md-ul>')
     html = re.sub(
-        r'<ol start="(?P<start>\d+)">',
-        lambda match: _ol_open(options, text, start=int(match.group('start'))),
+        r'<ol(?: start="(?P<start>\d+)")?>',
+        lambda match: f'<md-ol data-start="{match.group("start") or "1"}">',
         html,
-    )
+    ).replace('</ol>', '</md-ol>')
+    html = html.replace('<li>', '<md-li>').replace('</li>', '</md-li>')
 
     replacements = [
         (r"<h1>", _h1_open(options, primary, text)),
@@ -113,7 +120,7 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
         (r"<code>", '<code class="md-inline-code" style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">'),
         (r"<hr ?/?>", _hr_open(options, border, primary)),
         (r"<img ", _image_open(options)),
-        (r"<a href=", '<a class="md-link" style="color: #576b95; text-decoration: none;" href='),
+        (r"<a href=", '<a class="md-link" style="color: #1e6bd6; text-decoration: underline; text-underline-offset: 2px;" href='),
         (r"<strong>", f'<strong class="md-strong" style="color: {primary}; font-weight: 700; font-size: {options.font_size}px;">'),
         (r"<em>", f'<em class="md-em" style="color: {text}; font-style: italic; font-size: {options.font_size}px;">'),
         (r"<table>", _table_open(options, text)),
@@ -125,17 +132,149 @@ def _decorate_html(html: str, options: RenderOptions) -> str:
         html = re.sub(pattern, replacement, html)
     html = re.sub(r'<figure class="md-figure"([^>]*)>', f'<figure class="md-figure"\\1 style="margin: 1.5em 8px; color: {text}; text-align: left;">', html)
     html = _compact_nested_paragraphs(html, options)
+    html = _render_inline_list_blocks(html, options, text)
     html = _enhance_code_blocks(html, options)
+    html = _convert_grid_layouts(html, options)
     html = _apply_caption_mode(html, options)
     html = _rewrite_embedded_videos(html, options)
     html = _rewrite_external_links(html, options)
+    if not options.footnote_links:
+        html = _rewrite_visual_links(html)
     return html
+
+
+def _convert_grid_layouts(html: str, options: RenderOptions) -> str:
+    """Feishu <grid>/<column> parallel layouts: render as fixed-layout tables so
+    side-by-side images (or text+image) stay side-by-side in WeChat.
+    Column widths from Feishu become td percentages; figure margins normalize to 0.
+    """
+    def grid_to_table(match: re.Match[str]) -> str:
+        grid = match.group(0)
+        cols = re.findall(r'<column\s+width="(\d+)"\s*>(.*?)</column>', grid, re.S)
+        if not cols:
+            return grid
+        tds = []
+        for width, inner in cols:
+            inner = inner.strip()
+            inner = inner.replace('margin: 1.5em 8px', 'margin: 0')
+            if '<figure' not in inner and '<img' not in inner:
+                inner = (f'<p style="margin: 0; color: inherit; font-size: {options.font_size}px; '
+                         f'line-height: inherit; letter-spacing: 0.1em;">{inner}</p>')
+            tds.append(f'<td style="width:{width}%; padding:0 4px; vertical-align:top;">{inner}</td>')
+        return ('<table style="width:100%; table-layout:fixed; border-collapse:collapse; margin:1.5em 0;">'
+                f'<tbody><tr>{"".join(tds)}</tr></tbody></table>')
+
+    return re.sub(r'<grid[^>]*>.*?</grid>', grid_to_table, html, flags=re.S)
+
+
+def _render_inline_list_blocks(html: str, options: RenderOptions, text: str) -> str:
+    """Render every Markdown list with exactly one inline marker per item.
+
+    Native list markers can repeat in WeChat's editor on a wrapped visual line.
+    Earlier flex layouts could also split a marker from its text after HTML
+    sanitization. This deliberately uses ordinary paragraphs and inline spans.
+    """
+    tag_re = re.compile(r'</?md-(?:ul|ol)(?:\s[^>]*)?>')
+
+    def replace_first(fragment: str) -> str:
+        match = re.search(r'<md-(ul|ol)(?P<attrs>[^>]*)>', fragment)
+        if not match:
+            return fragment
+        list_type = match.group(1)
+        stack = [list_type]
+        closing_end: int | None = None
+        for token in tag_re.finditer(fragment, match.end()):
+            token_text = token.group(0)
+            token_type_match = re.search(r'md-(ul|ol)', token_text)
+            if not token_type_match:
+                continue
+            token_type = token_type_match.group(1)
+            if token_text.startswith('</'):
+                if stack and stack[-1] == token_type:
+                    stack.pop()
+                if not stack:
+                    closing_end = token.end()
+                    break
+            else:
+                stack.append(token_type)
+        if closing_end is None:
+            return fragment
+        closing = f'</md-{list_type}>'
+        inner = replace_first(fragment[match.end():closing_end - len(closing)])
+        start_match = re.search(r'data-start="(\d+)"', match.group('attrs'))
+        start = int(start_match.group(1)) if start_match else 1
+        rendered = _render_inline_list_block(list_type, inner, options, text, start=start)
+        return fragment[:match.start()] + rendered + replace_first(fragment[closing_end:])
+
+    return replace_first(html)
+
+
+def _render_inline_list_block(list_type: str, inner: str, options: RenderOptions, text: str, *, start: int = 1) -> str:
+    item_re = re.compile(r'<md-li>(.*?)</md-li>', re.S)
+    items = item_re.findall(inner)
+    if not items:
+        return inner
+    margin = '0' if options.theme == 'default' else '.8em 0'
+    item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
+    kind = 'ordered' if list_type == 'ol' else 'unordered'
+    parts = [f'<section class="md-list md-list-{kind}" style="margin: {margin}; text-align: left;">']
+    for index, body in enumerate(items, start=start):
+        body = _inline_list_item_body(body)
+        # U+2022 BULLET is the standard filled list glyph used by the WeChat editor.
+        # Use a numeric entity rather than the Chinese middle dot (U+00B7) typed via IME.
+        marker = f'{index}.' if list_type == 'ol' else '&#8226;'
+        marker_class = 'md-ordered-index' if list_type == 'ol' else 'md-bullet-dot'
+        text_class = 'md-ordered-text' if list_type == 'ol' else 'md-bullet-text'
+        item_class = 'md-ordered-item' if list_type == 'ol' else 'md-bullet-item'
+        parts.append(
+            f'<p class="{item_class}" style="display: block; margin: {item_margin}; padding-left: 1.6em; text-indent: -1.6em; '
+            f'color: {text}; font-size: {options.font_size}px; line-height: inherit; text-align: left;">'
+            f'<span class="{marker_class}" style="display: inline; font-weight: 700;">{marker}</span>&nbsp;'
+            f'<span class="{text_class}" style="display: inline; text-align: left;">{body}</span></p>'
+        )
+    parts.append('</section>')
+    return ''.join(parts)
+
+
+def _inline_list_item_body(body: str) -> str:
+    """Keep list content inline; paragraph blocks become deliberate line breaks."""
+    body = body.strip()
+    body = re.sub(r'<p\b[^>]*>', '', body)
+    body = body.replace('</p>', '<br/>')
+    return re.sub(r'(?:<br/>)+$', '', body)
 
 
 def _preprocess_markdown(markdown: str) -> str:
     markdown = _CALLOUT_BLOCK_RE.sub(_replace_callout_block, markdown)
+    markdown = _autolink_bare_urls(markdown)
     markdown = _IMAGE_WITH_TITLE_RE.sub(_replace_image_with_figure, markdown)
     return markdown
+
+
+def _autolink_bare_urls(markdown: str) -> str:
+    """Make pasted plain URLs look like links without touching fenced code blocks."""
+    lines: list[str] = []
+    in_fence = False
+    for line in markdown.splitlines(keepends=True):
+        if re.match(r"^\s*```", line):
+            in_fence = not in_fence
+            lines.append(line)
+            continue
+        if in_fence:
+            lines.append(line)
+            continue
+        lines.append(_BARE_URL_RE.sub(_replace_bare_url, line))
+    return "".join(lines)
+
+
+def _replace_bare_url(match: re.Match[str]) -> str:
+    url = match.group(1)
+    trailing = ""
+    while url and url[-1] in "，。；：、,.!?！？]】》）)":
+        trailing = url[-1] + trailing
+        url = url[:-1]
+    escaped_url = url.replace(")", "%29")
+    return f"[{url}]({escaped_url}){trailing}"
 
 
 def _compact_nested_paragraphs(html: str, options: RenderOptions) -> str:
@@ -345,7 +484,26 @@ def _rewrite_embedded_videos(html: str, options: RenderOptions) -> str:
     return _WECHAT_VIDEO_TAG_RE.sub(repl, html)
 
 
+_GENERIC_IMAGE_CAPTIONS = {
+    'image',
+    'img',
+    'picture',
+    'photo',
+    '图片',
+    '图像',
+}
+
+
+def _clean_caption_candidate(value: str) -> str:
+    cleaned = html_lib.unescape(value).strip()
+    if cleaned.casefold() in _GENERIC_IMAGE_CAPTIONS:
+        return ''
+    return value.strip()
+
+
 def _resolve_caption_text(mode: str, *, alt: str, title: str) -> str:
+    alt = _clean_caption_candidate(alt)
+    title = _clean_caption_candidate(title)
     if mode == 'title-first':
         return title or alt
     if mode == 'alt-first':
@@ -355,6 +513,20 @@ def _resolve_caption_text(mode: str, *, alt: str, title: str) -> str:
     if mode == 'alt-only':
         return alt
     return ''
+
+
+def _rewrite_visual_links(html: str) -> str:
+    """Render links as blue underlined text because WeChat strips external anchors."""
+
+    def repl(match: re.Match[str]) -> str:
+        _href, text = match.groups()
+        return (
+            '<span class="md-link" '
+            'style="color: #1e6bd6; text-decoration: underline; text-underline-offset: 2px;">'
+            f'{text}</span>'
+        )
+
+    return _LINK_RE.sub(repl, html)
 
 
 def _rewrite_external_links(html: str, options: RenderOptions) -> str:
@@ -431,22 +603,30 @@ def _blockquote_open(options: RenderOptions, primary: str, muted: str, soft: str
 
 
 def _ul_open(options: RenderOptions, text: str) -> str:
-    if options.theme == "default":
-        return f'<ul class="md-ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: {text};">'
-    # grace and simple themes use list-style: none (aligned with Doocs)
-    return f'<ul class="md-ul" style="list-style: none; padding-left: 1.5em; margin-left: 0; color: {text};">'
+    # WeChat's sanitizer is reliable with native list markers but may drop custom
+    # flex/section bullets. Keep a real <ul>/<li> marker as the durable fallback.
+    marker = "circle" if options.theme == "default" else "disc"
+    margin = "0.4em 0" if options.theme == "default" else "0.8em 0"
+    return (
+        f'<ul class="md-ul" style="list-style-type: {marker}; list-style-position: outside; '
+        f'padding-left: 1.8em; margin: {margin}; color: {text};">'
+    )
 
 
 def _ol_open(options: RenderOptions, text: str, start: int = 1) -> str:
     data_start = f' data-start="{start}"' if start != 1 else ''
-    if options.theme == "default":
-        return f'<ol class="md-ol"{data_start} style="padding-left: 1em; margin-left: 0; color: {text};">'
-    return f'<ol class="md-ol"{data_start} style="padding-left: 1.5em; margin-left: 0; color: {text};">'
+    margin = "0.4em 0" if options.theme == "default" else "0.8em 0"
+    return (
+        f'<ol class="md-ol"{data_start} style="list-style-type: decimal; list-style-position: outside; '
+        f'padding-left: 1.8em; margin: {margin}; color: {text};">'
+    )
 
 
 def _li_open(options: RenderOptions, text: str) -> str:
-    margin = "0.2em 8px" if options.theme == "default" else "0.5em 8px"
-    return f'<li class="md-li" style="display: block; margin: {margin}; color: {text}; font-size: {options.font_size}px; line-height: inherit;">'
+    margin = "0.2em 0" if options.theme == "default" else "0.5em 0"
+    # display:list-item keeps marker and content on the same row after WeChat
+    # sanitization; display:block turns markers into a separate line or drops them.
+    return f'<li class="md-li" style="display: list-item; margin: {margin}; padding-left: 0; color: {text}; font-size: {options.font_size}px; line-height: inherit;">'
 
 
 def _hr_open(options: RenderOptions, border: str, primary: str) -> str:
@@ -468,9 +648,12 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     border_radius = "8px"
     line_height = "1.5"
     box_shadow = "none"
-    overflow_css = "overflow-x: auto; overflow-y: hidden;"
+    overflow_css = "overflow: visible;"
+    pre_padding = "14px"
     if options.mac_code_block:
         classes.append("md-pre-mac")
+        # WeChat strips styles from <code>, so keep the durable breathing room on <pre>.
+        pre_padding = "0 14px 14px"
     if options.theme == "grace":
         box_shadow = "inset 0 0 10px rgba(0, 0, 0, 0.05)"
     elif options.theme == "simple":
@@ -479,9 +662,11 @@ def _pre_open(options: RenderOptions, code_bg: str, code_fg: str, code_border: s
     class_str = " ".join(classes)
     border_css = 'none' if options.theme in {'default', 'grace'} else f'1px solid {code_border}'
     return (
-        f'<pre class="{class_str}" style="font-size: 90%; margin: {margin}; padding: 0; {overflow_css} '
-        f'-webkit-overflow-scrolling: touch; border-radius: {border_radius}; line-height: {line_height}; background: {code_bg}; color: {code_fg}; border: {border_css}; '
-        f'box-shadow: {box_shadow}; position: relative;\"><code'
+        f'<section class="md-code-scroll-wrap" style="margin: {margin}; max-width: 100%; overflow-x: auto; overflow-y: hidden; '
+        f'-webkit-overflow-scrolling: touch; box-sizing: border-box;">'
+        f'<pre class="{class_str}" style="font-size: 12px; margin: 0; padding: {pre_padding}; {overflow_css} '
+        f'border-radius: {border_radius}; line-height: {line_height}; background: {code_bg}; color: {code_fg}; border: {border_css}; '
+        f'box-shadow: {box_shadow}; position: relative; display: inline-block; min-width: 100%; max-width: none; box-sizing: border-box; vertical-align: top;\"><code'
     )
 
 
@@ -524,10 +709,10 @@ def _td_open(options: RenderOptions, border: str) -> str:
 
 
 def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
-    pattern = re.compile(r'(<pre class="[^"]*md-pre[^"]*"[^>]*>)(<code.*?</code></pre>)', re.S)
+    pattern = re.compile(r'(<section class="md-code-scroll-wrap"[^>]*>)?(<pre class="[^"]*md-pre[^"]*"[^>]*>)(<code.*?</code></pre>)', re.S)
 
     def repl(match: re.Match[str]) -> str:
-        pre_open, code_block = match.groups()
+        section_open, pre_open, code_block = match.groups()
         prefix = ""
         language = 'text'
         code_open_match = re.match(r'(<code[^>]*>)', code_block)
@@ -542,28 +727,67 @@ def _enhance_code_blocks(html: str, options: RenderOptions) -> str:
                 '</span>'
             )
 
-        wrap_code = False
+        # Lock code blocks to the viewport width and wrap long lines instead of
+        # horizontal scrolling. The old inline-block/min-width:100% pre grew past
+        # the screen on long lines and painted its light background into the
+        # overflow area (the "light strip on the right" bug). Wrapping preserves
+        # all content, so "no clipped long lines" still holds.
+        # Exception: line-number mode keeps horizontal scroll because wrapped
+        # lines would misalign the number column.
+        wrap_code = not options.code_line_numbers
+        plain_code = False
         if code_open_match:
             code_open = code_open_match.group(1)
             content_match = re.match(r'<code[^>]*>(.*?)</code></pre>', code_block, re.S)
             if content_match:
                 encoded_content = content_match.group(1)
                 raw_code = html_lib.unescape(encoded_content)
-                wrap_code = _should_wrap_code_block(raw_code, language)
-                rendered_content = _render_code_block_content(raw_code, language, options, wrap_code=wrap_code)
+                language = _normalize_code_language(raw_code, language)
+                code_open = _replace_code_language_class(code_open, language)
+                # Prose/prompt blocks mislabeled as code render without Pygments
+                # to avoid red error spans; real code keeps syntax highlighting.
+                plain_code = _should_render_plain_code_block(raw_code, language)
+                rendered_content = _render_code_block_content(raw_code, language, options, plain_code=plain_code, wrap_code=wrap_code)
                 code_block = f'{code_open}{rendered_content}</code></pre>'
 
         if wrap_code:
-            pre_open = _make_pre_wrap_container(pre_open)
+            section_open, pre_open = _make_pre_wrap_container(section_open, pre_open)
         code_style = _code_block_style(options, wrap_code=wrap_code)
         code_block = code_block.replace(
             '<code',
             f'<code style="{code_style}"',
             1,
         )
-        return pre_open + prefix + code_block
+        assembled = (section_open or '') + pre_open + prefix + code_block.replace('</pre>', '</pre></section>', 1)
+        if code_block.count('<br/>') > 30:
+            assembled = _cap_long_code_block(assembled)
+        return assembled
 
     return pattern.sub(repl, html)
+
+
+def _cap_long_code_block(block_html: str) -> str:
+    """Height-cap very long Mac code blocks (100+ lines): extract the Mac-dots
+    span into a fixed header and give the pre max-height + vertical scroll, so
+    mobile readers don't scroll past hundreds of lines. No-op without dots."""
+    m = re.match(
+        r'(<section[^>]*>)(<pre[^>]*>)(<span[^>]*style="display:block;padding:10px 14px 0;line-height:0;user-select:none;"[^>]*>.*?</span>)(.*)',
+        block_html, re.S)
+    if not m:
+        return block_html
+    section_open, pre_open, dots, rest = m.groups()
+    if 'max-height' in pre_open:
+        return block_html
+    bg = re.search(r'background: ([^;]+);', pre_open)
+    shadow = re.search(r'box-shadow: ([^;]+);', pre_open)
+    new_pre_open = pre_open.replace('overflow: visible;', 'overflow-y: auto;overflow-x: visible;max-height: 480px;')
+    new_pre_open = new_pre_open.replace('border-radius: 8px;', 'border-radius: 0 0 8px 8px;')
+    if new_pre_open == pre_open:
+        return block_html
+    header = (f'<section style="background: {bg.group(1) if bg else "#f6f8fa"};border-radius: 8px 8px 0 0;'
+              f'box-shadow: {shadow.group(1) if shadow else "none"};box-sizing: border-box;width: 100%;display: block;">'
+              + dots + '</section>')
+    return section_open + header + new_pre_open + rest
 
 
 def _extract_code_language(code_open: str) -> str:
@@ -583,6 +807,48 @@ def _extract_code_language(code_open: str) -> str:
         'plaintext': 'text',
     }
     return aliases.get(language, language)
+
+
+def _normalize_code_language(raw_code: str, language: str) -> str:
+    """Correct bad Feishu fence labels before syntax highlighting.
+
+    Feishu sometimes exports terminal snippets as ``javascript {wrap}`` or
+    ``yaml``. Pygments then treats ``# ~/.path`` as an error token and emits a
+    red border. For command-looking blocks, prefer shell highlighting.
+    """
+    normalized = (language or 'text').strip().lower().split()[0]
+    normalized = normalized.split('{', 1)[0].strip() or 'text'
+    aliases = {
+        'py': 'python',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'shell': 'bash',
+        'sh': 'bash',
+        'zsh': 'bash',
+        'yml': 'yaml',
+        'md': 'markdown',
+        'plaintext': 'text',
+    }
+    normalized = aliases.get(normalized, normalized)
+    lines = [line for line in raw_code.strip().splitlines() if line.strip()]
+    if lines:
+        commandish = sum(1 for line in lines if _looks_like_shell_command(line))
+        if commandish >= max(1, len(lines) // 2) and normalized in {'text', 'yaml', 'javascript', 'typescript', 'markdown'}:
+            return 'bash'
+    return normalized
+
+
+def _looks_like_shell_command(line: str) -> bool:
+    return bool(re.match(
+        r'\s*(?:#\s*)?(?:sudo\s+|npm\s+|pnpm\s+|yarn\s+|npx\s+|node\s+|python\d*\s+|pip\s+|curl\s+|git\s+|memos\s+|openclaw\s+|export\s+|mkdir\s+|cp\s+|brew\s+|winget\s+|apt(?:-get)?\s+)',
+        line,
+    ))
+
+
+def _replace_code_language_class(code_open: str, language: str) -> str:
+    if re.search(r'class="[^"]*language-[^\s"]+', code_open):
+        return re.sub(r'language-[^\s"]+', f'language-{language}', code_open, count=1)
+    return code_open
 
 
 def _remap_pygments_colors_to_github_like(html: str) -> str:
@@ -615,18 +881,7 @@ def _pygments_inline_html(code: str, language: str) -> str:
 
 
 def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_newlines: bool) -> str:
-    formatted = highlighted_html
-    formatted = re.sub(
-        r'(<span[^>]*>[^<]*</span>)(\s+)(<span[^>]*>[^<]*</span>)',
-        lambda m: m.group(1) + m.group(3).replace(m.group(3).split('>', 1)[0] + '>', m.group(3).split('>', 1)[0] + '>' + m.group(2), 1),
-        formatted,
-    )
-    formatted = re.sub(
-        r'(\s+)(<span[^>]*>)',
-        lambda m: m.group(2).replace('>', '>' + m.group(1), 1),
-        formatted,
-    )
-    formatted = formatted.replace('\t', '    ')
+    formatted = highlighted_html.replace('\t', '    ')
     if preserve_newlines:
         formatted = formatted.replace('\r\n', '<br/>').replace('\n', '<br/>')
     parts = re.split(r'(<[^>]+>)', formatted)
@@ -638,16 +893,53 @@ def _format_highlighted_html_preserve_spaces(highlighted_html: str, *, preserve_
             out.append(part)
         else:
             out.append(part.replace(' ', '&nbsp;'))
-    return ''.join(out)
+    return _unwrap_plain_space_spans(''.join(out))
 
 
-def _render_code_block_content(raw_code: str, language: str, options: RenderOptions, *, wrap_code: bool = False) -> str:
-    if wrap_code:
-        return _format_plain_code_preserve_lines(raw_code)
-    if options.code_line_numbers:
+def _unwrap_plain_space_spans(html: str) -> str:
+    return re.sub(r'<span style="color: #24292E">((?:&nbsp;)+)</span>', r'\1', html)
+
+
+def _render_code_block_content(raw_code: str, language: str, options: RenderOptions, *, plain_code: bool = False, wrap_code: bool = False) -> str:
+    if plain_code:
+        rendered = _format_plain_code_preserve_lines(raw_code)
+    elif options.code_line_numbers:
         return _render_highlighted_code_lines(raw_code, language)
-    highlighted = _pygments_inline_html(raw_code, language)
-    return _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=True)
+    else:
+        highlighted = _pygments_inline_html(raw_code, language)
+        rendered = _format_highlighted_html_preserve_spaces(highlighted, preserve_newlines=True)
+    if options.mac_code_block:
+        rendered = _apply_mac_code_line_insets(rendered, wrap=wrap_code)
+    return rendered
+
+
+def _apply_mac_code_line_insets(rendered_content: str, *, wrap: bool = False) -> str:
+    """Use inner spans for Mac code alignment because WeChat strips <code> padding."""
+    lines = rendered_content.split('<br/>')
+    if len(lines) > 1 and lines[-1] == '':
+        trailing = lines.pop()
+    else:
+        trailing = None
+    wrapped: list[str] = []
+    for idx, line in enumerate(lines):
+        if line == '':
+            wrapped.append(line)
+            continue
+        if wrap:
+            # inline-block sizes to content width; max-width:100% + inherited
+            # pre-wrap lets long lines fold inside the span instead of
+            # overflowing the locked-width pre.
+            style = 'display: inline-block;max-width: 100%;box-sizing: border-box;padding-left: 14px;'
+            if idx == 0:
+                style = 'display: inline-block;max-width: 100%;box-sizing: border-box;padding-left: 14px;padding-top: 8px;'
+        else:
+            style = 'display: inline-block;padding-left: 14px;'
+            if idx == 0:
+                style = 'display: inline-block;padding-left: 14px;padding-top: 8px;'
+        wrapped.append(f'<span style="{style}">{line}</span>')
+    if trailing is not None:
+        wrapped.append(trailing)
+    return '<br/>'.join(wrapped)
 
 
 def _format_plain_code_preserve_lines(raw_code: str) -> str:
@@ -655,8 +947,9 @@ def _format_plain_code_preserve_lines(raw_code: str) -> str:
     return escaped.replace('\n', '<br/>')
 
 
-def _should_wrap_code_block(raw_code: str, language: str) -> bool:
-    """Wrap prose/prompt templates; keep real terminal/code blocks horizontally scrollable."""
+def _should_render_plain_code_block(raw_code: str, language: str) -> bool:
+    """Prose/prompt templates render without Pygments to avoid red error spans;
+    real code keeps syntax highlighting. Layout wrapping is handled separately."""
     normalized_language = (language or 'text').lower()
     stripped = raw_code.strip()
     if not stripped:
@@ -665,7 +958,7 @@ def _should_wrap_code_block(raw_code: str, language: str) -> bool:
     if not lines:
         return False
     # Typical shell/CLI snippets should keep exact no-wrap behavior.
-    shellish = sum(1 for line in lines if re.match(r'\s*(?:#\s*)?(?:sudo\s+|npm\s+|pnpm\s+|yarn\s+|npx\s+|node\s+|python\d*\s+|pip\s+|curl\s+|git\s+|openclaw\s+|export\s+|mkdir\s+|cp\s+|brew\s+|winget\s+|apt(?:-get)?\s+)', line))
+    shellish = sum(1 for line in lines if _looks_like_shell_command(line))
     if shellish >= max(1, len(lines) // 2):
         return False
     no_wrap_languages = {'bash', 'shell', 'sh', 'zsh', 'python', 'py', 'javascript', 'js', 'typescript', 'ts', 'json', 'yaml', 'yml', 'toml', 'html', 'xml', 'css', 'dockerfile'}
@@ -682,10 +975,20 @@ def _should_wrap_code_block(raw_code: str, language: str) -> bool:
     return True
 
 
-def _make_pre_wrap_container(pre_open: str) -> str:
-    pre_open = pre_open.replace('overflow-x: auto; overflow-y: hidden;', 'overflow-x: visible; overflow-y: visible;')
-    pre_open = pre_open.replace('-webkit-overflow-scrolling: touch;', '')
-    return pre_open
+def _make_pre_wrap_container(section_open: str | None, pre_open: str) -> tuple[str | None, str]:
+    # Lock the pre to viewport width and fold long lines. Put the wrap rules on
+    # <pre> too (not only <code>) because WeChat may strip styles from <code>.
+    pre_open = pre_open.replace(
+        'display: inline-block; min-width: 100%; max-width: none;',
+        'display: block; min-width: 0; max-width: 100%; width: 100%; '
+        'white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;',
+    )
+    if section_open:
+        section_open = section_open.replace(
+            'overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;',
+            'overflow-x: hidden;',
+        )
+    return section_open, pre_open
 def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
     raw_lines = raw_code.replace('\r\n', '\n').split('\n')
     if raw_lines and raw_lines[-1] == '':
@@ -711,20 +1014,24 @@ def _render_highlighted_code_lines(raw_code: str, language: str) -> str:
 
 
 def _code_block_style(options: RenderOptions, *, wrap_code: bool = False) -> str:
-    top_padding = '0.5em'
+    top_padding = '0.75em'
+    horizontal_padding = '1.25em'
     if options.mac_code_block:
-        top_padding = '0.35em'
+        # Keep <code> itself flush; durable Mac alignment is handled by
+        # inner line spans because WeChat strips padding from <code>.
+        top_padding = '0'
+        horizontal_padding = '0'
     if wrap_code:
         return (
-            f"display: block; padding: {top_padding} 1em 1em; text-indent: 0; "
+            f"display: block; padding: {top_padding} {horizontal_padding} 1.1em; text-indent: 0; "
             "color: inherit; background: none; white-space: pre-wrap; margin: 0; min-width: 0; width: 100%; max-width: 100%; "
             "word-break: break-word; overflow-wrap: anywhere; box-sizing: border-box; "
             "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
         )
     return (
-        f"display: block; padding: {top_padding} 1em 1em; text-indent: 0; "
-        "color: inherit; background: none; white-space: pre; margin: 0; min-width: max-content; "
-        "word-break: normal; overflow-wrap: normal; box-sizing: border-box; "
+        f"display: inline-block; padding: {top_padding} {horizontal_padding} 1.1em; text-indent: 0; "
+        "color: inherit; background: none; white-space: pre; margin: 0; min-width: 100%; width: auto; max-width: none; "
+        "word-break: normal; overflow-wrap: normal; box-sizing: border-box; vertical-align: top; "
         "font-family: 'Fira Code', Menlo, Operator Mono, Consolas, Monaco, monospace;"
     )
 

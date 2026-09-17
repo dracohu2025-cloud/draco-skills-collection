@@ -1,0 +1,1 @@
+"""WeChat draft publisher MVP."""
