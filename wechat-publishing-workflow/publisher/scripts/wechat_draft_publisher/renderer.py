@@ -167,16 +167,17 @@ def _convert_grid_layouts(html: str, options: RenderOptions) -> str:
     return re.sub(r'<grid[^>]*>.*?</grid>', grid_to_table, html, flags=re.S)
 
 
-def _render_inline_list_blocks(html: str, options: RenderOptions, text: str) -> str:
+def _render_inline_list_blocks(html: str, options: RenderOptions, text: str, _depth: int = 0) -> str:
     """Render every Markdown list with exactly one inline marker per item.
 
     Native list markers can repeat in WeChat's editor on a wrapped visual line.
     Earlier flex layouts could also split a marker from its text after HTML
     sanitization. This deliberately uses ordinary paragraphs and inline spans.
+    Nested lists recurse with deeper indent so hierarchy survives.
     """
     tag_re = re.compile(r'</?md-(?:ul|ol)(?:\s[^>]*)?>')
 
-    def replace_first(fragment: str) -> str:
+    def replace_first(fragment: str, depth: int) -> str:
         match = re.search(r'<md-(ul|ol)(?P<attrs>[^>]*)>', fragment)
         if not match:
             return fragment
@@ -200,26 +201,66 @@ def _render_inline_list_blocks(html: str, options: RenderOptions, text: str) -> 
         if closing_end is None:
             return fragment
         closing = f'</md-{list_type}>'
-        inner = replace_first(fragment[match.end():closing_end - len(closing)])
+        inner = replace_first(fragment[match.end():closing_end - len(closing)], depth + 1)
         start_match = re.search(r'data-start="(\d+)"', match.group('attrs'))
         start = int(start_match.group(1)) if start_match else 1
-        rendered = _render_inline_list_block(list_type, inner, options, text, start=start)
-        return fragment[:match.start()] + rendered + replace_first(fragment[closing_end:])
+        rendered = _render_inline_list_block(list_type, inner, options, text, start=start, depth=depth)
+        return fragment[:match.start()] + rendered + replace_first(fragment[closing_end:], depth)
 
-    return replace_first(html)
+    return replace_first(html, _depth)
 
 
-def _render_inline_list_block(list_type: str, inner: str, options: RenderOptions, text: str, *, start: int = 1) -> str:
+_NESTED_LIST_SECTION_RE = re.compile(
+    r'<section class="md-list md-list-(?:un)?ordered[^"]*"[^>]*>', re.S
+)
+
+
+def _extract_nested_list_sections(body: str) -> tuple[str, list[str]]:
+    """Pull rendered nested-list sections out of an item body.
+
+    Sections can themselves contain deeper sections, so match them with
+    balanced tag scanning instead of a non-greedy regex.
+    """
+    nested: list[str] = []
+    while True:
+        match = _NESTED_LIST_SECTION_RE.search(body)
+        if not match:
+            break
+        depth = 0
+        end = None
+        for token in re.finditer(r'</?section\b[^>]*>', body[match.start():]):
+            if token.group(0).startswith('</'):
+                depth -= 1
+                if depth == 0:
+                    end = match.start() + token.end()
+                    break
+            else:
+                depth += 1
+        if end is None:
+            break
+        nested.append(body[match.start():end])
+        body = body[:match.start()] + body[end:]
+    return body, nested
+
+
+def _render_inline_list_block(list_type: str, inner: str, options: RenderOptions, text: str, *, start: int = 1, depth: int = 0) -> str:
     item_re = re.compile(r'<md-li>(.*?)</md-li>', re.S)
     items = item_re.findall(inner)
     if not items:
         return inner
     margin = '0' if options.theme == 'default' else '.8em 0'
     item_margin = '0.2em 8px' if options.theme == 'default' else '0.5em 8px'
+    if depth > 0:
+        margin = '0.2em 0'
+    indent = 1.6 * (depth + 1)
     kind = 'ordered' if list_type == 'ol' else 'unordered'
-    parts = [f'<section class="md-list md-list-{kind}" style="margin: {margin}; text-align: left;">']
+    depth_class = f' md-list-depth-{depth}' if depth > 0 else ''
+    parts = [f'<section class="md-list md-list-{kind}{depth_class}" style="margin: {margin}; text-align: left;">']
     for index, body in enumerate(items, start=start):
-        body = _inline_list_item_body(body)
+        # Hoist already-rendered nested list sections out of the paragraph so
+        # each nested item keeps its own <p> structure and deeper indent.
+        text_body, nested = _extract_nested_list_sections(body)
+        text_body = _inline_list_item_body(text_body)
         # U+2022 BULLET is the standard filled list glyph used by the WeChat editor.
         # Use a numeric entity rather than the Chinese middle dot (U+00B7) typed via IME.
         marker = f'{index}.' if list_type == 'ol' else '&#8226;'
@@ -227,11 +268,12 @@ def _render_inline_list_block(list_type: str, inner: str, options: RenderOptions
         text_class = 'md-ordered-text' if list_type == 'ol' else 'md-bullet-text'
         item_class = 'md-ordered-item' if list_type == 'ol' else 'md-bullet-item'
         parts.append(
-            f'<p class="{item_class}" style="display: block; margin: {item_margin}; padding-left: 1.6em; text-indent: -1.6em; '
+            f'<p class="{item_class}" style="display: block; margin: {item_margin}; padding-left: {indent:.1f}em; text-indent: -1.6em; '
             f'color: {text}; font-size: {options.font_size}px; line-height: inherit; text-align: left;">'
             f'<span class="{marker_class}" style="display: inline; font-weight: 700;">{marker}</span>&nbsp;'
-            f'<span class="{text_class}" style="display: inline; text-align: left;">{body}</span></p>'
+            f'<span class="{text_class}" style="display: inline; text-align: left;">{text_body}</span></p>'
         )
+        parts.extend(nested)
     parts.append('</section>')
     return ''.join(parts)
 

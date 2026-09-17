@@ -259,7 +259,7 @@ def test_nested_unordered_lists_render_as_nested_blocks() -> None:
   - 宿主：腾讯云轻应用服务器4核8G版本实例 - 曼谷节点；
 """
     html = render_markdown(md, profile="doocs", theme="grace", font_size=14).html
-    assert html.count('class="md-list md-list-unordered"') >= 2
+    assert html.count('class="md-list md-list-unordered') >= 2
     assert '<ul class="md-ul"' not in html
     assert '<li class="md-li"' not in html
     assert '<span class="md-bullet-text" style="display: inline; text-align: left;">Hermes：' in html
