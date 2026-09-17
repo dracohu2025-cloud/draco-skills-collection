@@ -166,8 +166,8 @@ Reference: `references/video-and-markdown-codeblock-pitfalls.md` captures sessio
 每次推送前可选的「卡片选风格」流程（2026-09 落地，已实测通过）：
 
 1. `python scripts/style_select_card.py --token <TASKID> --title "<文章标题>" --doc-url <飞书链接> --output /tmp/card_<TASKID>.json` — 自动读取 publisher `list-styles` 的 ui_schema v2，生成含 7 个下拉控件（主题色/字号/字体/标题样式/代码主题/图注/Mac代码块）+ 提交按钮的卡片，推荐值已预选。
-2. `feishu-card --as user --chat-id <oc_...> --json /tmp/card_<TASKID>.json` 发卡。
-3. `python scripts/wait_style_choice.py --token <TASKID> --output /tmp/style_<TASKID>.json --timeout 600`（后台跑）— lark-oapi WS 长连接收 `card.action.trigger`，按 token 匹配，把选项映射成 publisher label 格式 style JSON，并回 toast。
+2. **先启动监听**：`python scripts/wait_style_choice.py --token <TASKID> --output /tmp/style_<TASKID>.json --timeout 600`（后台跑）— lark-oapi WS 长连接收 `card.action.trigger`，按 token 匹配，把选项映射成 publisher label 格式 style JSON，并回 toast。**必须先挂监听再发卡**（WS 只收在线期间的回调，先点后挂会丢事件）。
+3. 再发卡：`feishu-card --as user --chat-id <oc_...> --json /tmp/card_<TASKID>.json`。
 4. 收到选择后：`publish-feishu-doc-default ... --style-json "$(cat /tmp/style_<TASKID>.json)"`；超时则走默认风格（活力橙/grace/15px）。
 
 关键事实（别踩坑）：
